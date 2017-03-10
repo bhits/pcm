@@ -1,0 +1,21 @@
+server:
+  port: 8457
+logging:
+  file: /java/C2S_LOGS/pcm/pcm.log
+info:
+  component: Patient Consent Management Service
+ribbon:
+  ReadTimeout: 50000
+spring:
+  datasource:
+    # configure url, username and password per environment
+    url: jdbc:mysql://localhost:3306/pcm?autoReconnect=true
+    username: root
+    password: admin
+---
+spring.profiles: standalone-ssl
+spring:
+  profiles:
+    include: ssl-default
+server:
+  context-path: /pcm
