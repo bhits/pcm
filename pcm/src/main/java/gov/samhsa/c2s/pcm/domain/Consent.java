@@ -3,7 +3,6 @@ package gov.samhsa.c2s.pcm.domain;
 import gov.samhsa.c2s.pcm.domain.valueobject.ConsentStage;
 import lombok.Data;
 import org.hibernate.envers.Audited;
-import org.hibernate.envers.NotAudited;
 
 import javax.persistence.Basic;
 import javax.persistence.Entity;
@@ -15,9 +14,9 @@ import javax.persistence.Id;
 import javax.persistence.Lob;
 import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
-import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.validation.constraints.NotNull;
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -32,10 +31,10 @@ public class Consent {
     private Patient patient;
 
     @ManyToMany
-    private List<Provider> fromProviders;
+    private List<Provider> fromProviders = new ArrayList<>();
 
     @ManyToMany
-    private List<Provider> toProviders;
+    private List<Provider> toProviders = new ArrayList<>();
 
     @Lob
     @Basic(fetch = FetchType.LAZY)
@@ -48,7 +47,7 @@ public class Consent {
     private ConsentRevocation consentRevocation;
 
     @ManyToMany
-    private List<SecurityLabel> securityLabels;
+    private List<SensitivityCategory> sensitivityCategories = new ArrayList<>();
 
     @Enumerated(EnumType.STRING)
     @NotNull

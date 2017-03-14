@@ -13,6 +13,7 @@ import javax.persistence.Lob;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -39,18 +40,17 @@ public class ConsentAttestation {
 
     @OneToMany(mappedBy = "consentAttestation")
     @NotAudited
-    private List<Practitioner> fromPractitioners;
+    private List<Practitioner> fromPractitioners = new ArrayList<>();
 
     @OneToMany(mappedBy = "consentAttestation")
     @NotAudited
-    private List<Organization> fromOrganizations;
+    private List<Organization> fromOrganizations = new ArrayList<>();
 
     @OneToMany(mappedBy = "consentAttestation")
     @NotAudited
-    private List<Practitioner> toPractitioners;
+    private List<Practitioner> toPractitioners = new ArrayList<>();
 
     @OneToMany(mappedBy = "consentAttestation")
     @NotAudited
-    private List<Organization> toOrganizations;
-
+    private List<Organization> toOrganizations = new ArrayList<>();
 }

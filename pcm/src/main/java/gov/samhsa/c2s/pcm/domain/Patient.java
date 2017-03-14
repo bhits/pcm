@@ -8,6 +8,7 @@ import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.ManyToMany;
 import javax.persistence.OneToMany;
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -19,9 +20,9 @@ public class Patient {
 
     @OneToMany(mappedBy = "patient")
     @NotAudited
-    private List<Consent> consents;
+    private List<Consent> consents = new ArrayList<>();
 
-    @ManyToMany(mappedBy = "patients")
+    @ManyToMany
     @NotAudited
-    private List<Provider> providers;
+    private List<Provider> providers = new ArrayList<>();
 }
