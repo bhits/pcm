@@ -60,7 +60,11 @@ public class ProviderServiceImpl implements ProviderService {
     public List<FlattenedSmallProviderDto> getProviders(Long patientId) {
         final Patient patient = patientRepository.saveAndGet(patientId);
         return patient.getProviders().stream()
-                .map(provider -> plsService.getFlattenedSmallProvider(provider.getIdentifier().getValue(), PlsService.Projection.FLATTEN_SMALL_PROVIDER))
+                .map(provider -> {
+                    final FlattenedSmallProviderDto flattenedSmallProvider = plsService.getFlattenedSmallProvider(provider.getIdentifier().getValue(), PlsService.Projection.FLATTEN_SMALL_PROVIDER);
+                    flattenedSmallProvider.setId(provider.getId());
+                    return flattenedSmallProvider;
+                })
                 .collect(toList());
     }
 }

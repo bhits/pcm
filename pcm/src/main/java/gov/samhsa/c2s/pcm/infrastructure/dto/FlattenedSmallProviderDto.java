@@ -4,6 +4,7 @@ import lombok.Data;
 
 @Data
 public class FlattenedSmallProviderDto {
+    private Long id;
     private String firstName;
     private String lastName;
     private String npi;
