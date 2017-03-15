@@ -6,17 +6,14 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.envers.Audited;
-import org.hibernate.envers.NotAudited;
 
 import javax.persistence.Embedded;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Index;
-import javax.persistence.ManyToMany;
 import javax.persistence.Table;
-import java.util.ArrayList;
-import java.util.List;
+import javax.validation.Valid;
 
 @Entity
 @Table(indexes = @Index(columnList = "system,value", name = "provider_identifier_idx", unique = true))
@@ -31,9 +28,6 @@ public class Provider {
     private Long id;
 
     @Embedded
+    @Valid
     private Identifier identifier;
-
-    @ManyToMany
-    @NotAudited
-    private List<Patient> patients  = new ArrayList<>();
 }

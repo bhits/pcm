@@ -11,6 +11,7 @@ import javax.persistence.Id;
 import javax.persistence.Lob;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToOne;
+import javax.validation.constraints.NotNull;
 
 @Entity
 @Data
@@ -21,9 +22,11 @@ public class ConsentRevocation {
     private Long id;
 
     @OneToOne
+    @NotNull
     private Consent consent;
 
     @ManyToOne
+    @NotNull
     private ConsentRevocationTerm consentRevocationTerm;
 
     @Lob

@@ -4,7 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.hibernate.validator.constraints.NotEmpty;
+import org.hibernate.validator.constraints.NotBlank;
 
 import javax.persistence.Embeddable;
 import java.io.Serializable;
@@ -15,8 +15,8 @@ import java.io.Serializable;
 @AllArgsConstructor
 @NoArgsConstructor
 public class Identifier implements Serializable {
-    @NotEmpty
+    @NotBlank
     private String system;
-    @NotEmpty
+    @NotBlank
     private String value;
 }

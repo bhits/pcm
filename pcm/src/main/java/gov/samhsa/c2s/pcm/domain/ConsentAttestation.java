@@ -13,6 +13,7 @@ import javax.persistence.Lob;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
+import javax.validation.constraints.NotNull;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -25,9 +26,11 @@ public class ConsentAttestation {
     private Long id;
 
     @OneToOne
+    @NotNull
     private Consent consent;
 
     @ManyToOne
+    @NotNull
     private ConsentAttestationTerm consentAttestationTerm;
 
     @Lob

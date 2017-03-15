@@ -3,6 +3,7 @@ package gov.samhsa.c2s.pcm.infrastructure.dto;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.validator.constraints.NotBlank;
 
 @Data
 @AllArgsConstructor
@@ -12,6 +13,7 @@ public class ValueSetCategoryDto {
     /**
      * The code.
      */
+    @NotBlank
     private String code;
 
     /**
@@ -37,5 +39,6 @@ public class ValueSetCategoryDto {
     /**
      * The system.
      */
+    @NotBlank
     private String system;
 }

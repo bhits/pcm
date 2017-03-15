@@ -4,7 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.hibernate.validator.constraints.NotEmpty;
+import org.hibernate.validator.constraints.NotBlank;
 
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Past;
@@ -20,20 +20,20 @@ public class PatientDto {
     @NotNull
     private Long id;
 
-    @NotEmpty
+    @NotBlank
     private String lastName;
 
-    @NotEmpty
+    @NotBlank
     private String firstName;
 
-    @NotEmpty
+    @NotBlank
     @Pattern(regexp = "^[\\w-]+(\\.[\\w-]+)*@([a-zA-Z0-9-]+(\\.[a-zA-Z0-9-]+)*?\\.[a-zA-Z]{2,6}|(\\d{1,3}\\.){3}\\d{1,3})(:\\d{4})?$")
     private String email;
 
     @Past
     private Date birthDate;
 
-    @NotEmpty
+    @NotBlank
     private String genderCode;
 
     private String socialSecurityNumber;

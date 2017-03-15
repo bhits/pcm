@@ -10,6 +10,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Index;
 import javax.persistence.Table;
+import javax.validation.Valid;
 
 @Entity
 @Table(indexes = @Index(columnList = "system,value", name = "sensitivity_category_identifier_idx", unique = true))
@@ -21,5 +22,6 @@ public class SensitivityCategory {
     private Long id;
 
     @Embedded
+    @Valid
     private Identifier identifier;
 }
