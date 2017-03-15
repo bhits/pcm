@@ -12,6 +12,10 @@ spring:
     url: jdbc:mysql://localhost:3306/pcm?autoReconnect=true
     username: root
     password: admin
+c2s:
+  pcm:
+    supported-provider-systems:
+      - "http://hl7.org/fhir/sid/us-npi"
 ---
 spring.profiles: standalone-ssl
 spring:

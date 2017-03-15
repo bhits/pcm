@@ -11,12 +11,24 @@ import java.util.Optional;
 
 @Repository
 public interface PatientRepository extends JpaRepository<Patient, Long> {
-    default Optional<Patient> findOneAsOptional(Long id) {
-        return Optional.ofNullable(findOne(id));
+    Optional<Patient> findOneById(Long id);
+
+    Optional<Patient> findOneByIdAndProvidersId(Long patientId, Long providerId);
+
+    boolean existsByIdAndProvidersId(Long patientId, Long providerId);
+
+    default boolean notExistsByIdAndProvidersId(Long patientId, Long providerId) {
+        return !existsByIdAndProvidersId(patientId, providerId);
+    }
+
+    boolean existsByIdAndProvidersIdentifierSystemAndProvidersIdentifierValue(Long patientId, String identifierSystem, String identifierValue);
+
+    default boolean notExistsByIdAndProvidersIdentifierSystemAndProvidersIdentifierValue(Long patientId, String identifierSystem, String identifierValue) {
+        return !existsByIdAndProvidersIdentifierSystemAndProvidersIdentifierValue(patientId, identifierSystem, identifierValue);
     }
 
     default Patient saveAndGet(Long id) {
-        return findOneAsOptional(id)
+        return findOneById(id)
                 .orElseGet(() -> {
                     final PhrService phrService = SpringContext.getBean(PhrService.class);
                     final PatientDto patientProfile = phrService.getPatientProfile();
