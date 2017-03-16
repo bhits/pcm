@@ -1,8 +1,13 @@
 package gov.samhsa.c2s.pcm.domain;
 
+import gov.samhsa.c2s.common.validator.constraint.PresentOrFuture;
 import gov.samhsa.c2s.pcm.domain.valueobject.ConsentStage;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.hibernate.envers.Audited;
+import org.hibernate.validator.constraints.ScriptAssert;
 
 import javax.persistence.Basic;
 import javax.persistence.Entity;
@@ -15,13 +20,23 @@ import javax.persistence.Lob;
 import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToOne;
+import javax.validation.constraints.Future;
 import javax.validation.constraints.NotNull;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-@Data
 @Audited
+@ScriptAssert(
+        lang = "javascript",
+        alias = "_",
+        script = "_.startDate != null && _.endDate != null && _.startDate < _.endDate",
+        message = "consent end date must be after consent start date")
+@Data
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class Consent {
     @Id
     @GeneratedValue
@@ -47,11 +62,20 @@ public class Consent {
     private ConsentRevocation consentRevocation;
 
     @ManyToMany
-    private List<SensitivityCategory> sensitivityCategories = new ArrayList<>();
+    private List<SensitivityCategory> shareSensitivityCategories = new ArrayList<>();
+
+    @ManyToMany
+    private List<Purpose> sharePurposes = new ArrayList<>();
 
     @Enumerated(EnumType.STRING)
     @NotNull
     private ConsentStage consentStage = ConsentStage.SAVED;
+
+    @PresentOrFuture
+    private LocalDate startDate;
+
+    @Future
+    private LocalDate endDate;
 
     public void setConsentAttestation(ConsentAttestation consentAttestation) {
         setConsentStage(ConsentStage.SIGNED);

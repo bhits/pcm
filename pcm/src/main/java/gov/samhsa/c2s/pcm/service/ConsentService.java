@@ -8,4 +8,7 @@ import java.util.List;
 public interface ConsentService {
     @Transactional
     List<ConsentDto> getConsents(Long patientId);
+
+    @Transactional
+    void saveConsent(Long patientId, ConsentDto consentDto);
 }

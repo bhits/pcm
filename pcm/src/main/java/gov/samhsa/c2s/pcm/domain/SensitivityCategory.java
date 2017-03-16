@@ -1,7 +1,10 @@
 package gov.samhsa.c2s.pcm.domain;
 
 import gov.samhsa.c2s.pcm.domain.valueobject.Identifier;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.hibernate.envers.Audited;
 
 import javax.persistence.Embedded;
@@ -14,8 +17,11 @@ import javax.validation.Valid;
 
 @Entity
 @Table(indexes = @Index(columnList = "system,value", name = "sensitivity_category_identifier_idx", unique = true))
-@Data
 @Audited
+@Data
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class SensitivityCategory {
     @Id
     @GeneratedValue
