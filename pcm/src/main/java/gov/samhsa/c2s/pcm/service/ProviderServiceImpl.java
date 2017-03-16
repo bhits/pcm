@@ -8,7 +8,7 @@ import gov.samhsa.c2s.pcm.domain.ProviderRepository;
 import gov.samhsa.c2s.pcm.domain.valueobject.Identifier;
 import gov.samhsa.c2s.pcm.infrastructure.PlsService;
 import gov.samhsa.c2s.pcm.infrastructure.dto.FlattenedSmallProviderDto;
-import gov.samhsa.c2s.pcm.service.dto.ProviderIdentifierDto;
+import gov.samhsa.c2s.pcm.service.dto.IdentifierDto;
 import gov.samhsa.c2s.pcm.service.exception.PatientOrProviderNotFoundException;
 import gov.samhsa.c2s.pcm.service.exception.PatientProviderNotFoundException;
 import lombok.extern.slf4j.Slf4j;
@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
+import static java.util.Comparator.comparing;
 import static java.util.stream.Collectors.toList;
 
 @Service
@@ -41,10 +42,10 @@ public class ProviderServiceImpl implements ProviderService {
 
     @Override
     @Transactional
-    public void saveProviders(Long patientId, Set<ProviderIdentifierDto> providerIdentifierDtos) {
+    public void saveProviders(Long patientId, Set<IdentifierDto> providerIdentifierDtos) {
         // Assert provider identifier systems
         providerIdentifierDtos.stream()
-                .map(ProviderIdentifierDto::getSystem)
+                .map(IdentifierDto::getSystem)
                 .forEach(system -> Assert.isTrue(pcmProperties.getSupportedProviderSystems().contains(system), "Invalid Provider System"));
 
         // Assert provider identifier values
@@ -92,6 +93,7 @@ public class ProviderServiceImpl implements ProviderService {
                     flattenedSmallProvider.setSystem(provider.getIdentifier().getSystem());
                     return flattenedSmallProvider;
                 })
+                .sorted(comparing(FlattenedSmallProviderDto::getId))
                 .collect(toList());
     }
 

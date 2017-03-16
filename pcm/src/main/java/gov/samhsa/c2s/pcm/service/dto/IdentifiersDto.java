@@ -1,13 +1,15 @@
 package gov.samhsa.c2s.pcm.service.dto;
 
 import lombok.Data;
+import org.hibernate.validator.constraints.NotEmpty;
 
 import javax.validation.Valid;
 import java.util.HashSet;
 import java.util.Set;
 
 @Data
-public class ProviderIdentifiersDto {
+public class IdentifiersDto {
     @Valid
-    private Set<ProviderIdentifierDto> providerIdentifiers = new HashSet<>();
+    @NotEmpty
+    private Set<IdentifierDto> identifiers = new HashSet<>();
 }

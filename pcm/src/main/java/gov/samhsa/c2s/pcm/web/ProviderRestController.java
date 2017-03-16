@@ -2,7 +2,7 @@ package gov.samhsa.c2s.pcm.web;
 
 import gov.samhsa.c2s.pcm.infrastructure.dto.FlattenedSmallProviderDto;
 import gov.samhsa.c2s.pcm.service.ProviderService;
-import gov.samhsa.c2s.pcm.service.dto.ProviderIdentifiersDto;
+import gov.samhsa.c2s.pcm.service.dto.IdentifiersDto;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -34,8 +34,8 @@ public class ProviderRestController {
     @PostMapping("/providers")
     @ResponseStatus(HttpStatus.CREATED)
     public void saveProviders(@PathVariable Long patientId,
-                              @Valid @RequestBody ProviderIdentifiersDto providerIdentifiersDto) {
-        providerService.saveProviders(patientId, providerIdentifiersDto.getProviderIdentifiers());
+                              @Valid @RequestBody IdentifiersDto providerIdentifiersDto) {
+        providerService.saveProviders(patientId, providerIdentifiersDto.getIdentifiers());
     }
 
     @DeleteMapping("/providers/{providerId}")
