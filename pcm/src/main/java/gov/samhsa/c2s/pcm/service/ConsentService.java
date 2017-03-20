@@ -11,4 +11,7 @@ public interface ConsentService {
 
     @Transactional
     void saveConsent(Long patientId, ConsentDto consentDto);
+
+    @Transactional
+    void deleteConsent(Long patientId, Long consentId);
 }
