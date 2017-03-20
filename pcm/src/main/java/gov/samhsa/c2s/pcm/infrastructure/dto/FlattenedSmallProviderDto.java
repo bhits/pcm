@@ -17,7 +17,7 @@ public class FlattenedSmallProviderDto {
     private String lastUpdateDate;
     private String entityTypeDisplayName;
     private String entityTypeCode;
-    private String businessPracticeLocationAddressFaxNumber;
+    private String practiceLocationAddressFaxNumber;
     private String practiceLocationAddressTelephoneNumber;
     private String firstLinePracticeLocationAddress;
     private String secondLinePracticeLocationAddress;
