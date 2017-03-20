@@ -23,6 +23,7 @@
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <java.version>1.8</java.version>
         <c2s.common-libraries.version>1.10.0-SNAPSHOT</c2s.common-libraries.version>
+        <hapi.fhir.version>2.2</hapi.fhir.version>
     </properties>
 
     <dependencies>
@@ -94,6 +95,22 @@
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
         </dependency>
+
+        <!-- HAPI FHIR JARS -->
+        <dependency>
+            <groupId>ca.uhn.hapi.fhir</groupId>
+            <artifactId>hapi-fhir-base</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>ca.uhn.hapi.fhir</groupId>
+            <artifactId>hapi-fhir-validation-resources-dstu3</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>ca.uhn.hapi.fhir</groupId>
+            <artifactId>hapi-fhir-structures-dstu3</artifactId>
+        </dependency>
+        <!-- HAPI FHIR JARS -->
+
     </dependencies>
 
     <dependencyManagement>
@@ -105,6 +122,25 @@
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
+
+            <!-- HAPI FHIR JARS -->
+            <dependency>
+                <groupId>ca.uhn.hapi.fhir</groupId>
+                <artifactId>hapi-fhir-base</artifactId>
+                <version>${hapi.fhir.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>ca.uhn.hapi.fhir</groupId>
+                <artifactId>hapi-fhir-validation-resources-dstu3</artifactId>
+                <version>${hapi.fhir.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>ca.uhn.hapi.fhir</groupId>
+                <artifactId>hapi-fhir-structures-dstu3</artifactId>
+                <version>${hapi.fhir.version}</version>
+            </dependency>
+            <!-- HAPI FHIR JARS -->
+
         </dependencies>
     </dependencyManagement>
 
