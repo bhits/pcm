@@ -1,6 +1,6 @@
 # Patient Consent Management Service
 
-The Patient Consent Management (PCM) Service is one of the core components of the Consent2Share (C2S) application. The PCM provides service for patients to manage their electronic consents including consent create, consent edit, consent delete, consent eSignature and patient provider list management. An electronic patient consent is a digital agreement created and electronically signed by the patient to do the following:
+The Patient Consent Management (PCM) Service is one of the core components of the Consent2Share (C2S) application. The PCM provides APIs for patients to manage their electronic consents including consent create, consent edit, consent delete, consent eSignature and patient provider list management. An electronic patient consent is a digital agreement created and electronically signed by the patient to do the following:
 
 1. Select which *sensitive categories* of health information he or she wishes to share
 2. Select the *purposes* for which the medical information may be used
