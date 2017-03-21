@@ -1,7 +1,10 @@
 package gov.samhsa.c2s.pcm.domain;
 
 import gov.samhsa.c2s.pcm.domain.valueobject.Address;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.hibernate.envers.Audited;
 import org.hibernate.validator.constraints.NotBlank;
 
@@ -16,6 +19,9 @@ import javax.validation.constraints.NotNull;
 @Entity
 @Data
 @Audited
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class Organization {
     @Id
     @GeneratedValue

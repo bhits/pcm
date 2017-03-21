@@ -1,10 +1,14 @@
 package gov.samhsa.c2s.pcm.domain;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.hibernate.envers.Audited;
 import org.hibernate.envers.NotAudited;
 
 import javax.persistence.Basic;
+import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
@@ -20,6 +24,9 @@ import java.util.List;
 @Entity
 @Data
 @Audited
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class ConsentAttestation {
     @Id
     @GeneratedValue
@@ -41,19 +48,19 @@ public class ConsentAttestation {
     @Basic(fetch = FetchType.LAZY)
     private byte[] fhirConsent;
 
-    @OneToMany(mappedBy = "consentAttestation")
+    @OneToMany(mappedBy = "consentAttestation", cascade = CascadeType.ALL)
     @NotAudited
     private List<Practitioner> fromPractitioners = new ArrayList<>();
 
-    @OneToMany(mappedBy = "consentAttestation")
+    @OneToMany(mappedBy = "consentAttestation", cascade = CascadeType.ALL)
     @NotAudited
     private List<Organization> fromOrganizations = new ArrayList<>();
 
-    @OneToMany(mappedBy = "consentAttestation")
+    @OneToMany(mappedBy = "consentAttestation", cascade = CascadeType.ALL)
     @NotAudited
     private List<Practitioner> toPractitioners = new ArrayList<>();
 
-    @OneToMany(mappedBy = "consentAttestation")
+    @OneToMany(mappedBy = "consentAttestation", cascade = CascadeType.ALL)
     @NotAudited
     private List<Organization> toOrganizations = new ArrayList<>();
 }
