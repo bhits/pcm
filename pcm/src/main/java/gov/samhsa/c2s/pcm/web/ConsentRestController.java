@@ -3,6 +3,7 @@ package gov.samhsa.c2s.pcm.web;
 import gov.samhsa.c2s.pcm.service.ConsentService;
 import gov.samhsa.c2s.pcm.service.dto.ConsentAttestationDto;
 import gov.samhsa.c2s.pcm.service.dto.ConsentDto;
+import gov.samhsa.c2s.pcm.service.dto.ConsentRevocationDto;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.NotImplementedException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -61,4 +62,12 @@ public class ConsentRestController {
                               @Valid @RequestBody ConsentAttestationDto consentAttestationDto) {
         consentService.attestConsent(patientId, consentId, consentAttestationDto);
     }
+
+    @PutMapping("/consents/{consentId}/revocation")
+    @ResponseStatus(HttpStatus.OK)
+    public void revokeConsent(@PathVariable Long patientId, @PathVariable Long consentId,
+                              @Valid @RequestBody ConsentRevocationDto consentRevocationDto) {
+            consentService.revokeConsent(patientId, consentId, consentRevocationDto);
+    }
+
 }

@@ -2,15 +2,14 @@ package gov.samhsa.c2s.pcm.service;
 
 import gov.samhsa.c2s.pcm.domain.Consent;
 import gov.samhsa.c2s.pcm.domain.ConsentAttestation;
-import gov.samhsa.c2s.pcm.domain.ConsentAttestationRepository;
 import gov.samhsa.c2s.pcm.domain.ConsentAttestationTermRepository;
 import gov.samhsa.c2s.pcm.domain.ConsentRepository;
+import gov.samhsa.c2s.pcm.domain.ConsentRevocation;
+import gov.samhsa.c2s.pcm.domain.ConsentRevocationTermRepository;
 import gov.samhsa.c2s.pcm.domain.Organization;
-import gov.samhsa.c2s.pcm.domain.OrganizationRepository;
 import gov.samhsa.c2s.pcm.domain.Patient;
 import gov.samhsa.c2s.pcm.domain.PatientRepository;
 import gov.samhsa.c2s.pcm.domain.Practitioner;
-import gov.samhsa.c2s.pcm.domain.PractitionerRepository;
 import gov.samhsa.c2s.pcm.domain.Provider;
 import gov.samhsa.c2s.pcm.domain.ProviderRepository;
 import gov.samhsa.c2s.pcm.domain.Purpose;
@@ -24,6 +23,7 @@ import gov.samhsa.c2s.pcm.infrastructure.PlsService;
 import gov.samhsa.c2s.pcm.infrastructure.dto.FlattenedSmallProviderDto;
 import gov.samhsa.c2s.pcm.service.dto.ConsentAttestationDto;
 import gov.samhsa.c2s.pcm.service.dto.ConsentDto;
+import gov.samhsa.c2s.pcm.service.dto.ConsentRevocationDto;
 import gov.samhsa.c2s.pcm.service.dto.IdentifierDto;
 import gov.samhsa.c2s.pcm.service.exception.InvalidProviderException;
 import gov.samhsa.c2s.pcm.service.exception.InvalidPurposeException;
@@ -56,19 +56,10 @@ public class ConsentServiceImpl implements ConsentService {
     private PurposeRepository purposeRepository;
 
     @Autowired
-    private PractitionerRepository practitionerRepository;
-
-    @Autowired
-    private OrganizationRepository organizationRepository;
-
-
-
-    @Autowired
-    private ConsentAttestationRepository consentAttestationRepository;
-
-
-    @Autowired
     private ConsentAttestationTermRepository consentAttestationTermRepository;
+
+    @Autowired
+    private ConsentRevocationTermRepository consentRevocationTermRepository;
 
 
     @Autowired
@@ -146,7 +137,7 @@ public class ConsentServiceImpl implements ConsentService {
 
     @Override
     public void attestConsent(Long patientId, Long consentId, ConsentAttestationDto consentAttestationDto) {
-        if (consentAttestationDto.getAcceptTerms().equals(Boolean.TRUE)) {
+        if (consentAttestationDto.isAcceptTerms()) {
 
             //get patient
             final Patient patient = patientRepository.saveAndGet(patientId);
@@ -284,6 +275,31 @@ public class ConsentServiceImpl implements ConsentService {
         consent.setSharePurposes(sharePurposes);
 
         consentRepository.save(consent);
+    }
+
+
+    @Override
+    public void revokeConsent(Long patientId, Long consentId,ConsentRevocationDto consentRevocationDto) {
+
+        if (consentRevocationDto.isAcceptTerms()) {
+
+            //get patient
+            final Patient patient = patientRepository.saveAndGet(patientId);
+
+            Consent consent = consentRepository.findOne(consentId);
+
+            //build consentRevocation
+            final ConsentRevocation consentRevocation = ConsentRevocation.builder()
+                    .consentRevocationTerm(consentRevocationTermRepository.findOne(Long.valueOf(1)))
+                    .consent(consent)
+                    .build();
+
+            //update consent
+            consent.setConsentStage(ConsentStage.REVOKED);
+            consent.setConsentRevocation(consentRevocation);
+
+            consentRepository.save(consent);
+        }
     }
 
 }

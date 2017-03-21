@@ -6,11 +6,9 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
 @Data
-public class ConsentAttestationDto {
+public class ConsentRevocationDto {
     @Valid
     @NotNull
     private boolean acceptTerms;
-
-    private ConsentDto consentDto;
 
 }
