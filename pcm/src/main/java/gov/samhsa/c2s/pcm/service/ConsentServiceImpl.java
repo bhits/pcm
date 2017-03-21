@@ -28,9 +28,11 @@ import gov.samhsa.c2s.pcm.service.dto.IdentifierDto;
 import gov.samhsa.c2s.pcm.service.exception.InvalidProviderException;
 import gov.samhsa.c2s.pcm.service.exception.InvalidPurposeException;
 import gov.samhsa.c2s.pcm.service.exception.InvalidSensitivityCategoryException;
+import gov.samhsa.c2s.pcm.service.exception.PatientOrSavedConsentNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.Assert;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -117,6 +119,15 @@ public class ConsentServiceImpl implements ConsentService {
         consentRepository.save(consent);
         patient.getConsents().add(consent);
         patientRepository.save(patient);
+    }
+
+    @Override
+    public void deleteConsent(Long patientId, Long consentId) {
+        final Consent consent = consentRepository.findOneByIdAndPatientIdAndConsentAttestationIsNullAndConsentRevocationIsNull(consentId, patientId).orElseThrow(PatientOrSavedConsentNotFoundException::new);
+        Assert.isNull(consent.getConsentAttestation(), "Cannot delete an attested consent");
+        Assert.isNull(consent.getConsentRevocation(), "Cannot delete an revoked consent");
+        Assert.isTrue(ConsentStage.SAVED.equals(consent.getConsentStage()), "Cannot delete a consent that is not in 'SAVED' stage");
+        consentRepository.delete(consent);
     }
 
     private Function<IdentifierDto, Purpose> toPurpose() {

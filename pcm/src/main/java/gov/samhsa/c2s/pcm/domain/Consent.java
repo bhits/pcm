@@ -6,6 +6,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 import org.hibernate.envers.Audited;
 import org.hibernate.validator.constraints.ScriptAssert;
 
@@ -35,6 +36,7 @@ import java.util.List;
         script = "_.startDate != null && _.endDate != null && _.startDate < _.endDate",
         message = "consent end date must be after consent start date")
 @Data
+@ToString(exclude = "patient")
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor

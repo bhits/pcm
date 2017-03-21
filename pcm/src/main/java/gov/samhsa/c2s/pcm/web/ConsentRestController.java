@@ -7,6 +7,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.NotImplementedException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -38,6 +39,13 @@ public class ConsentRestController {
     public void saveConsent(@PathVariable Long patientId,
                             @Valid @RequestBody ConsentDto consentDto) {
         consentService.saveConsent(patientId, consentDto);
+    }
+
+    @DeleteMapping("/consents/{consentId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteConsent(@PathVariable Long patientId,
+                              @PathVariable Long consentId) {
+        consentService.deleteConsent(patientId, consentId);
     }
 
     @PutMapping("/consents/{consentId}")
