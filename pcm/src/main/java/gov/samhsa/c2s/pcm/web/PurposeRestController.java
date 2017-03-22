@@ -17,7 +17,7 @@ public class PurposeRestController {
     private PurposeService purposeService;
 
     @GetMapping("/purposes")
-    public List<PurposeDto> getProviders() {
+    public List<PurposeDto> getPurposes() {
         return purposeService.getPurposes();
     }
 }
