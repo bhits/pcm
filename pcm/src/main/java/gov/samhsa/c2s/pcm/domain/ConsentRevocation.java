@@ -1,6 +1,9 @@
 package gov.samhsa.c2s.pcm.domain;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.hibernate.envers.Audited;
 
 import javax.persistence.Basic;
@@ -16,6 +19,9 @@ import javax.validation.constraints.NotNull;
 @Entity
 @Data
 @Audited
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class ConsentRevocation {
     @Id
     @GeneratedValue

@@ -12,6 +12,7 @@ import org.hibernate.envers.Audited;
 import org.hibernate.validator.constraints.ScriptAssert;
 
 import javax.persistence.Basic;
+import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
@@ -59,10 +60,10 @@ public class Consent {
     @Basic(fetch = FetchType.LAZY)
     private byte[] savedPdf;
 
-    @OneToOne(mappedBy = "consent")
+    @OneToOne(mappedBy = "consent", cascade = CascadeType.ALL)
     private ConsentAttestation consentAttestation;
 
-    @OneToOne(mappedBy = "consent")
+    @OneToOne(mappedBy = "consent", cascade = CascadeType.ALL)
     private ConsentRevocation consentRevocation;
 
     @ManyToMany
