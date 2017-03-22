@@ -9,7 +9,6 @@ The Patient Consent Management (PCM) Service is one of the core components of th
 5. Record the date when the consent *goes into effect*
 6. Identify the *expiration date* of the consent
 
-The value sets, downloaded from [VSAC](https://vsac.nlm.nih.gov/), are a set of concept codes mapped to various *sensitive categories* that are intended for use by organizations exchanging personally identifiable protected health information to perform data segmentation based on the patient’s privacy preferences in his or her consent.
 
 ## Build
 
