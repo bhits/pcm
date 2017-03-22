@@ -21,6 +21,7 @@ public class PurposeServiceImpl implements PurposeService {
         return purposes.stream()
                 .map(purpose -> PurposeDto.builder()
                         .id(purpose.getId())
+                        .description(purpose.getDescription())
                         .display(purpose.getDisplay())
                         .system(purpose.getIdentifier().getSystem())
                         .value(purpose.getIdentifier().getValue())
