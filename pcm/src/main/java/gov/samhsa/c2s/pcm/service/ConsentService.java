@@ -25,4 +25,13 @@ public interface ConsentService {
 
     @Transactional
     void revokeConsent(Long patientId, Long consentId, ConsentRevocationDto consentRevocationDto);
+
+    @Transactional(readOnly = true)
+    Object getConsent(Long patientId, Long consentId, String format);
+
+    @Transactional(readOnly = true)
+    Object getAttestedConsent(Long patientId, Long consentId, String format);
+
+    @Transactional(readOnly = true)
+    Object getRevokedConsent(Long patientId, Long consentId, String format);
 }

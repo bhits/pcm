@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -70,4 +71,23 @@ public class ConsentRestController {
             consentService.revokeConsent(patientId, consentId, consentRevocationDto);
     }
 
+
+    @GetMapping("/consents/{consentId}")
+    public Object getConsent(@PathVariable Long patientId, @PathVariable Long consentId,
+                                        @RequestParam(required = false)  String format) {
+        return consentService.getConsent(patientId, consentId, format);
+    }
+
+    @GetMapping("/consents/{consentId}/attestation")
+    public Object getAttestedConsent(@PathVariable Long patientId, @PathVariable Long consentId,
+                             @RequestParam(required = false)  String format) {
+        return consentService.getAttestedConsent(patientId, consentId, format);
+    }
+
+    @GetMapping("/consents/{consentId}/revocation")
+    public Object getRevokedConsent(@PathVariable Long patientId, @PathVariable Long consentId,
+                                     @RequestParam(required = false)  String format) {
+        return consentService.getRevokedConsent(patientId, consentId, format);
+    }
 }
+
