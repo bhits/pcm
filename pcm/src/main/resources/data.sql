@@ -9,13 +9,13 @@ INSERT INTO sensitivity_category VALUES (6, 'http://hl7.org/fhir/v3/ActCode', 'A
 INSERT INTO purpose VALUES (1,
                             'To perform one or more operations on information for the provision of health care.',
                             'Healthcare Treatment',
-                            'http://hl7.org/fhir/v3/ActReason', 'TREATMENT');
+                            'http://hl7.org/fhir/v3/ActReason', 'TREAT');
 INSERT INTO purpose VALUES (2,
                             'To perform one or more operations on information for conducting financial or contractual activities related to payment for the provision of health care.',
-                            'Payment', 'http://hl7.org/fhir/v3/ActReason', 'PAYMENT');
+                            'Payment', 'http://hl7.org/fhir/v3/ActReason', 'HPAYMT');
 INSERT INTO purpose VALUES (3,
                             'To perform one or more operations on information for conducting scientific investigations to obtain health care knowledge.',
-                            'Research', 'http://hl7.org/fhir/v3/ActReason', 'RESEARCH');
+                            'Research', 'http://hl7.org/fhir/v3/ActReason', 'HRESCH');
 
 INSERT INTO consent_attestation_term VALUES (1,
                                              'I, ${ATTESTER_FULL_NAME}, understand that my records are protected under the federal regulations governing Confidentiality of Alcohol and Drug Abuse Patient Records, 42 CFR part 2, and cannot be disclosed without my written permission or as otherwise permitted by 42 CFR part 2. I also understand that I may revoke this consent at any time except to the extent that action has been taken in reliance on it, and that any event this consent expires automatically as follows:');
