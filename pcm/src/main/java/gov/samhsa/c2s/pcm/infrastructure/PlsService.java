@@ -18,4 +18,9 @@ public interface PlsService {
     interface Projection {
         String FLATTEN_SMALL_PROVIDER = "FlattenSmallProvider";
     }
+
+    interface ProviderType {
+        String INDIVIDUAL = "Individual";
+        String ORGANIZATION = "Organization";
+    }
 }

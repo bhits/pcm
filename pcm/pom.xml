@@ -24,6 +24,7 @@
         <java.version>1.8</java.version>
         <c2s.common-libraries.version>1.10.0-SNAPSHOT</c2s.common-libraries.version>
         <hapi.fhir.version>2.2</hapi.fhir.version>
+        <modelmapper.version>0.7.7</modelmapper.version>
     </properties>
 
     <dependencies>
@@ -83,6 +84,13 @@
             <groupId>com.fasterxml.jackson.datatype</groupId>
             <artifactId>jackson-datatype-jsr310</artifactId>
         </dependency>
+
+        <dependency>
+            <groupId>org.modelmapper</groupId>
+            <artifactId>modelmapper</artifactId>
+            <version>${modelmapper.version}</version>
+        </dependency>
+
         <dependency>
             <groupId>gov.samhsa.c2s</groupId>
             <artifactId>validator-extension</artifactId>
