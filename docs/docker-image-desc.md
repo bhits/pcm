@@ -22,7 +22,6 @@ The Patient Consent Management (PCM) Service is one of the core components of th
 5. record the date when the consent *goes into effect*,
 6. identify the *expiration date*.
 
-The value sets, downloaded from [VSAC](https://vsac.nlm.nih.gov/), are a set of concept codes mapped to various *sensitive categories* that are intended for use by organizations exchanging personally identifiable protected health information to perform data segmentation based on the patient’s privacy preferences in his or her consent.
 
 For more information and related downloads for Consent2Share, please visit [Consent2Share](https://bhits.github.io/consent2share/).
 
