@@ -427,7 +427,7 @@ public class ConsentServiceImpl implements ConsentService {
     @Override
     public Object getConsent(Long patientId, Long consentId, String format) {
         Consent consent = consentRepository.findOne(consentId);
-        if (format != null && format.equals("pdf")) {
+        if (format != null && format.equals("pdf")&& consent.getConsentStage().equals(ConsentStage.SAVED)) {
             return new ContentDto("application/pdf", consent.getSavedPdf());
         } else
             return mapToDetailedConsentDto(consent);
@@ -436,7 +436,7 @@ public class ConsentServiceImpl implements ConsentService {
     @Override
     public Object getAttestedConsent(Long patientId, Long consentId, String format) {
         Consent consent = consentRepository.findOne(consentId);
-        if (format != null && format.equals("pdf")) {
+        if (format != null && format.equals("pdf")&& (!consent.getConsentStage().equals(ConsentStage.SAVED))) {
             return new ContentDto("application/pdf", consent.getConsentAttestation().getConsentAttestationPdf());
         } else
             return mapToDetailedConsentDto(consent);
@@ -447,7 +447,7 @@ public class ConsentServiceImpl implements ConsentService {
     @Override
     public Object getRevokedConsent(Long patientId, Long consentId, String format) {
         Consent consent = consentRepository.findOne(consentId);
-        if (format != null && format.equals("pdf")) {
+        if (format != null && format.equals("pdf") && consent.getConsentStage().equals(ConsentStage.REVOKED)) {
             return new ContentDto("application/pdf", consent.getConsentRevocation().getConsentRevocationPdf());
         } else
             return mapToDetailedConsentDto(consent);
