@@ -1,24 +1,7 @@
 package gov.samhsa.c2s.pcm.service;
 
 import gov.samhsa.c2s.pcm.config.PcmProperties;
-import gov.samhsa.c2s.pcm.domain.Consent;
-import gov.samhsa.c2s.pcm.domain.ConsentAttestation;
-import gov.samhsa.c2s.pcm.domain.ConsentAttestationTerm;
-import gov.samhsa.c2s.pcm.domain.ConsentAttestationTermRepository;
-import gov.samhsa.c2s.pcm.domain.ConsentRepository;
-import gov.samhsa.c2s.pcm.domain.ConsentRevocation;
-import gov.samhsa.c2s.pcm.domain.ConsentRevocationTerm;
-import gov.samhsa.c2s.pcm.domain.ConsentRevocationTermRepository;
-import gov.samhsa.c2s.pcm.domain.Organization;
-import gov.samhsa.c2s.pcm.domain.Patient;
-import gov.samhsa.c2s.pcm.domain.PatientRepository;
-import gov.samhsa.c2s.pcm.domain.Practitioner;
-import gov.samhsa.c2s.pcm.domain.Provider;
-import gov.samhsa.c2s.pcm.domain.ProviderRepository;
-import gov.samhsa.c2s.pcm.domain.Purpose;
-import gov.samhsa.c2s.pcm.domain.PurposeRepository;
-import gov.samhsa.c2s.pcm.domain.SensitivityCategory;
-import gov.samhsa.c2s.pcm.domain.SensitivityCategoryRepository;
+import gov.samhsa.c2s.pcm.domain.*;
 import gov.samhsa.c2s.pcm.domain.valueobject.Address;
 import gov.samhsa.c2s.pcm.domain.valueobject.ConsentStage;
 import gov.samhsa.c2s.pcm.infrastructure.PhrService;
@@ -27,22 +10,8 @@ import gov.samhsa.c2s.pcm.infrastructure.dto.FlattenedSmallProviderDto;
 import gov.samhsa.c2s.pcm.infrastructure.dto.PatientDto;
 import gov.samhsa.c2s.pcm.infrastructure.pdf.ConsentPdfGenerator;
 import gov.samhsa.c2s.pcm.infrastructure.pdf.ConsentRevocationPdfGenerator;
-import gov.samhsa.c2s.pcm.service.dto.AbstractProviderDto;
-import gov.samhsa.c2s.pcm.service.dto.ConsentAttestationDto;
-import gov.samhsa.c2s.pcm.service.dto.ConsentDto;
-import gov.samhsa.c2s.pcm.service.dto.ConsentRevocationDto;
-import gov.samhsa.c2s.pcm.service.dto.ContentDto;
-import gov.samhsa.c2s.pcm.service.dto.DetailedConsentDto;
-import gov.samhsa.c2s.pcm.service.dto.IdentifierDto;
-import gov.samhsa.c2s.pcm.service.dto.IdentifiersDto;
-import gov.samhsa.c2s.pcm.service.dto.OrganizationDto;
-import gov.samhsa.c2s.pcm.service.dto.PractitionerDto;
-import gov.samhsa.c2s.pcm.service.exception.BadRequestException;
-import gov.samhsa.c2s.pcm.service.exception.InvalidProviderException;
-import gov.samhsa.c2s.pcm.service.exception.InvalidProviderTypeException;
-import gov.samhsa.c2s.pcm.service.exception.InvalidPurposeException;
-import gov.samhsa.c2s.pcm.service.exception.InvalidSensitivityCategoryException;
-import gov.samhsa.c2s.pcm.service.exception.PatientOrSavedConsentNotFoundException;
+import gov.samhsa.c2s.pcm.service.dto.*;
+import gov.samhsa.c2s.pcm.service.exception.*;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -67,43 +36,31 @@ import static java.util.stream.Collectors.toSet;
 public class ConsentServiceImpl implements ConsentService {
 
     @Autowired
-    private PcmProperties pcmProperties;
-
-    @Autowired
-    private PatientRepository patientRepository;
-
-    @Autowired
-    private ConsentRepository consentRepository;
-
-    @Autowired
-    private ProviderRepository providerRepository;
-
-    @Autowired
-    private PurposeRepository purposeRepository;
-
-    @Autowired
     private ConsentAttestationTermRepository consentAttestationTermRepository;
-
-    @Autowired
-    private ConsentRevocationTermRepository consentRevocationTermRepository;
-
-    @Autowired
-    private SensitivityCategoryRepository sensitivityCategoryRepository;
-
     @Autowired
     private ConsentPdfGenerator consentPdfGenerator;
-
+    @Autowired
+    private ConsentRepository consentRepository;
     @Autowired
     private ConsentRevocationPdfGenerator consentRevocationPdfGenerator;
-
     @Autowired
-    private PhrService phrService;
-
-    @Autowired
-    private PlsService plsService;
-
+    private ConsentRevocationTermRepository consentRevocationTermRepository;
     @Autowired
     private ModelMapper modelMapper;
+    @Autowired
+    private PatientRepository patientRepository;
+    @Autowired
+    private PcmProperties pcmProperties;
+    @Autowired
+    private PhrService phrService;
+    @Autowired
+    private PlsService plsService;
+    @Autowired
+    private ProviderRepository providerRepository;
+    @Autowired
+    private PurposeRepository purposeRepository;
+    @Autowired
+    private SensitivityCategoryRepository sensitivityCategoryRepository;
 
     @Override
     @Transactional
@@ -172,10 +129,9 @@ public class ConsentServiceImpl implements ConsentService {
                 .map(SensitivityCategory::getIdentifier)
                 .map(identifier -> modelMapper.map(identifier, IdentifierDto.class))
                 .collect(toSet());
-        final Set<IdentifierDto> sharePurposes = consent.getSharePurposes().stream()
-                .map(Purpose::getIdentifier)
-                .map(identifier -> modelMapper.map(identifier, IdentifierDto.class))
-                .collect(toSet());
+        final List<PurposeDto> sharePurposes = consent.getSharePurposes().stream()
+                .map(purpose -> modelMapper.map(purpose, PurposeDto.class))
+                .collect(toList());
 
         final List<AbstractProviderDto> fromProviders = Optional.ofNullable(consent.getConsentAttestation())
                 .map(consentAttestation -> Stream.concat(
@@ -204,7 +160,7 @@ public class ConsentServiceImpl implements ConsentService {
                 .fromProviders(fromProviders)
                 .toProviders(toProviders)
                 .shareSensitivityCategories(IdentifiersDto.of(shareSensitivityCategories))
-                .sharePurposes(IdentifiersDto.of(sharePurposes))
+                .sharePurposes(sharePurposes)
                 .startDate(consent.getStartDate())
                 .endDate(consent.getEndDate())
                 .build();
@@ -255,7 +211,7 @@ public class ConsentServiceImpl implements ConsentService {
 
         Consent consent = consentRepository.findOne(consentId);
 
-        if (consentAttestationDto.isAcceptTerms()&& consent.getConsentStage().equals(ConsentStage.SAVED)) {
+        if (consentAttestationDto.isAcceptTerms() && consent.getConsentStage().equals(ConsentStage.SAVED)) {
 
             //get getFromProviders
             final List<FlattenedSmallProviderDto> fromProviderDtos = consent.getFromProviders().stream().map(provider -> {
@@ -325,8 +281,7 @@ public class ConsentServiceImpl implements ConsentService {
 
             consentRepository.save(consent);
 
-        }
-        else throw new BadRequestException();
+        } else throw new BadRequestException();
     }
 
     private Practitioner mapFlattenedSmallProviderToPractitioner(FlattenedSmallProviderDto flattenedSmallProviderDto, Patient patient, Consent consent) {
@@ -408,9 +363,9 @@ public class ConsentServiceImpl implements ConsentService {
 
         Consent consent = consentRepository.findOne(consentId);
 
-        ConsentRevocationTerm consentRevocationTerm=consentRevocationTermRepository.findOne(Long.valueOf(1));
+        ConsentRevocationTerm consentRevocationTerm = consentRevocationTermRepository.findOne(Long.valueOf(1));
 
-        if (consentRevocationDto.isAcceptTerms()&& consent.getConsentStage().equals(ConsentStage.SIGNED)) {
+        if (consentRevocationDto.isAcceptTerms() && consent.getConsentStage().equals(ConsentStage.SIGNED)) {
 
             //build consentRevocation
             final ConsentRevocation consentRevocation = ConsentRevocation.builder()
@@ -423,19 +378,18 @@ public class ConsentServiceImpl implements ConsentService {
 
 
             PatientDto patientDto = phrService.getPatientProfile();
-            consentRevocation.setConsentRevocationPdf(consentRevocationPdfGenerator.generateConsentRevocationPdf(consent, patientDto, new Date(),consentRevocationTerm.getText()));
+            consentRevocation.setConsentRevocationPdf(consentRevocationPdfGenerator.generateConsentRevocationPdf(consent, patientDto, new Date(), consentRevocationTerm.getText()));
 
             consent.setConsentRevocation(consentRevocation);
 
             consentRepository.save(consent);
-        }
-        else throw new BadRequestException();
+        } else throw new BadRequestException();
     }
 
     @Override
     public Object getConsent(Long patientId, Long consentId, String format) {
         Consent consent = consentRepository.findOne(consentId);
-        if (format != null && format.equals("pdf")&& consent.getConsentStage().equals(ConsentStage.SAVED)) {
+        if (format != null && format.equals("pdf") && consent.getConsentStage().equals(ConsentStage.SAVED)) {
             return new ContentDto("application/pdf", consent.getSavedPdf());
         } else
             return mapToDetailedConsentDto(consent);
@@ -444,7 +398,7 @@ public class ConsentServiceImpl implements ConsentService {
     @Override
     public Object getAttestedConsent(Long patientId, Long consentId, String format) {
         Consent consent = consentRepository.findOne(consentId);
-        if (format != null && format.equals("pdf")&& (!consent.getConsentStage().equals(ConsentStage.SAVED))) {
+        if (format != null && format.equals("pdf") && (!consent.getConsentStage().equals(ConsentStage.SAVED))) {
             return new ContentDto("application/pdf", consent.getConsentAttestation().getConsentAttestationPdf());
         } else
             return mapToDetailedConsentDto(consent);

@@ -1,6 +1,5 @@
 package gov.samhsa.c2s.pcm.service.dto;
 
-import com.fasterxml.jackson.annotation.JsonUnwrapped;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -21,6 +20,5 @@ public class PurposeDto {
 
     @Valid
     @NotNull
-    @JsonUnwrapped
     private IdentifierDto identifier;
 }
