@@ -1,7 +1,5 @@
 package gov.samhsa.c2s.pcm.config;
 
-import gov.samhsa.c2s.pcm.domain.Organization;
-import gov.samhsa.c2s.pcm.domain.valueobject.Identifier;
 import gov.samhsa.c2s.pcm.infrastructure.dto.FlattenedSmallProviderDto;
 import gov.samhsa.c2s.pcm.service.dto.IdentifierDto;
 import gov.samhsa.c2s.pcm.service.dto.OrganizationDto;
@@ -40,20 +38,6 @@ public class ModelMapperConfig {
     // PropertyMaps
 
     /**
-     * Customizes mapping of properties from {@link Organization} to {@link OrganizationDto}
-     */
-    @Component
-    static class OrganizationToOrganizationDtoMap extends PropertyMap<Organization, OrganizationDto> {
-        @Autowired
-        private IdentifierToSetOfIdentifierDtoConverter identifierToSetOfIdentifierDtoConverter;
-
-        @Override
-        protected void configure() {
-            using(identifierToSetOfIdentifierDtoConverter).map(source).setIdentifiers(null);
-        }
-    }
-
-    /**
      * Customizes mapping of properties from {@link FlattenedSmallProviderDto} to {@link OrganizationDto}
      */
     @Component
@@ -65,7 +49,6 @@ public class ModelMapperConfig {
         protected void configure() {
             using(flattenedSmallProviderDtoToIdentifiersDtoConverter).map(source).setIdentifiers(null);
             map().setName(source.getOrganizationName());
-            skip().setProviderType(null);
             map().getAddress().setLine1(source.getFirstLinePracticeLocationAddress());
             map().getAddress().setLine2(source.getSecondLinePracticeLocationAddress());
             map().getAddress().setCity(source.getPracticeLocationAddressCityName());
@@ -86,7 +69,6 @@ public class ModelMapperConfig {
         @Override
         protected void configure() {
             using(flattenedSmallProviderDtoToIdentifiersDtoConverter).map(source).setIdentifiers(null);
-            skip().setProviderType(null);
             map().getAddress().setLine1(source.getFirstLinePracticeLocationAddress());
             map().getAddress().setLine2(source.getSecondLinePracticeLocationAddress());
             map().getAddress().setCity(source.getPracticeLocationAddressCityName());
@@ -97,17 +79,6 @@ public class ModelMapperConfig {
     }
 
     // Converters
-
-    /**
-     * Converts {@link Identifier to {@link Set} of {@link IdentifierDto}}
-     */
-    @Component
-    static class IdentifierToSetOfIdentifierDtoConverter extends AbstractConverter<Identifier, Set<IdentifierDto>> {
-        @Override
-        protected Set<IdentifierDto> convert(Identifier source) {
-            return Stream.of(IdentifierDto.of(source.getSystem(), source.getValue())).collect(toSet());
-        }
-    }
 
     /**
      * Converts {@link FlattenedSmallProviderDto to {@link Set} of {@link IdentifierDto}}

@@ -17,12 +17,12 @@ public class PractitionerDto extends AbstractProviderDto {
     private String lastName;
 
     public PractitionerDto() {
-        super(new HashSet<>(), null, ProviderType.PRACTITIONER);
+        super(null, new HashSet<>(), null, null, ProviderType.PRACTITIONER);
     }
 
     @Builder
     public PractitionerDto(AddressDto addressDto, Set<IdentifierDto> identifiers, String firstName, String middleName, String lastName) {
-        super(identifiers, addressDto, ProviderType.PRACTITIONER);
+        super(null, identifiers, addressDto, null, ProviderType.PRACTITIONER);
         this.identifiers = identifiers;
         this.firstName = firstName;
         this.middleName = middleName;
