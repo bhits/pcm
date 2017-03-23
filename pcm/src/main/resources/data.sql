@@ -1,10 +1,34 @@
 -- FIXME: remove this file after initial implementation is done
-INSERT INTO sensitivity_category VALUES (1, 'http://hl7.org/fhir/v3/ActCode', 'ETH');
-INSERT INTO sensitivity_category VALUES (2, 'http://hl7.org/fhir/v3/ActCode', 'HIV');
-INSERT INTO sensitivity_category VALUES (3, 'http://hl7.org/fhir/v3/ActCode', 'PSY');
-INSERT INTO sensitivity_category VALUES (4, 'http://hl7.org/fhir/v3/ActCode', 'COM');
-INSERT INTO sensitivity_category VALUES (5, 'http://hl7.org/fhir/v3/ActCode', 'SEX');
-INSERT INTO sensitivity_category VALUES (6, 'http://hl7.org/fhir/v3/ActCode', 'ALC');
+INSERT INTO sensitivity_category VALUES (1,
+                                         'Drug abuse or substance abuse is the use of mood-altering substances that interfere with or have a negative effect on a person’s life. These include negative effects on a person’s physical, psychological, social, emotional, occupational, and educational well-being. Drug abuse is characterized by dysfunction and negative consequences. Most drugs of abuse are mood altering (they change a person’s mood or feeling), and fall in three categories: stimulants, depressants, and hallucinogens.',
+                                         'Drug use information',
+                                         'http://hl7.org/fhir/v3/ActCode',
+                                         'ETH');
+INSERT INTO sensitivity_category VALUES (2,
+                                        'Human immunodeficiency virus (HIV) is a virus that weakens a person’s immune system by destroying important cells that fight disease and infection. HIV infection typically begins with flu-like symptoms followed by a long symptom-free period. HIV can be controlled with antiretroviral therapy. Untreated, HIV can advance to acquire immunodeficiency syndrome (AIDS), the most severe phase of HIV infection. People with AIDS have such badly damaged immune systems that they get an increasing number of severe illnesses, which can lead to death.',
+                                        'HIV/AIDS information',
+                                        'http://hl7.org/fhir/v3/ActCode',
+                                        'HIV');
+INSERT INTO sensitivity_category VALUES (3,
+                                        'Mental illness or a psychiatric disorder is a condition that affects a person’s thinking, feeling, or mood, and may affect his or her ability to relate to others and function well on a daily basis. Mental illnesses are medical conditions that often cause a diminished ability to cope with the ordinary demands of life. Like other medical disorders, mental illness ranges from mild to severe. There is a wide variety of treatments for mental illnesses.',
+                                        'Mental health information',
+                                        'http://hl7.org/fhir/v3/ActCode',
+                                        'PSY');
+INSERT INTO sensitivity_category VALUES (4,
+                                        'Communicable diseases, also known as infectious diseases are illnesses that result from the infection, presence, and growth of organisms and microorganisms such as bacteria, viruses, fungi, and parasites. They can be spread, directly or indirectly, from one person to another.',
+                                        'Communicable disease information',
+                                        'http://hl7.org/fhir/v3/ActCode',
+                                        'COM');
+INSERT INTO sensitivity_category VALUES (5,
+                                        'Good sexual and reproductive health is a state of complete physical, mental, and social well-being in all matters relating to the reproductive system, at all stages of life. It implies that people are able to have a satisfying and safe sex life, the capacity to reproduce, and the freedom to decide if, when, and how often to do so. Similarly, sexual health is a state of physical, emotional, and social well-being in relation to sexuality. It is not simply the absence of disease, dysfunction, or infirmity.',
+                                        'Sexuality and reproductive health information',
+                                        'http://hl7.org/fhir/v3/ActCode',
+                                        'SEX');
+INSERT INTO sensitivity_category VALUES (6,
+                                        'Alcohol abuse is the use of alcohol in such a way that it interferes with or has a negative effect on a person’s life. These include negative effects on a person’s physical, psychological, social, emotional, occupational, and educational well-being. Alcoholism or alcohol addiction is a primary, chronic, and disabling disorder that involves compulsion, loss of control, and continued use despite negative consequences. Genetic, psychosocial, and environmental factors influence its development and outcome.',
+                                        'Alcohol use and Alcoholism Information',
+                                        'http://hl7.org/fhir/v3/ActCode',
+                                        'ALC');
 
 INSERT INTO purpose VALUES (1,
                             'To perform one or more operations on information for the provision of health care.',
