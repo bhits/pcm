@@ -14,12 +14,12 @@ public class OrganizationDto extends AbstractProviderDto {
     private String name;
 
     public OrganizationDto() {
-        super(new HashSet<>(), null, ProviderType.ORGANIZATION);
+        super(null, new HashSet<>(), null, null, ProviderType.ORGANIZATION);
     }
 
     @Builder
     public OrganizationDto(AddressDto addressDto, Set<IdentifierDto> identifiers, String name) {
-        super(identifiers, addressDto, ProviderType.ORGANIZATION);
+        super(null, identifiers, addressDto, null, ProviderType.ORGANIZATION);
         this.identifiers = identifiers;
         this.name = name;
     }

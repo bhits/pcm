@@ -196,11 +196,19 @@ public class ConsentServiceImpl implements ConsentService {
         return Optional.of(flattenedSmallProviderDto)
                 .filter(providerDto -> PlsService.ProviderType.INDIVIDUAL.equalsIgnoreCase(providerDto.getEntityTypeDisplayName()))
                 .map(providerDto -> modelMapper.map(providerDto, PractitionerDto.class))
+                .map(practitioner -> setIdAndDeletableFalseAndReturn(practitioner, provider))
                 .map(AbstractProviderDto.class::cast)
                 .orElseGet(() -> Optional.of(flattenedSmallProviderDto)
                         .filter(providerDto -> PlsService.ProviderType.ORGANIZATION.equalsIgnoreCase(providerDto.getEntityTypeDisplayName()))
                         .map(providerDto -> modelMapper.map(providerDto, OrganizationDto.class))
+                        .map(organization -> setIdAndDeletableFalseAndReturn(organization, provider))
                         .orElseThrow(InvalidProviderTypeException::new));
+    }
+
+    private AbstractProviderDto setIdAndDeletableFalseAndReturn(AbstractProviderDto providerDto, Provider provider) {
+        providerDto.setId(provider.getId());
+        providerDto.setDeletable(Boolean.FALSE);
+        return providerDto;
     }
 
     private Function<IdentifierDto, Purpose> toPurpose() {
