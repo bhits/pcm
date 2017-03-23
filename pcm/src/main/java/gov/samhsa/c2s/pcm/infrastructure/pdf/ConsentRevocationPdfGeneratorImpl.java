@@ -8,8 +8,6 @@ import com.itextpdf.text.pdf.PdfWriter;
 import gov.samhsa.c2s.pcm.domain.Consent;
 import gov.samhsa.c2s.pcm.infrastructure.dto.PatientDto;
 import gov.samhsa.c2s.pcm.infrastructure.exception.ConsentPdfGenerationException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
@@ -21,13 +19,11 @@ import java.util.Date;
 public class ConsentRevocationPdfGeneratorImpl implements ConsentRevocationPdfGenerator {
 
 
-    private final Logger logger = LoggerFactory.getLogger(this.getClass());
-
     @Autowired
     private ITextPdfService iTextPdfService;
 
     @Override
-    public byte[] generateConsentRevocationPdf(Consent consent, PatientDto patient, Date attestedOnDateTime) {
+    public byte[] generateConsentRevocationPdf(Consent consent, PatientDto patient, Date attestedOnDateTime, String consentRevocationTerm) {
         Assert.notNull(consent, "Consent is required.");
 
         Document document = new Document();
@@ -56,7 +52,7 @@ public class ConsentRevocationPdfGeneratorImpl implements ConsentRevocationPdfGe
 
             document.add(new Paragraph(" "));
 
-            document.add(new Paragraph(consent.getConsentRevocation().getConsentRevocationTerm().getText()));
+            document.add(new Paragraph(consentRevocationTerm));
 
             document.add(new Paragraph(" "));
 
@@ -66,7 +62,6 @@ public class ConsentRevocationPdfGeneratorImpl implements ConsentRevocationPdfGe
             document.close();
 
         } catch (Throwable e) {
-            logger.error(e.getMessage(), e);
             throw new ConsentPdfGenerationException("Exception when trying to generate pdf", e);
         }
 

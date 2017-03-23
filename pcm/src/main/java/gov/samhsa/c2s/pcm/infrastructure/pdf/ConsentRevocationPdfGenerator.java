@@ -7,6 +7,6 @@ import java.util.Date;
 
 public interface ConsentRevocationPdfGenerator {
 
-    byte[] generateConsentRevocationPdf(Consent consent, PatientDto patient, Date attestedOnDateTime);
+    byte[] generateConsentRevocationPdf(Consent consent, PatientDto patient, Date attestedOnDateTime, String consentRevocationTerm);
 
 }
