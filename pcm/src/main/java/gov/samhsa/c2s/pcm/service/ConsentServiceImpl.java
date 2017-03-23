@@ -25,12 +25,10 @@ import java.time.LocalDate;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.toList;
-import static java.util.stream.Collectors.toSet;
 
 @Service
 public class ConsentServiceImpl implements ConsentService {
@@ -125,10 +123,9 @@ public class ConsentServiceImpl implements ConsentService {
 
     private DetailedConsentDto mapToDetailedConsentDto(Consent consent) {
 
-        final Set<IdentifierDto> shareSensitivityCategories = consent.getShareSensitivityCategories().stream()
-                .map(SensitivityCategory::getIdentifier)
-                .map(identifier -> modelMapper.map(identifier, IdentifierDto.class))
-                .collect(toSet());
+        final List<SensitivityCategoryDto> shareSensitivityCategories = consent.getShareSensitivityCategories().stream()
+                .map(sensitivityCategory -> modelMapper.map(sensitivityCategory, SensitivityCategoryDto.class))
+                .collect(toList());
         final List<PurposeDto> sharePurposes = consent.getSharePurposes().stream()
                 .map(purpose -> modelMapper.map(purpose, PurposeDto.class))
                 .collect(toList());
@@ -159,7 +156,7 @@ public class ConsentServiceImpl implements ConsentService {
                 .id(consent.getId())
                 .fromProviders(fromProviders)
                 .toProviders(toProviders)
-                .shareSensitivityCategories(IdentifiersDto.of(shareSensitivityCategories))
+                .shareSensitivityCategories(shareSensitivityCategories)
                 .sharePurposes(sharePurposes)
                 .startDate(consent.getStartDate())
                 .endDate(consent.getEndDate())
