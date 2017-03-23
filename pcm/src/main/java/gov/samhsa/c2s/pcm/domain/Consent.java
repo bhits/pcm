@@ -1,5 +1,6 @@
 package gov.samhsa.c2s.pcm.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import gov.samhsa.c2s.common.validator.constraint.PresentOrFuture;
 import gov.samhsa.c2s.pcm.domain.valueobject.ConsentStage;
 import lombok.AllArgsConstructor;
@@ -46,6 +47,7 @@ public class Consent {
     private Long id;
 
     @ManyToOne
+    @JsonIgnore
     private Patient patient;
 
     @ManyToMany

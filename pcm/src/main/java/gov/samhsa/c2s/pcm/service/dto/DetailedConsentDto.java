@@ -11,27 +11,29 @@ import javax.validation.Valid;
 import javax.validation.constraints.Future;
 import javax.validation.constraints.NotNull;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
 @Data
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 @ScriptAssert(
         lang = "javascript",
         alias = "_",
         script = "_.startDate != null && _.endDate != null && _.startDate < _.endDate",
         message = "consent end date must be after consent start date")
-@Builder
-@AllArgsConstructor
-@NoArgsConstructor
-public class ConsentDto {
+public class DetailedConsentDto {
 
     private Long id;
 
     @Valid
     @NotNull
-    private IdentifiersDto fromProviders;
+    private List<AbstractProviderDto> fromProviders = new ArrayList<>();
 
     @Valid
     @NotNull
-    private IdentifiersDto toProviders;
+    private List<AbstractProviderDto> toProviders = new ArrayList<>();
 
     @Valid
     @NotNull
