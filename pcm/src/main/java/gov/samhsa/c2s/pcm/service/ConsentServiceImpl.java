@@ -476,6 +476,7 @@ public class ConsentServiceImpl implements ConsentService {
                 .sharePurposes(sharePurposs)
                 .fromProviders(fromProviders)
                 .toProviders(toProviders)
+                .id(consent.getId())
                 .build();
 
     }
