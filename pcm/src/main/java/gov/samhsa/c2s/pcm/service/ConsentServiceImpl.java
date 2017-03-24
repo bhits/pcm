@@ -32,6 +32,7 @@ import gov.samhsa.c2s.pcm.service.dto.AbstractProviderDto;
 import gov.samhsa.c2s.pcm.service.dto.ConsentAttestationDto;
 import gov.samhsa.c2s.pcm.service.dto.ConsentDto;
 import gov.samhsa.c2s.pcm.service.dto.ConsentRevocationDto;
+import gov.samhsa.c2s.pcm.service.dto.ConsentTermDto;
 import gov.samhsa.c2s.pcm.service.dto.ContentDto;
 import gov.samhsa.c2s.pcm.service.dto.DetailedConsentDto;
 import gov.samhsa.c2s.pcm.service.dto.IdentifierDto;
@@ -481,6 +482,22 @@ public class ConsentServiceImpl implements ConsentService {
             return new ContentDto("application/pdf", consent.getConsentRevocation().getConsentRevocationPdf());
         } else
             return mapToDetailedConsentDto(consent);
+    }
+
+    @Override
+    public ConsentTermDto getConsentAttestationTerm(Optional<Long> id) {
+        final Long termId = id.filter(i -> i != 1L).orElse(1L);
+        ConsentAttestationTerm consentAttestationTerm = consentAttestationTermRepository.findOne(termId);
+        Assert.notNull(consentAttestationTerm, "Consent attestation term cannot be found");
+        return modelMapper.map(consentAttestationTerm, ConsentTermDto.class);
+    }
+
+    @Override
+    public ConsentTermDto getConsentRevocationTerm(Optional<Long> id) {
+        final Long termId = id.filter(i -> i != 1L).orElse(1L);
+        ConsentRevocationTerm consentRevocationTerm = consentRevocationTermRepository.findOne(termId);
+        Assert.notNull(consentRevocationTerm, "Consent revocation term cannot be found");
+        return modelMapper.map(consentRevocationTerm, ConsentTermDto.class);
     }
 
     private ConsentDto toConsentDto(Consent consent) {
