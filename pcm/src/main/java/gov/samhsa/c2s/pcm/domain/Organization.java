@@ -31,9 +31,6 @@ public class Organization {
     @NotNull
     private Provider provider;
 
-    @ManyToOne
-    @NotNull
-    private Consent consent;
 
     @NotBlank
     private String name;

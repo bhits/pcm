@@ -135,7 +135,8 @@ public class ConsentServiceImpl implements ConsentService {
         final Set<Identifier> toProviderIdentifiers = toProviders.stream().map(Provider::getIdentifier).collect(toSet());
         final Set<Identifier> sharePurposeIdentifiers = sharePurposes.stream().map(Purpose::getIdentifier).collect(toSet());
         final boolean duplicate = patient.getConsents().stream()
-                // find any consent that
+                // find any consent that is not in 'REVOKED' stage
+                .filter(consent -> !ConsentStage.REVOKED.equals(consent.getConsentStage()))
                 .anyMatch(consent ->
                         // contains any of the from providers and
                         consent.getFromProviders().stream()
@@ -362,7 +363,6 @@ public class ConsentServiceImpl implements ConsentService {
                         .build())
                 .phoneNumber(flattenedSmallProviderDto.getPracticeLocationAddressTelephoneNumber())
                 .provider(findProvider(flattenedSmallProviderDto.getSystem(), flattenedSmallProviderDto.getNpi(), patient))
-                .consent(consent)
                 .build();
     }
 
@@ -378,7 +378,6 @@ public class ConsentServiceImpl implements ConsentService {
                         .build())
                 .phoneNumber(flattenedSmallProviderDto.getPracticeLocationAddressTelephoneNumber())
                 .provider(findProvider(flattenedSmallProviderDto.getSystem(), flattenedSmallProviderDto.getNpi(), patient))
-                .consent(consent)
                 .build();
 
     }
@@ -460,8 +459,12 @@ public class ConsentServiceImpl implements ConsentService {
         Consent consent = consentRepository.findOne(consentId);
         if (format != null && format.equals("pdf") && consent.getConsentStage().equals(ConsentStage.SAVED)) {
             return new ContentDto("application/pdf", consent.getSavedPdf());
-        } else
-            return toConsentDto(consent);
+        }
+        if (format != null && format.equals("detailedConsent") && consent.getConsentStage().equals(ConsentStage.SAVED)){
+            return mapToDetailedConsentDto(consent);
+        }
+
+        return toConsentDto(consent);
     }
 
     @Override
@@ -480,7 +483,8 @@ public class ConsentServiceImpl implements ConsentService {
         Consent consent = consentRepository.findOne(consentId);
         if (format != null && format.equals("pdf") && consent.getConsentStage().equals(ConsentStage.REVOKED)) {
             return new ContentDto("application/pdf", consent.getConsentRevocation().getConsentRevocationPdf());
-        } else
+        }
+        else
             return mapToDetailedConsentDto(consent);
     }
 

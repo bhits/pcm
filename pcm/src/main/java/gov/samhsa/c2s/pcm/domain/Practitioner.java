@@ -31,10 +31,6 @@ public class Practitioner {
     @NotNull
     private Provider provider;
 
-    @ManyToOne
-    @NotNull
-    private Consent consent;
-
     @NotBlank
     private String firstName;
     private String middleName;
