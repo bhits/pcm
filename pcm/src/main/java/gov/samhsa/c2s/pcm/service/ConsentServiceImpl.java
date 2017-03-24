@@ -21,6 +21,7 @@ import gov.samhsa.c2s.pcm.domain.SensitivityCategory;
 import gov.samhsa.c2s.pcm.domain.SensitivityCategoryRepository;
 import gov.samhsa.c2s.pcm.domain.valueobject.Address;
 import gov.samhsa.c2s.pcm.domain.valueobject.ConsentStage;
+import gov.samhsa.c2s.pcm.domain.valueobject.Identifier;
 import gov.samhsa.c2s.pcm.infrastructure.PhrService;
 import gov.samhsa.c2s.pcm.infrastructure.PlsService;
 import gov.samhsa.c2s.pcm.infrastructure.dto.FlattenedSmallProviderDto;
@@ -40,6 +41,7 @@ import gov.samhsa.c2s.pcm.service.dto.PractitionerDto;
 import gov.samhsa.c2s.pcm.service.dto.PurposeDto;
 import gov.samhsa.c2s.pcm.service.dto.SensitivityCategoryDto;
 import gov.samhsa.c2s.pcm.service.exception.BadRequestException;
+import gov.samhsa.c2s.pcm.service.exception.DuplicateConsentException;
 import gov.samhsa.c2s.pcm.service.exception.InvalidProviderException;
 import gov.samhsa.c2s.pcm.service.exception.InvalidProviderTypeException;
 import gov.samhsa.c2s.pcm.service.exception.InvalidPurposeException;
@@ -59,11 +61,13 @@ import java.time.LocalDate;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.toSet;
 
 @Service
 public class ConsentServiceImpl implements ConsentService {
@@ -124,6 +128,31 @@ public class ConsentServiceImpl implements ConsentService {
         final List<Purpose> sharePurposes = consentDto.getSharePurposes().getIdentifiers().stream()
                 .map(toPurpose())
                 .collect(toList());
+
+        // Assert consent is not conflicting with an existing consent
+        final Set<Identifier> fromProviderIdentifiers = fromProviders.stream().map(Provider::getIdentifier).collect(toSet());
+        final Set<Identifier> toProviderIdentifiers = toProviders.stream().map(Provider::getIdentifier).collect(toSet());
+        final Set<Identifier> sharePurposeIdentifiers = sharePurposes.stream().map(Purpose::getIdentifier).collect(toSet());
+        final boolean duplicate = patient.getConsents().stream()
+                // find any consent that
+                .anyMatch(consent ->
+                        // contains any of the from providers and
+                        consent.getFromProviders().stream()
+                                .map(Provider::getIdentifier)
+                                .anyMatch(fromProviderIdentifiers::contains) &&
+                                // contains any of the to providers and
+                                consent.getToProviders().stream()
+                                        .map(Provider::getIdentifier)
+                                        .anyMatch(toProviderIdentifiers::contains) &&
+                                // the date overlaps and
+                                (!(consent.getStartDate().isAfter(consentDto.getEndDate()) || consentDto.getStartDate().isAfter(consent.getEndDate()))) &&
+                                // contains any of the share purposes
+                                consent.getSharePurposes().stream().map(Purpose::getIdentifier)
+                                        .anyMatch(sharePurposeIdentifiers::contains));
+        if (duplicate) {
+            throw new DuplicateConsentException();
+        }
+
         final LocalDate startDate = consentDto.getStartDate();
         final LocalDate endDate = consentDto.getEndDate();
         final Consent consent = Consent.builder()
@@ -365,7 +394,7 @@ public class ConsentServiceImpl implements ConsentService {
     public void updateConsent(Long patientId, Long consentId, ConsentDto consentDto) {
         final Patient patient = patientRepository.saveAndGet(patientId);
         Consent consent = consentRepository.findOne(consentId);
-        if(consent.getConsentStage().equals(ConsentStage.SAVED)) {
+        if (consent.getConsentStage().equals(ConsentStage.SAVED)) {
             final List<Provider> fromProviders = consentDto.getFromProviders().getIdentifiers().stream()
                     .map(toProvider(patient))
                     .collect(toList());
@@ -454,7 +483,7 @@ public class ConsentServiceImpl implements ConsentService {
             return mapToDetailedConsentDto(consent);
     }
 
-    private ConsentDto toConsentDto(Consent consent){
+    private ConsentDto toConsentDto(Consent consent) {
         IdentifiersDto shareSensitivityCategory = IdentifiersDto.of(consent.getShareSensitivityCategories().stream().distinct()
                 .map(sensitivityCategory -> modelMapper.map(sensitivityCategory, SensitivityCategoryDto.class))
                 .map(sensitivityCategoryDto -> sensitivityCategoryDto.getIdentifier())
@@ -474,7 +503,6 @@ public class ConsentServiceImpl implements ConsentService {
                 .map(sensitivityCategory -> modelMapper.map(sensitivityCategory, SensitivityCategoryDto.class))
                 .map(sensitivityCategoryDto -> sensitivityCategoryDto.getIdentifier())
                 .collect(Collectors.toSet()));
-
 
 
         return ConsentDto.builder()
