@@ -459,8 +459,12 @@ public class ConsentServiceImpl implements ConsentService {
         Consent consent = consentRepository.findOne(consentId);
         if (format != null && format.equals("pdf") && consent.getConsentStage().equals(ConsentStage.SAVED)) {
             return new ContentDto("application/pdf", consent.getSavedPdf());
-        } else
-            return toConsentDto(consent);
+        }
+        if (format != null && format.equals("detailedConsent") && consent.getConsentStage().equals(ConsentStage.SAVED)){
+            return mapToDetailedConsentDto(consent);
+        }
+
+        return toConsentDto(consent);
     }
 
     @Override
@@ -479,7 +483,8 @@ public class ConsentServiceImpl implements ConsentService {
         Consent consent = consentRepository.findOne(consentId);
         if (format != null && format.equals("pdf") && consent.getConsentStage().equals(ConsentStage.REVOKED)) {
             return new ContentDto("application/pdf", consent.getConsentRevocation().getConsentRevocationPdf());
-        } else
+        }
+        else
             return mapToDetailedConsentDto(consent);
     }
 
