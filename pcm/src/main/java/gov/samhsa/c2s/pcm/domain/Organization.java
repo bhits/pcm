@@ -42,6 +42,8 @@ public class Organization {
     @Valid
     private Address address;
 
+    private String phoneNumber;
+
     @ManyToOne
     @NotNull
     private ConsentAttestation consentAttestation;

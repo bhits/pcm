@@ -329,8 +329,8 @@ public class ConsentServiceImpl implements ConsentService {
                         .state(flattenedSmallProviderDto.getPracticeLocationAddressStateName())
                         .postalCode(flattenedSmallProviderDto.getPracticeLocationAddressPostalCode())
                         .country(flattenedSmallProviderDto.getPracticeLocationAddressCountryCode())
-                        .phoneNumber(flattenedSmallProviderDto.getPracticeLocationAddressTelephoneNumber())
                         .build())
+                .phoneNumber(flattenedSmallProviderDto.getPracticeLocationAddressTelephoneNumber())
                 .provider(findProvider(flattenedSmallProviderDto.getSystem(), flattenedSmallProviderDto.getNpi(), patient))
                 .consent(consent)
                 .build();
@@ -345,8 +345,8 @@ public class ConsentServiceImpl implements ConsentService {
                         .state(flattenedSmallProviderDto.getPracticeLocationAddressStateName())
                         .postalCode(flattenedSmallProviderDto.getPracticeLocationAddressPostalCode())
                         .country(flattenedSmallProviderDto.getPracticeLocationAddressCountryCode())
-                        .phoneNumber(flattenedSmallProviderDto.getPracticeLocationAddressTelephoneNumber())
                         .build())
+                .phoneNumber(flattenedSmallProviderDto.getPracticeLocationAddressTelephoneNumber())
                 .provider(findProvider(flattenedSmallProviderDto.getSystem(), flattenedSmallProviderDto.getNpi(), patient))
                 .consent(consent)
                 .build();

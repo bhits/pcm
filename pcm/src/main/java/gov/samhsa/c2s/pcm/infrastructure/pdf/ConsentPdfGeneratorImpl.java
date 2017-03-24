@@ -228,7 +228,7 @@ public class ConsentPdfGeneratorImpl implements ConsentPdfGenerator {
                         providerTable.addCell(createProviderPropertyValueTable("Provider Name", organization.getName()));
                         providerTable.addCell(createProviderPropertyValueTable("NPI Number", organization.getProvider().getIdentifier().getValue()));
                         providerTable.addCell(createProviderPropertyValueTable("Address", composeAddress(organization.getAddress())));
-                        providerTable.addCell(createProviderPropertyValueTable("Phone", organization.getAddress().getPhoneNumber()));
+                        providerTable.addCell(createProviderPropertyValueTable("Phone", organization.getPhoneNumber()));
 
                     });
 
@@ -237,7 +237,7 @@ public class ConsentPdfGeneratorImpl implements ConsentPdfGenerator {
                         providerTable.addCell(createProviderPropertyValueTable("Provider Name", practitioner.getFirstName() + " " + practitioner.getLastName()));
                         providerTable.addCell(createProviderPropertyValueTable("NPI Number", practitioner.getProvider().getIdentifier().getValue()));
                         providerTable.addCell(createProviderPropertyValueTable("Address", composeAddress(practitioner.getAddress())));
-                        providerTable.addCell(createProviderPropertyValueTable("Phone", practitioner.getAddress().getPhoneNumber()));
+                        providerTable.addCell(createProviderPropertyValueTable("Phone", practitioner.getPhoneNumber()));
 
                     });
         } else {
@@ -266,7 +266,7 @@ public class ConsentPdfGeneratorImpl implements ConsentPdfGenerator {
                         providerTable.addCell(createProviderPropertyValueTable("Provider Name", organization.getName()));
                         providerTable.addCell(createProviderPropertyValueTable("NPI Number", organization.getProvider().getIdentifier().getValue()));
                         providerTable.addCell(createProviderPropertyValueTable("Address", composeAddress(organization.getAddress())));
-                        providerTable.addCell(createProviderPropertyValueTable("Phone", organization.getAddress().getPhoneNumber()));
+                        providerTable.addCell(createProviderPropertyValueTable("Phone", organization.getPhoneNumber()));
 
                     });
 
@@ -275,7 +275,7 @@ public class ConsentPdfGeneratorImpl implements ConsentPdfGenerator {
                         providerTable.addCell(createProviderPropertyValueTable("Provider Name", practitioner.getFirstName() + " " + practitioner.getLastName()));
                         providerTable.addCell(createProviderPropertyValueTable("NPI Number", practitioner.getProvider().getIdentifier().getValue()));
                         providerTable.addCell(createProviderPropertyValueTable("Address", composeAddress(practitioner.getAddress())));
-                        providerTable.addCell(createProviderPropertyValueTable("Phone", practitioner.getAddress().getPhoneNumber()));
+                        providerTable.addCell(createProviderPropertyValueTable("Phone", practitioner.getPhoneNumber()));
                     });
         } else {
             consent.getFromProviders().stream().map(provider -> plsService.getFlattenedSmallProvider(provider.getIdentifier().getValue(), PlsService.Projection.FLATTEN_SMALL_PROVIDER))
