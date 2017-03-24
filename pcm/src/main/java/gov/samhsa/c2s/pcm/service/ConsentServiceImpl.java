@@ -46,7 +46,6 @@ import gov.samhsa.c2s.pcm.service.exception.DuplicateConsentException;
 import gov.samhsa.c2s.pcm.service.exception.InvalidProviderException;
 import gov.samhsa.c2s.pcm.service.exception.InvalidProviderTypeException;
 import gov.samhsa.c2s.pcm.service.exception.InvalidPurposeException;
-import gov.samhsa.c2s.pcm.service.exception.InvalidSensitivityCategoryException;
 import gov.samhsa.c2s.pcm.service.exception.PatientOrSavedConsentNotFoundException;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.modelmapper.ModelMapper;
@@ -261,7 +260,7 @@ public class ConsentServiceImpl implements ConsentService {
     }
 
     private Function<IdentifierDto, SensitivityCategory> toSensitivityCategory() {
-        return identifier -> sensitivityCategoryRepository.findOneByIdentifierSystemAndIdentifierValue(identifier.getSystem(), identifier.getValue()).orElseThrow(InvalidSensitivityCategoryException::new);
+        return identifier -> sensitivityCategoryRepository.saveAndGet(identifier.getSystem(), identifier.getValue());
     }
 
     private Function<IdentifierDto, Provider> toProvider(Patient patient) {
@@ -460,7 +459,7 @@ public class ConsentServiceImpl implements ConsentService {
         if (format != null && format.equals("pdf") && consent.getConsentStage().equals(ConsentStage.SAVED)) {
             return new ContentDto("application/pdf", consent.getSavedPdf());
         }
-        if (format != null && format.equals("detailedConsent") && consent.getConsentStage().equals(ConsentStage.SAVED)){
+        if (format != null && format.equals("detailedConsent") && consent.getConsentStage().equals(ConsentStage.SAVED)) {
             return mapToDetailedConsentDto(consent);
         }
 
@@ -483,8 +482,7 @@ public class ConsentServiceImpl implements ConsentService {
         Consent consent = consentRepository.findOne(consentId);
         if (format != null && format.equals("pdf") && consent.getConsentStage().equals(ConsentStage.REVOKED)) {
             return new ContentDto("application/pdf", consent.getConsentRevocation().getConsentRevocationPdf());
-        }
-        else
+        } else
             return mapToDetailedConsentDto(consent);
     }
 
