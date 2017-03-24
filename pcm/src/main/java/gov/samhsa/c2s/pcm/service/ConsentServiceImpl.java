@@ -359,30 +359,32 @@ public class ConsentServiceImpl implements ConsentService {
     public void updateConsent(Long patientId, Long consentId, ConsentDto consentDto) {
         final Patient patient = patientRepository.saveAndGet(patientId);
         Consent consent = consentRepository.findOne(consentId);
-        final List<Provider> fromProviders = consentDto.getFromProviders().getIdentifiers().stream()
-                .map(toProvider(patient))
-                .collect(toList());
-        final List<Provider> toProviders = consentDto.getToProviders().getIdentifiers().stream()
-                .map(toProvider(patient))
-                .collect(toList());
-        final List<SensitivityCategory> shareSensitivityCategories = consentDto.getShareSensitivityCategories().getIdentifiers().stream()
-                .map(toSensitivityCategory())
-                .collect(toList());
-        final List<Purpose> sharePurposes = consentDto.getSharePurposes().getIdentifiers().stream()
-                .map(toPurpose())
-                .collect(toList());
+        if(consent.getConsentStage().equals(ConsentStage.SAVED)) {
+            final List<Provider> fromProviders = consentDto.getFromProviders().getIdentifiers().stream()
+                    .map(toProvider(patient))
+                    .collect(toList());
+            final List<Provider> toProviders = consentDto.getToProviders().getIdentifiers().stream()
+                    .map(toProvider(patient))
+                    .collect(toList());
+            final List<SensitivityCategory> shareSensitivityCategories = consentDto.getShareSensitivityCategories().getIdentifiers().stream()
+                    .map(toSensitivityCategory())
+                    .collect(toList());
+            final List<Purpose> sharePurposes = consentDto.getSharePurposes().getIdentifiers().stream()
+                    .map(toPurpose())
+                    .collect(toList());
 
-        consent.setStartDate(consentDto.getStartDate());
-        consent.setEndDate(consentDto.getEndDate());
-        consent.setFromProviders(fromProviders);
-        consent.setToProviders(toProviders);
-        consent.setShareSensitivityCategories(shareSensitivityCategories);
-        consent.setSharePurposes(sharePurposes);
-        //generate pdf
-        PatientDto patientDto = phrService.getPatientProfile();
-        consent.setSavedPdf(consentPdfGenerator.generate42CfrPart2Pdf(consent, patientDto, false, new Date(), consentAttestationTermRepository.findOne(Long.valueOf(1)).getText()));
+            consent.setStartDate(consentDto.getStartDate());
+            consent.setEndDate(consentDto.getEndDate());
+            consent.setFromProviders(fromProviders);
+            consent.setToProviders(toProviders);
+            consent.setShareSensitivityCategories(shareSensitivityCategories);
+            consent.setSharePurposes(sharePurposes);
+            //generate pdf
+            PatientDto patientDto = phrService.getPatientProfile();
+            consent.setSavedPdf(consentPdfGenerator.generate42CfrPart2Pdf(consent, patientDto, false, new Date(), consentAttestationTermRepository.findOne(Long.valueOf(1)).getText()));
 
-        consentRepository.save(consent);
+            consentRepository.save(consent);
+        }
     }
 
 
