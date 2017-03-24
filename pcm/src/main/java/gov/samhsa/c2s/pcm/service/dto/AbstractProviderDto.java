@@ -18,6 +18,7 @@ public class AbstractProviderDto {
     @Valid
     protected AddressDto address;
     protected Boolean deletable;
+    protected String phoneNumber;
     /**
      * Immutable property to represent the {@link ProviderType} of this instance
      */
