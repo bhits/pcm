@@ -6,7 +6,7 @@ import org.hibernate.validator.constraints.NotBlank;
 import javax.validation.constraints.Size;
 
 @Data
-public class ConsentAttestationTermDto {
+public class ConsentTermDto {
     private Long id;
 
     @NotBlank

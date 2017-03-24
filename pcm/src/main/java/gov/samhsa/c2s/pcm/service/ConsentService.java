@@ -35,5 +35,8 @@ public interface ConsentService {
     Object getRevokedConsent(Long patientId, Long consentId, String format);
 
     @Transactional(readOnly = true)
-    ConsentAttestationTermDto getConsentAttestationTerm(Optional<Long> id);
+    ConsentTermDto getConsentAttestationTerm(Optional<Long> id);
+
+    @Transactional(readOnly = true)
+    ConsentTermDto getConsentRevocationTerm(Optional<Long> id);
 }

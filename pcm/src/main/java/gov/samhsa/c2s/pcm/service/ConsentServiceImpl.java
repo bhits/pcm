@@ -422,11 +422,19 @@ public class ConsentServiceImpl implements ConsentService {
     }
 
     @Override
-    public ConsentAttestationTermDto getConsentAttestationTerm(Optional<Long> id) {
+    public ConsentTermDto getConsentAttestationTerm(Optional<Long> id) {
         final Long termId = id.filter(i -> i != 1L).orElse(1L);
         ConsentAttestationTerm consentAttestationTerm = consentAttestationTermRepository.findOne(termId);
         Assert.notNull(consentAttestationTerm);
-        return modelMapper.map(consentAttestationTerm, ConsentAttestationTermDto.class);
+        return modelMapper.map(consentAttestationTerm, ConsentTermDto.class);
+    }
+
+    @Override
+    public ConsentTermDto getConsentRevocationTerm(Optional<Long> id) {
+        final Long termId = id.filter(i -> i != 1L).orElse(1L);
+        ConsentRevocationTerm consentRevocationTerm = consentRevocationTermRepository.findOne(termId);
+        Assert.notNull(consentRevocationTerm);
+        return modelMapper.map(consentRevocationTerm, ConsentTermDto.class);
     }
 
     private ConsentDto toConsentDto(Consent consent) {
