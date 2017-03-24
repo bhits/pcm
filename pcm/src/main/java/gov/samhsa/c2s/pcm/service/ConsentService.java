@@ -1,9 +1,6 @@
 package gov.samhsa.c2s.pcm.service;
 
-import gov.samhsa.c2s.pcm.service.dto.ConsentAttestationDto;
-import gov.samhsa.c2s.pcm.service.dto.ConsentDto;
-import gov.samhsa.c2s.pcm.service.dto.ConsentRevocationDto;
-import gov.samhsa.c2s.pcm.service.dto.DetailedConsentDto;
+import gov.samhsa.c2s.pcm.service.dto.*;
 import org.springframework.data.domain.Page;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -36,4 +33,7 @@ public interface ConsentService {
 
     @Transactional(readOnly = true)
     Object getRevokedConsent(Long patientId, Long consentId, String format);
+
+    @Transactional(readOnly = true)
+    ConsentAttestationTermDto getConsentAttestationTerm(Optional<Long> id);
 }

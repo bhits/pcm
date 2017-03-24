@@ -1,24 +1,7 @@
 package gov.samhsa.c2s.pcm.service;
 
 import gov.samhsa.c2s.pcm.config.PcmProperties;
-import gov.samhsa.c2s.pcm.domain.Consent;
-import gov.samhsa.c2s.pcm.domain.ConsentAttestation;
-import gov.samhsa.c2s.pcm.domain.ConsentAttestationTerm;
-import gov.samhsa.c2s.pcm.domain.ConsentAttestationTermRepository;
-import gov.samhsa.c2s.pcm.domain.ConsentRepository;
-import gov.samhsa.c2s.pcm.domain.ConsentRevocation;
-import gov.samhsa.c2s.pcm.domain.ConsentRevocationTerm;
-import gov.samhsa.c2s.pcm.domain.ConsentRevocationTermRepository;
-import gov.samhsa.c2s.pcm.domain.Organization;
-import gov.samhsa.c2s.pcm.domain.Patient;
-import gov.samhsa.c2s.pcm.domain.PatientRepository;
-import gov.samhsa.c2s.pcm.domain.Practitioner;
-import gov.samhsa.c2s.pcm.domain.Provider;
-import gov.samhsa.c2s.pcm.domain.ProviderRepository;
-import gov.samhsa.c2s.pcm.domain.Purpose;
-import gov.samhsa.c2s.pcm.domain.PurposeRepository;
-import gov.samhsa.c2s.pcm.domain.SensitivityCategory;
-import gov.samhsa.c2s.pcm.domain.SensitivityCategoryRepository;
+import gov.samhsa.c2s.pcm.domain.*;
 import gov.samhsa.c2s.pcm.domain.valueobject.Address;
 import gov.samhsa.c2s.pcm.domain.valueobject.ConsentStage;
 import gov.samhsa.c2s.pcm.infrastructure.PhrService;
@@ -27,24 +10,8 @@ import gov.samhsa.c2s.pcm.infrastructure.dto.FlattenedSmallProviderDto;
 import gov.samhsa.c2s.pcm.infrastructure.dto.PatientDto;
 import gov.samhsa.c2s.pcm.infrastructure.pdf.ConsentPdfGenerator;
 import gov.samhsa.c2s.pcm.infrastructure.pdf.ConsentRevocationPdfGenerator;
-import gov.samhsa.c2s.pcm.service.dto.AbstractProviderDto;
-import gov.samhsa.c2s.pcm.service.dto.ConsentAttestationDto;
-import gov.samhsa.c2s.pcm.service.dto.ConsentDto;
-import gov.samhsa.c2s.pcm.service.dto.ConsentRevocationDto;
-import gov.samhsa.c2s.pcm.service.dto.ContentDto;
-import gov.samhsa.c2s.pcm.service.dto.DetailedConsentDto;
-import gov.samhsa.c2s.pcm.service.dto.IdentifierDto;
-import gov.samhsa.c2s.pcm.service.dto.IdentifiersDto;
-import gov.samhsa.c2s.pcm.service.dto.OrganizationDto;
-import gov.samhsa.c2s.pcm.service.dto.PractitionerDto;
-import gov.samhsa.c2s.pcm.service.dto.PurposeDto;
-import gov.samhsa.c2s.pcm.service.dto.SensitivityCategoryDto;
-import gov.samhsa.c2s.pcm.service.exception.BadRequestException;
-import gov.samhsa.c2s.pcm.service.exception.InvalidProviderException;
-import gov.samhsa.c2s.pcm.service.exception.InvalidProviderTypeException;
-import gov.samhsa.c2s.pcm.service.exception.InvalidPurposeException;
-import gov.samhsa.c2s.pcm.service.exception.InvalidSensitivityCategoryException;
-import gov.samhsa.c2s.pcm.service.exception.PatientOrSavedConsentNotFoundException;
+import gov.samhsa.c2s.pcm.service.dto.*;
+import gov.samhsa.c2s.pcm.service.exception.*;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -365,7 +332,7 @@ public class ConsentServiceImpl implements ConsentService {
     public void updateConsent(Long patientId, Long consentId, ConsentDto consentDto) {
         final Patient patient = patientRepository.saveAndGet(patientId);
         Consent consent = consentRepository.findOne(consentId);
-        if(consent.getConsentStage().equals(ConsentStage.SAVED)) {
+        if (consent.getConsentStage().equals(ConsentStage.SAVED)) {
             final List<Provider> fromProviders = consentDto.getFromProviders().getIdentifiers().stream()
                     .map(toProvider(patient))
                     .collect(toList());
@@ -454,7 +421,15 @@ public class ConsentServiceImpl implements ConsentService {
             return mapToDetailedConsentDto(consent);
     }
 
-    private ConsentDto toConsentDto(Consent consent){
+    @Override
+    public ConsentAttestationTermDto getConsentAttestationTerm(Optional<Long> id) {
+        final Long termId = id.filter(i -> i != 1L).orElse(1L);
+        ConsentAttestationTerm consentAttestationTerm = consentAttestationTermRepository.findOne(termId);
+        Assert.notNull(consentAttestationTerm);
+        return modelMapper.map(consentAttestationTerm, ConsentAttestationTermDto.class);
+    }
+
+    private ConsentDto toConsentDto(Consent consent) {
         IdentifiersDto shareSensitivityCategory = IdentifiersDto.of(consent.getShareSensitivityCategories().stream().distinct()
                 .map(sensitivityCategory -> modelMapper.map(sensitivityCategory, SensitivityCategoryDto.class))
                 .map(sensitivityCategoryDto -> sensitivityCategoryDto.getIdentifier())
@@ -474,7 +449,6 @@ public class ConsentServiceImpl implements ConsentService {
                 .map(sensitivityCategory -> modelMapper.map(sensitivityCategory, SensitivityCategoryDto.class))
                 .map(sensitivityCategoryDto -> sensitivityCategoryDto.getIdentifier())
                 .collect(Collectors.toSet()));
-
 
 
         return ConsentDto.builder()
