@@ -1,6 +1,7 @@
 package gov.samhsa.c2s.pcm.service.dto;
 
 import gov.samhsa.c2s.common.validator.constraint.PresentOrFuture;
+import gov.samhsa.c2s.pcm.domain.valueobject.ConsentStage;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -50,4 +51,7 @@ public class DetailedConsentDto {
     @NotNull
     @Future
     private LocalDate endDate;
+
+    @NotNull
+    private ConsentStage consentStage;
 }

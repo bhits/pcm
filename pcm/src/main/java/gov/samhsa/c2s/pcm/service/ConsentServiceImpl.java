@@ -197,6 +197,7 @@ public class ConsentServiceImpl implements ConsentService {
                 .sharePurposes(sharePurposes)
                 .startDate(consent.getStartDate())
                 .endDate(consent.getEndDate())
+                .consentStage(consent.getConsentStage())
                 .build();
     }
 
