@@ -12,6 +12,7 @@ import lombok.NoArgsConstructor;
 public class AddressDto {
     private String line1;
     private String line2;
+    private String phoneNumber;
     private String city;
     private String state;
     private String postalCode;

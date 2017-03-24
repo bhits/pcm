@@ -45,6 +45,7 @@ import gov.samhsa.c2s.pcm.service.exception.InvalidProviderTypeException;
 import gov.samhsa.c2s.pcm.service.exception.InvalidPurposeException;
 import gov.samhsa.c2s.pcm.service.exception.InvalidSensitivityCategoryException;
 import gov.samhsa.c2s.pcm.service.exception.PatientOrSavedConsentNotFoundException;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -134,6 +135,8 @@ public class ConsentServiceImpl implements ConsentService {
                 .startDate(startDate)
                 .endDate(endDate)
                 .consentStage(ConsentStage.SAVED)
+                .consentReferenceId(RandomStringUtils
+                        .randomAlphanumeric(10))
                 .build();
 
         //generate pdf
@@ -325,6 +328,7 @@ public class ConsentServiceImpl implements ConsentService {
                         .state(flattenedSmallProviderDto.getPracticeLocationAddressStateName())
                         .postalCode(flattenedSmallProviderDto.getPracticeLocationAddressPostalCode())
                         .country(flattenedSmallProviderDto.getPracticeLocationAddressCountryCode())
+                        .phoneNumber(flattenedSmallProviderDto.getPracticeLocationAddressTelephoneNumber())
                         .build())
                 .provider(findProvider(flattenedSmallProviderDto.getSystem(), flattenedSmallProviderDto.getNpi(), patient))
                 .consent(consent)
@@ -340,6 +344,7 @@ public class ConsentServiceImpl implements ConsentService {
                         .state(flattenedSmallProviderDto.getPracticeLocationAddressStateName())
                         .postalCode(flattenedSmallProviderDto.getPracticeLocationAddressPostalCode())
                         .country(flattenedSmallProviderDto.getPracticeLocationAddressCountryCode())
+                        .phoneNumber(flattenedSmallProviderDto.getPracticeLocationAddressTelephoneNumber())
                         .build())
                 .provider(findProvider(flattenedSmallProviderDto.getSystem(), flattenedSmallProviderDto.getNpi(), patient))
                 .consent(consent)

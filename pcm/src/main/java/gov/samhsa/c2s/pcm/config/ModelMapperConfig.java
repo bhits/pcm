@@ -75,6 +75,7 @@ public class ModelMapperConfig {
             map().getAddress().setState(source.getPracticeLocationAddressStateName());
             map().getAddress().setPostalCode(source.getPracticeLocationAddressPostalCode());
             map().getAddress().setCountry(source.getPracticeLocationAddressCountryCode());
+            map().getAddress().setPhoneNumber(source.getPracticeLocationAddressTelephoneNumber());
         }
     }
 

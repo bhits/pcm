@@ -82,6 +82,9 @@ public class Consent {
     @Future
     private LocalDate endDate;
 
+    @NotNull
+    private String consentReferenceId;
+
     public void setConsentAttestation(ConsentAttestation consentAttestation) {
         setConsentStage(ConsentStage.SIGNED);
         this.consentAttestation = consentAttestation;
