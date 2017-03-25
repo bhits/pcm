@@ -34,7 +34,7 @@ public class FhirPatientServiceImpl implements FhirPatientService {
             Patient fhirPatient = new Patient();
 
             //setting mandatory fields
-            fhirPatient.setId(new IdType(patientDto.getMedicalRecordNumber()));
+
             fhirPatient.addName().setFamily(patientDto.getLastName()).addGiven(patientDto.getFirstName());
             fhirPatient.addTelecom().setValue(patientDto.getEmail()).setSystem(ContactPoint.ContactPointSystem.EMAIL);
             fhirPatient.setBirthDate(patientDto.getBirthDate());
@@ -59,6 +59,7 @@ public class FhirPatientServiceImpl implements FhirPatientService {
                 //setting patient mrn
                 patient.addIdentifier().setSystem(fhirProperties.getMrn().getSystem())
                         .setUse(Identifier.IdentifierUse.OFFICIAL).setValue(pidDto.getValue());
+                patient.setId(new IdType(pidDto.getValue()));
             } else if(pidDto.getSystem().equalsIgnoreCase(fhirProperties.getSsn().getSystem())) {
                 String ssnValue =  pidDto.getValue();
                 // setting ssn value
