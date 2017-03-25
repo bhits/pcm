@@ -1,5 +1,6 @@
 package gov.samhsa.c2s.pcm.service;
 
+import gov.samhsa.c2s.pcm.config.FhirProperties;
 import gov.samhsa.c2s.pcm.config.PcmProperties;
 import gov.samhsa.c2s.pcm.domain.Consent;
 import gov.samhsa.c2s.pcm.domain.ConsentAttestation;
@@ -48,6 +49,7 @@ import gov.samhsa.c2s.pcm.service.exception.InvalidProviderException;
 import gov.samhsa.c2s.pcm.service.exception.InvalidProviderTypeException;
 import gov.samhsa.c2s.pcm.service.exception.InvalidPurposeException;
 import gov.samhsa.c2s.pcm.service.exception.PatientOrSavedConsentNotFoundException;
+import gov.samhsa.c2s.pcm.service.fhir.FhirConsentService;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -99,6 +101,10 @@ public class ConsentServiceImpl implements ConsentService {
     private PurposeRepository purposeRepository;
     @Autowired
     private SensitivityCategoryRepository sensitivityCategoryRepository;
+    @Autowired
+    private FhirProperties fhirProperties;
+    @Autowired
+    private FhirConsentService fhirConsentService;
 
     @Override
     @Transactional
@@ -345,7 +351,11 @@ public class ConsentServiceImpl implements ConsentService {
             //generate consent pdf
             consentAttestation.setConsentAttestationPdf(consentPdfGenerator.generate42CfrPart2Pdf(consent, patientDto, true, new Date(), consentAttestationTerm.getText()));
 
-            consentRepository.save(consent);
+            // generate FHIR Consent
+            if(pcmProperties.getConsent().getPublish().isEnabled()){
+                fhirConsentService.publishFhirConsent(consent, patientDto);
+            }
+            // consentRepository.save(consent);
 
         } else throw new BadRequestException();
     }
