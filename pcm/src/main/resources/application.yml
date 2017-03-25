@@ -18,7 +18,7 @@ c2s:
       - "http://hl7.org/fhir/sid/us-npi"
     consent:
       publish:
-        enabled: true
+        enabled: false
         # configure fhir server base url
         serverUrl: http://fhirserverhost:8080/baseStu3
         clientSocketTimeoutInMs: 768000
