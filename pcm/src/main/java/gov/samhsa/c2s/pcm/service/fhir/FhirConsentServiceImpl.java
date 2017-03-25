@@ -5,14 +5,22 @@ import ca.uhn.fhir.rest.client.IGenericClient;
 import ca.uhn.fhir.validation.FhirValidator;
 import ca.uhn.fhir.validation.ValidationResult;
 import gov.samhsa.c2s.pcm.config.FhirProperties;
+import gov.samhsa.c2s.pcm.domain.SensitivityCategory;
+import gov.samhsa.c2s.pcm.infrastructure.VssService;
 import gov.samhsa.c2s.pcm.infrastructure.dto.PatientDto;
+import gov.samhsa.c2s.pcm.infrastructure.dto.ValueSetCategoryDto;
 import lombok.extern.slf4j.Slf4j;
+import org.hl7.fhir.dstu3.model.Coding;
 import org.hl7.fhir.dstu3.model.Consent;
 import org.hl7.fhir.dstu3.model.IdType;
 import org.hl7.fhir.dstu3.model.Patient;
 import org.hl7.fhir.dstu3.model.Reference;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 @Service
 @Slf4j
@@ -36,6 +44,8 @@ public class FhirConsentServiceImpl implements FhirConsentService {
 
     @Autowired
     private FhirProperties fhirProperties;
+    @Autowired
+    private VssService vssService;
 
 
 
@@ -46,9 +56,6 @@ public class FhirConsentServiceImpl implements FhirConsentService {
     @Override
     public void publishFhirConsent(gov.samhsa.c2s.pcm.domain.Consent c2sConsent, PatientDto patientDto){
         Consent fhirConsent = createFhirConsent(c2sConsent, patientDto);
-    }
-
-    public void publishFhirConsentToHie(Consent fhirConsent) {
         //validate the resource
         ValidationResult validationResult =  fhirValidator.validateWithResult(fhirConsent);
 
@@ -250,75 +257,48 @@ public class FhirConsentServiceImpl implements FhirConsentService {
         // get basic consent details
         Consent fhirConsent = createBasicConsent(c2sConsent, patientDto);
 
-/*
-        // get obligations from consent
-        List<String> excludeCodes = getConsentObligations(c2sConsent);
 
-        List<Coding> excludeCodingList = new ArrayList<>();
-        List<Coding> includeCodingList = new ArrayList<>();
+        // get share categories from consent
+        List<SensitivityCategory> includeCodes = c2sConsent.getShareSensitivityCategories();
+
+         List<Coding> includeCodingList = new ArrayList<>();
+         //Get all sensitive categories from vss
+        List<ValueSetCategoryDto> allSensitiveCategories = vssService.getValueSetCategories();
         // go over full list and add obligation as exclusions
-        for (SensitivePolicyCodeEnum codesEnum : SensitivePolicyCodeEnum.values()) {
-            if (excludeCodes.contains(codesEnum.getCode())) {
-                // exclude it
-                 excludeCodingList.add(new Coding(codesEnum.getCodeSystem(), codesEnum.getCode(), codesEnum.getDisplayName()));
-              } else {
+        for (ValueSetCategoryDto valueSetCategoryDto: allSensitiveCategories){
+            if (includeCodes.contains(valueSetCategoryDto.getCode())) {
                 // include it
-                includeCodingList.add(new Coding(codesEnum.getCodeSystem(), codesEnum.getCode(), codesEnum.getDisplayName()));
+                includeCodingList.add(
+                        new Coding(valueSetCategoryDto.getSystem()
+                                , valueSetCategoryDto.getCode()
+                                , valueSetCategoryDto.getDisplayName()));
              }
         }
 
         // add list to consent
         Consent.ExceptComponent exceptComponent = new Consent.ExceptComponent();
 
-        if(fhirProperties.isKeepExcludeList()) {
-            //List of Excluded Sensitive policy codes
-            exceptComponent.setType(Consent.ConsentExceptType.DENY);
-            exceptComponent.setSecurityLabel(excludeCodingList);
-        } else {
-            //List of included Sensitive policy codes
-            exceptComponent.setSecurityLabel(includeCodingList);
-            exceptComponent.setType(Consent.ConsentExceptType.PERMIT);
-         }
+        //List of included Sensitive policy codes
+        exceptComponent.setSecurityLabel(includeCodingList);
+        exceptComponent.setType(Consent.ConsentExceptType.PERMIT);
+
         fhirConsent.setExcept(Collections.singletonList(exceptComponent));
 
         //logs FHIRConsent into json and xml format in debug mode
         logFHIRConsent(fhirConsent);
-*/
+
 
         return fhirConsent;
 
     }
-/*
-
-    private List<String> getConsentObligations(gov.samhsa.c2s.pcm.domain.consent.Consent  consent) {
-        final Set<String> obligationCodes = new HashSet<>();
-
-        for (final ConsentDoNotShareClinicalDocumentTypeCode item : consent
-                .getDoNotShareClinicalDocumentTypeCodes()) {
-            obligationCodes.add(item
-                    .getClinicalDocumentTypeCode().getCode());
-        }
-
-        for (final ConsentDoNotShareSensitivityPolicyCode item : consent
-                .getDoNotShareSensitivityPolicyCodes()) {
-            obligationCodes.add(item
-                    .getValueSetCategory().getCode());
-        }
-
-        for (final ClinicalConceptCode item : consent
-                .getDoNotShareClinicalConceptCodes()) {
-            obligationCodes.add(item.getCode());
-        }
-        return new ArrayList<>(obligationCodes);
-    }
 
 
     private void logFHIRConsent(Consent fhirConsent) {
-        log.debug(() -> fhirContext.newXmlParser().setPrettyPrint(true)
+        log.debug( fhirContext.newXmlParser().setPrettyPrint(true)
                 .encodeResourceToString(fhirConsent));
-        log.debug(() -> fhirContext.newJsonParser().setPrettyPrint(true)
+        log.debug( fhirContext.newJsonParser().setPrettyPrint(true)
                 .encodeResourceToString(fhirConsent));
     }
-*/
+
 
 }
