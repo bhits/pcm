@@ -9,5 +9,13 @@ import java.util.Optional;
 public interface ConsentRepository extends JpaRepository<Consent, Long> {
     Optional<Consent> findOneByIdAndPatientIdAndConsentAttestationIsNullAndConsentRevocationIsNull(Long consentId, Long patientId);
 
+    Optional<Consent> findOneByIdAndPatientIdAndConsentAttestationIsNotNullAndConsentRevocationIsNull(Long consentId, Long patientId);
+
+    Optional<Consent> findOneByIdAndPatientIdAndConsentAttestationIsNotNullAndConsentRevocationIsNotNull(Long consentId, Long patientId);
+
+    Optional<Consent> findOneByIdAndPatientId(Long consentId, Long patientId);
+
     Page<Consent> findAllByPatientId(Long patientId, Pageable pageable);
+
+
 }

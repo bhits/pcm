@@ -42,6 +42,7 @@ import gov.samhsa.c2s.pcm.service.dto.PractitionerDto;
 import gov.samhsa.c2s.pcm.service.dto.PurposeDto;
 import gov.samhsa.c2s.pcm.service.dto.SensitivityCategoryDto;
 import gov.samhsa.c2s.pcm.service.exception.BadRequestException;
+import gov.samhsa.c2s.pcm.service.exception.ConsentNotFoundException;
 import gov.samhsa.c2s.pcm.service.exception.DuplicateConsentException;
 import gov.samhsa.c2s.pcm.service.exception.InvalidProviderException;
 import gov.samhsa.c2s.pcm.service.exception.InvalidProviderTypeException;
@@ -274,9 +275,9 @@ public class ConsentServiceImpl implements ConsentService {
         //get patient
         final Patient patient = patientRepository.saveAndGet(patientId);
 
-        Consent consent = consentRepository.findOne(consentId);
+        Consent consent = consentRepository.findOneByIdAndPatientIdAndConsentAttestationIsNullAndConsentRevocationIsNull(consentId, patientId).orElseThrow(ConsentNotFoundException::new);
 
-        if (consentAttestationDto.isAcceptTerms() && consent.getConsentStage().equals(ConsentStage.SAVED)) {
+        if (consentAttestationDto.isAcceptTerms()) {
 
             //get getFromProviders
             final List<FlattenedSmallProviderDto> fromProviderDtos = consent.getFromProviders().stream().map(provider -> {
@@ -392,33 +393,33 @@ public class ConsentServiceImpl implements ConsentService {
     @Override
     public void updateConsent(Long patientId, Long consentId, ConsentDto consentDto) {
         final Patient patient = patientRepository.saveAndGet(patientId);
-        Consent consent = consentRepository.findOne(consentId);
-        if (consent.getConsentStage().equals(ConsentStage.SAVED)) {
-            final List<Provider> fromProviders = consentDto.getFromProviders().getIdentifiers().stream()
-                    .map(toProvider(patient))
-                    .collect(toList());
-            final List<Provider> toProviders = consentDto.getToProviders().getIdentifiers().stream()
-                    .map(toProvider(patient))
-                    .collect(toList());
-            final List<SensitivityCategory> shareSensitivityCategories = consentDto.getShareSensitivityCategories().getIdentifiers().stream()
-                    .map(toSensitivityCategory())
-                    .collect(toList());
-            final List<Purpose> sharePurposes = consentDto.getSharePurposes().getIdentifiers().stream()
-                    .map(toPurpose())
-                    .collect(toList());
+        Consent consent = consentRepository.findOneByIdAndPatientIdAndConsentAttestationIsNullAndConsentRevocationIsNull(consentId, patientId).orElseThrow(ConsentNotFoundException::new);
 
-            consent.setStartDate(consentDto.getStartDate());
-            consent.setEndDate(consentDto.getEndDate());
-            consent.setFromProviders(fromProviders);
-            consent.setToProviders(toProviders);
-            consent.setShareSensitivityCategories(shareSensitivityCategories);
-            consent.setSharePurposes(sharePurposes);
-            //generate pdf
-            PatientDto patientDto = phrService.getPatientProfile();
-            consent.setSavedPdf(consentPdfGenerator.generate42CfrPart2Pdf(consent, patientDto, false, new Date(), consentAttestationTermRepository.findOne(Long.valueOf(1)).getText()));
+        final List<Provider> fromProviders = consentDto.getFromProviders().getIdentifiers().stream()
+                .map(toProvider(patient))
+                .collect(toList());
+        final List<Provider> toProviders = consentDto.getToProviders().getIdentifiers().stream()
+                .map(toProvider(patient))
+                .collect(toList());
+        final List<SensitivityCategory> shareSensitivityCategories = consentDto.getShareSensitivityCategories().getIdentifiers().stream()
+                .map(toSensitivityCategory())
+                .collect(toList());
+        final List<Purpose> sharePurposes = consentDto.getSharePurposes().getIdentifiers().stream()
+                .map(toPurpose())
+                .collect(toList());
 
-            consentRepository.save(consent);
-        }
+        consent.setStartDate(consentDto.getStartDate());
+        consent.setEndDate(consentDto.getEndDate());
+        consent.setFromProviders(fromProviders);
+        consent.setToProviders(toProviders);
+        consent.setShareSensitivityCategories(shareSensitivityCategories);
+        consent.setSharePurposes(sharePurposes);
+        //generate pdf
+        PatientDto patientDto = phrService.getPatientProfile();
+        consent.setSavedPdf(consentPdfGenerator.generate42CfrPart2Pdf(consent, patientDto, false, new Date(), consentAttestationTermRepository.findOne(Long.valueOf(1)).getText()));
+
+        consentRepository.save(consent);
+
     }
 
 
@@ -428,11 +429,11 @@ public class ConsentServiceImpl implements ConsentService {
         //get patient
         final Patient patient = patientRepository.saveAndGet(patientId);
 
-        Consent consent = consentRepository.findOne(consentId);
+        Consent consent = consentRepository.findOneByIdAndPatientIdAndConsentAttestationIsNotNullAndConsentRevocationIsNull(consentId, patientId).orElseThrow(ConsentNotFoundException::new);
 
         ConsentRevocationTerm consentRevocationTerm = consentRevocationTermRepository.findOne(Long.valueOf(1));
 
-        if (consentRevocationDto.isAcceptTerms() && consent.getConsentStage().equals(ConsentStage.SIGNED)) {
+        if (consentRevocationDto.isAcceptTerms()) {
 
             //build consentRevocation
             final ConsentRevocation consentRevocation = ConsentRevocation.builder()
@@ -455,9 +456,12 @@ public class ConsentServiceImpl implements ConsentService {
 
     @Override
     public Object getConsent(Long patientId, Long consentId, String format) {
-        Consent consent = consentRepository.findOne(consentId);
-        if (format != null && format.equals("pdf") && consent.getConsentStage().equals(ConsentStage.SAVED)) {
-            return new ContentDto("application/pdf", consent.getSavedPdf());
+        final Consent consent = consentRepository.findOneByIdAndPatientId(consentId, patientId).orElseThrow(ConsentNotFoundException::new);
+        if (format != null && format.equals("pdf")) {
+            if (consent.getConsentStage().equals(ConsentStage.SAVED))
+                return new ContentDto("application/pdf", consent.getSavedPdf());
+            else
+                throw new BadRequestException("Please download attested consent.");
         }
         if (format != null && format.equals("detailedConsent") && consent.getConsentStage().equals(ConsentStage.SAVED)) {
             return mapToDetailedConsentDto(consent);
@@ -468,7 +472,7 @@ public class ConsentServiceImpl implements ConsentService {
 
     @Override
     public Object getAttestedConsent(Long patientId, Long consentId, String format) {
-        Consent consent = consentRepository.findOne(consentId);
+        final Consent consent = consentRepository.findOneByIdAndPatientId(consentId, patientId).orElseThrow(ConsentNotFoundException::new);
         if (format != null && format.equals("pdf") && (!consent.getConsentStage().equals(ConsentStage.SAVED))) {
             return new ContentDto("application/pdf", consent.getConsentAttestation().getConsentAttestationPdf());
         } else
@@ -479,8 +483,8 @@ public class ConsentServiceImpl implements ConsentService {
 
     @Override
     public Object getRevokedConsent(Long patientId, Long consentId, String format) {
-        Consent consent = consentRepository.findOne(consentId);
-        if (format != null && format.equals("pdf") && consent.getConsentStage().equals(ConsentStage.REVOKED)) {
+        final Consent consent = consentRepository.findOneByIdAndPatientIdAndConsentAttestationIsNotNullAndConsentRevocationIsNotNull(consentId, patientId).orElseThrow(ConsentNotFoundException::new);
+        if (format != null && format.equals("pdf")) {
             return new ContentDto("application/pdf", consent.getConsentRevocation().getConsentRevocationPdf());
         } else
             return mapToDetailedConsentDto(consent);
