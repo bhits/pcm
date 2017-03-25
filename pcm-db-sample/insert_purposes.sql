@@ -1,3 +1,11 @@
+-- Pcm Sample Data
+-- ------------------------------------------------------
+
+USE `pcm`;
+
+--
+-- Insert data for table `purpose`
+--
 INSERT INTO purpose VALUES (1,
                             'To perform one or more operations on information for the provision of health care.',
                             'Treatment',
