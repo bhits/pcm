@@ -34,7 +34,9 @@ To build the project, navigate to the folder that contains `pom.xml` file using 
 
 ### Prerequisites
 
-This service uses *[MySQL](https://www.mysql.com/)* for persistence and *[Flyway](https://flywaydb.org/)* for database migration. It requires having a database user account with Object and DDL Rights to a schema with default name `pcm`. Please see [Configure](#configure) section for details of configuring the data source. 
+This service uses *[MySQL](https://www.mysql.com/)* for persistence and *[Flyway](https://flywaydb.org/)* for database migration. It requires having a database user account with Object and DDL Rights to a schema with default name `pcm`. Please see [Configure](#configure) section for details of configuring the data source.
+
+A few additional [SQL files](https://github.com/bhits/pcm/blob/master/pcm-db-sample) are provided with this project to populate the database with sample `purpose`, `consent attestation term` and `consent revocation term` contents.
 
 ### Commands
 
