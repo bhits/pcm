@@ -6,7 +6,6 @@ import ca.uhn.fhir.validation.FhirValidator;
 import ca.uhn.fhir.validation.ValidationResult;
 import gov.samhsa.c2s.pcm.config.FhirProperties;
 import gov.samhsa.c2s.pcm.domain.Purpose;
-import gov.samhsa.c2s.pcm.domain.SensitivityCategory;
 import gov.samhsa.c2s.pcm.infrastructure.VssService;
 import gov.samhsa.c2s.pcm.infrastructure.dto.PatientDto;
 import gov.samhsa.c2s.pcm.infrastructure.dto.ValueSetCategoryDto;
@@ -28,6 +27,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -239,14 +239,20 @@ public class FhirConsentServiceImpl implements FhirConsentService {
 
 
         // get share categories from consent
-        List<SensitivityCategory> includeCodes = c2sConsent.getShareSensitivityCategories();
+        List<String> shareCodes = c2sConsent.getShareSensitivityCategories()
+                                                    .stream()
+                                                    .map(codes -> codes.getIdentifier().getValue())
+                                                    .collect(Collectors.toList());
+
 
         List<Coding> includeCodingList = new ArrayList<>();
         //Get all sensitive categories from vss
         List<ValueSetCategoryDto> allSensitiveCategories = vssService.getValueSetCategories();
+
+
         // go over full list and add obligation as exclusions
         for (ValueSetCategoryDto valueSetCategoryDto : allSensitiveCategories) {
-            if (includeCodes.contains(valueSetCategoryDto.getCode())) {
+            if (shareCodes.contains(valueSetCategoryDto.getCode())) {
                 // include it
                 includeCodingList.add(
                         new Coding(valueSetCategoryDto.getSystem()
