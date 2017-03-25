@@ -7,6 +7,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.envers.Audited;
 
+import javax.persistence.Column;
 import javax.persistence.Embedded;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -30,4 +31,10 @@ public class SensitivityCategory {
     @Embedded
     @Valid
     private Identifier identifier;
+
+    @Column(length = 5000)
+    private String description;
+
+    private String display;
+
 }

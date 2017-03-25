@@ -10,6 +10,7 @@ import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Past;
 import javax.validation.constraints.Pattern;
 import java.util.Date;
+import java.util.List;
 
 @Data
 @Builder
@@ -43,7 +44,10 @@ public class PatientDto {
     private String stateCode;
     private String zip;
 
+    private List<PatientIdentifierDto> patientIdentifiers;
     private String resourceIdentifier;
-    private String medicalRecordNumber;
+    //private String medicalRecordNumber;
     private String enterpriseIdentifier;
+
+
 }

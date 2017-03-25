@@ -9,6 +9,8 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 
 import javax.validation.Valid;
+import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 import java.util.ArrayList;
 import java.util.List;
@@ -34,6 +36,9 @@ public class PcmProperties {
     public static class Consent {
 
         @Valid
+        private Pagination pagination = new Pagination();
+
+        @Valid
         private Publish publish;
 
         @Data
@@ -46,6 +51,13 @@ public class PcmProperties {
 
             @NotEmpty
             private String clientSocketTimeoutInMs;
+        }
+
+        @Data
+        public static class Pagination{
+            @Min(1)
+            private int defaultSize = 10;
+            private int maxSize = 50;
         }
     }
 }

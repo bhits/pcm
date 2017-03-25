@@ -1,6 +1,6 @@
 package gov.samhsa.c2s.pcm.service;
 
-import gov.samhsa.c2s.pcm.infrastructure.dto.FlattenedSmallProviderDto;
+import gov.samhsa.c2s.pcm.service.dto.AbstractProviderDto;
 import gov.samhsa.c2s.pcm.service.dto.IdentifierDto;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -12,7 +12,7 @@ public interface ProviderService {
     void saveProviders(Long patientId, Set<IdentifierDto> providerIdentifierDtos);
 
     @Transactional
-    List<FlattenedSmallProviderDto> getProviders(Long patientId);
+    List<AbstractProviderDto> getProviders(Long patientId);
 
     @Transactional
     void deleteProvider(Long patientId, Long providerId);

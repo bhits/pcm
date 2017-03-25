@@ -26,4 +26,6 @@ public class Purpose {
     private Identifier identifier;
 
     private String display;
+
+    private String description;
 }

@@ -26,4 +26,5 @@ public class FlattenedSmallProviderDto {
     private String practiceLocationAddressPostalCode;
     private String practiceLocationAddressCountryCode;
     private String system;
+    private Boolean deletable;
 }

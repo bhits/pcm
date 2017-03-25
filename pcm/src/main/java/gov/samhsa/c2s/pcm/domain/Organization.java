@@ -31,9 +31,6 @@ public class Organization {
     @NotNull
     private Provider provider;
 
-    @ManyToOne
-    @NotNull
-    private Consent consent;
 
     @NotBlank
     private String name;
@@ -41,6 +38,8 @@ public class Organization {
     @Embedded
     @Valid
     private Address address;
+
+    private String phoneNumber;
 
     @ManyToOne
     @NotNull

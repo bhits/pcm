@@ -31,10 +31,6 @@ public class Practitioner {
     @NotNull
     private Provider provider;
 
-    @ManyToOne
-    @NotNull
-    private Consent consent;
-
     @NotBlank
     private String firstName;
     private String middleName;
@@ -44,6 +40,8 @@ public class Practitioner {
     @Embedded
     @Valid
     private Address address;
+
+    private String phoneNumber;
 
     @ManyToOne
     @NotNull

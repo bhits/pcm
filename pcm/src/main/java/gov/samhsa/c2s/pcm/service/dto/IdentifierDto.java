@@ -8,7 +8,7 @@ import org.hibernate.validator.constraints.NotBlank;
 
 @Data
 @Builder
-@AllArgsConstructor
+@AllArgsConstructor(staticName = "of")
 @NoArgsConstructor
 public class IdentifierDto {
     @NotBlank

@@ -1,7 +1,10 @@
 package gov.samhsa.c2s.pcm.service.dto;
 
 import gov.samhsa.c2s.common.validator.constraint.PresentOrFuture;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.hibernate.validator.constraints.ScriptAssert;
 
 import javax.validation.Valid;
@@ -15,7 +18,13 @@ import java.time.LocalDate;
         alias = "_",
         script = "_.startDate != null && _.endDate != null && _.startDate < _.endDate",
         message = "consent end date must be after consent start date")
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class ConsentDto {
+
+    private Long id;
+
     @Valid
     @NotNull
     private IdentifiersDto fromProviders;

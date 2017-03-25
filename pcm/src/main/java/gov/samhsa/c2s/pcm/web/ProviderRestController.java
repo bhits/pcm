@@ -1,7 +1,7 @@
 package gov.samhsa.c2s.pcm.web;
 
-import gov.samhsa.c2s.pcm.infrastructure.dto.FlattenedSmallProviderDto;
 import gov.samhsa.c2s.pcm.service.ProviderService;
+import gov.samhsa.c2s.pcm.service.dto.AbstractProviderDto;
 import gov.samhsa.c2s.pcm.service.dto.IdentifiersDto;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,7 +27,7 @@ public class ProviderRestController {
     private ProviderService providerService;
 
     @GetMapping("/providers")
-    public List<FlattenedSmallProviderDto> getProviders(@PathVariable Long patientId) {
+    public List<AbstractProviderDto> getProviders(@PathVariable Long patientId) {
         return providerService.getProviders(patientId);
     }
 
