@@ -351,12 +351,9 @@ public class ConsentServiceImpl implements ConsentService {
             //generate consent pdf
             consentAttestation.setConsentAttestationPdf(consentPdfGenerator.generate42CfrPart2Pdf(consent, patientDto, true, new Date(), consentAttestationTerm.getText()));
 
-            // generate FHIR Consent
-            byte[] fhirConsent = fhirConsentService.getFhirConsent(consent, patientDto);
-            consentAttestation.setFhirConsent(fhirConsent);
-            if (pcmProperties.getConsent().getPublish().isEnabled()) {
-                fhirConsentService.publishFhirConsent(fhirConsent);
-            }
+            // generate FHIR Consent and publish consent to FHIR server if enabled
+            consentAttestation.setFhirConsent(fhirConsentService.publishFhirConsent(consent, patientDto,pcmProperties.getConsent().getPublish().isEnabled()));
+
             consentRepository.save(consent);
 
         } else throw new BadRequestException();
