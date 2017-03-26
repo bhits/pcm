@@ -88,6 +88,34 @@ public class FhirConsentServiceImpl implements FhirConsentService {
 
     }
 
+    @Override
+    public byte[] revokeFhirConsent(gov.samhsa.c2s.pcm.domain.Consent c2sConsent, PatientDto patientDto, boolean isEnabled) {
+
+        // consent by identifier on FHIR server
+        Consent fhirConsent = createFhirConsent(c2sConsent, patientDto);
+        fhirConsent.setStatus(Consent.ConsentStatus.INACTIVE);
+
+        //validate the resource
+        ValidationResult validationResult = fhirValidator.validateWithResult(fhirConsent);
+
+        log.debug("validationResult.isSuccessful(): " + validationResult.isSuccessful());
+        //throw format error if the validation is not successful
+        if (!validationResult.isSuccessful()) {
+            throw new FHIRFormatErrorException("Consent Validation is not successful" + validationResult.getMessages());
+        }
+
+        //revoke fhir consent to fhir server if publish is enabled
+        if(isEnabled)
+        fhirClient.update().resource(fhirConsent)
+                .conditional()
+                .where(Consent.IDENTIFIER.exactly().systemAndCode(fhirProperties.getMrn().getSystem(),c2sConsent.getConsentReferenceId()))
+                .execute();
+
+        return fhirContext.newJsonParser().setPrettyPrint(true)
+                .encodeResourceToString(fhirConsent).getBytes();
+
+    }
+
     public Consent createFhirConsent(gov.samhsa.c2s.pcm.domain.Consent consent, PatientDto patientDto) {
         return createGranularConsent(consent, patientDto);
     }
