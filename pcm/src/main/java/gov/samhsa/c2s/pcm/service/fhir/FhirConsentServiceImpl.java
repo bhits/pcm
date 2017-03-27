@@ -76,8 +76,8 @@ public class FhirConsentServiceImpl implements FhirConsentService {
             throw new FHIRFormatErrorException("Consent Validation is not successful" + validationResult.getMessages());
         }
         //publish fhir consent to fhir server if publish is enabled
-        if(isPublishEnabled)
-        fhirClient.create().resource(fhirConsent).execute();
+        if (isPublishEnabled)
+            fhirClient.create().resource(fhirConsent).execute();
 
         return fhirContext.newJsonParser().setPrettyPrint(true)
                 .encodeResourceToString(fhirConsent).getBytes();
@@ -101,11 +101,11 @@ public class FhirConsentServiceImpl implements FhirConsentService {
         }
 
         //revoke fhir consent to fhir server if publish is enabled
-        if(isPublishEnabled)
-        fhirClient.update().resource(fhirConsent)
-                .conditional()
-                .where(Consent.IDENTIFIER.exactly().systemAndCode(fhirProperties.getMrn().getSystem(),c2sConsent.getConsentReferenceId()))
-                .execute();
+        if (isPublishEnabled)
+            fhirClient.update().resource(fhirConsent)
+                    .conditional()
+                    .where(Consent.IDENTIFIER.exactly().systemAndCode(fhirProperties.getMrn().getSystem(), c2sConsent.getConsentReferenceId()))
+                    .execute();
 
         return fhirContext.newJsonParser().setPrettyPrint(true)
                 .encodeResourceToString(fhirConsent).getBytes();
@@ -264,9 +264,9 @@ public class FhirConsentServiceImpl implements FhirConsentService {
 
         // get share categories from consent
         List<String> shareCodes = c2sConsent.getShareSensitivityCategories()
-                                                    .stream()
-                                                    .map(codes -> codes.getIdentifier().getValue())
-                                                    .collect(Collectors.toList());
+                .stream()
+                .map(codes -> codes.getIdentifier().getValue())
+                .collect(Collectors.toList());
 
 
         List<Coding> includeCodingList = new ArrayList<>();
@@ -277,10 +277,18 @@ public class FhirConsentServiceImpl implements FhirConsentService {
         // go over full list and add obligation as exclusions
         for (ValueSetCategoryDto valueSetCategoryDto : allSensitiveCategories) {
             if (shareCodes.contains(valueSetCategoryDto.getCode())) {
+                String systemUrl = valueSetCategoryDto.getSystem();
+                String code = valueSetCategoryDto.getCode();
+                if(!( code.equalsIgnoreCase(V3ActCode.ETH.toCode() )
+                        || code.equalsIgnoreCase(V3ActCode.PSY.toCode() )
+                        || code.equalsIgnoreCase(V3ActCode.SEX.toCode() )
+                        )) {
+                    systemUrl = fhirProperties.getMrn().getSystem();
+                }
                 // include it
                 includeCodingList.add(
-                        new Coding(valueSetCategoryDto.getSystem()
-                                , valueSetCategoryDto.getCode()
+                        new Coding(systemUrl
+                                , code
                                 , valueSetCategoryDto.getDisplayName()));
             }
         }
