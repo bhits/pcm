@@ -7,7 +7,7 @@ PCM provides service to manage patient provider lists and enables patients to ma
 
 [`2.0.0 (latest)`](https://github.com/bhits/pcm/releases/tag/2.0.0)
 
-[`Current Dockerfile`](hhttps://github.com/bhits/pcm/blob/master/pcm/src/main/docker/Dockerfile)
+[`Current Dockerfile`](https://github.com/bhits/pcm/blob/master/pcm/src/main/docker/Dockerfile)
 
 For more information about this image, the source code, and its history, please see the [GitHub repository](https://github.com/bhits/pcm).
 
