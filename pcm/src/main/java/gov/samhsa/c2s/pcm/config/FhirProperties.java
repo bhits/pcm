@@ -16,8 +16,6 @@ public class FhirProperties {
     private Npi npi;
     private Pou pou;
     private Mrn mrn;
-    private ConsentType consentType;
-    private boolean keepExcludeList;
 
     @Data
     public static class Identifier {
@@ -29,11 +27,6 @@ public class FhirProperties {
 
         @NotEmpty
         private String label;
-    }
-
-    @Data
-    public static class ConsentType extends Identifier{
-        private String code;
     }
 
     @Data

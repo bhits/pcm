@@ -39,13 +39,6 @@ c2s:
         system: https://bhits.github.io/consent2share/
         oid: urn:oid:1.3.6.1.4.1.21367.13.20.200
         label: MRN
-      consentType:
-        system: http://hl7.org/fhir/ValueSet/v3-ActConsentType
-        oid: urn:oid:2.16.840.1.113883.1.11.19897
-        label: information disclosure
-        code: IDSCL
-      keepExcludeList: false
-
 ---
 spring.profiles: standalone-ssl
 spring:

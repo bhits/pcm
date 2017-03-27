@@ -19,6 +19,7 @@ import org.hl7.fhir.dstu3.model.Organization;
 import org.hl7.fhir.dstu3.model.Patient;
 import org.hl7.fhir.dstu3.model.Practitioner;
 import org.hl7.fhir.dstu3.model.Reference;
+import org.hl7.fhir.dstu3.model.codesystems.V3ActCode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -53,11 +54,6 @@ public class FhirConsentServiceImpl implements FhirConsentService {
     private FhirProperties fhirProperties;
     @Autowired
     private VssService vssService;
-
-
-    // FHIR resource identifiers for inline/embedded objects
-    private String CONFIDENTIALITY_CODE_CODE_SYSTEM = "urn:oid:2.16.840.1.113883.5.25";
-    private String CODE_SYSTEM_SET_OPERATOR = "http://hl7.org/fhir/v3/SetOperator";
 
 
     @Override
@@ -218,10 +214,11 @@ public class FhirConsentServiceImpl implements FhirConsentService {
         //set category
         CodeableConcept categoryConcept = new CodeableConcept();
 
-        //TODO need to replace DISL from enum value
-        categoryConcept.addCoding(new Coding().setCode(fhirProperties.getConsentType().getCode())
-                .setSystem(fhirProperties.getConsentType().getSystem())
-                .setDisplay(fhirProperties.getConsentType().getLabel()));
+        categoryConcept.addCoding(
+                new Coding().setCode(V3ActCode.IDSCL.toCode())
+                        .setSystem(V3ActCode.IDSCL.getSystem())
+                        .setDisplay(V3ActCode.IDSCL.getDisplay())
+        );
         fhirConsent.getCategory().add(categoryConcept);
 
         return fhirConsent;
