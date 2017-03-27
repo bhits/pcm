@@ -61,7 +61,7 @@ public class FhirConsentServiceImpl implements FhirConsentService {
 
 
     @Override
-    public byte[] publishFhirConsent(gov.samhsa.c2s.pcm.domain.Consent c2sConsent, PatientDto patientDto, boolean isEnabled) {
+    public byte[] getAttestedFhirConsent(gov.samhsa.c2s.pcm.domain.Consent c2sConsent, PatientDto patientDto, boolean isPublishEnabled) {
         /*
         Use the client to store a new consent resource instance
         Invoke the server create method (and send pretty-printed JSON
@@ -80,7 +80,7 @@ public class FhirConsentServiceImpl implements FhirConsentService {
             throw new FHIRFormatErrorException("Consent Validation is not successful" + validationResult.getMessages());
         }
         //publish fhir consent to fhir server if publish is enabled
-        if(isEnabled)
+        if(isPublishEnabled)
         fhirClient.create().resource(fhirConsent).execute();
 
         return fhirContext.newJsonParser().setPrettyPrint(true)
@@ -89,7 +89,7 @@ public class FhirConsentServiceImpl implements FhirConsentService {
     }
 
     @Override
-    public byte[] revokeFhirConsent(gov.samhsa.c2s.pcm.domain.Consent c2sConsent, PatientDto patientDto, boolean isEnabled) {
+    public byte[] getRevokedFhirConsent(gov.samhsa.c2s.pcm.domain.Consent c2sConsent, PatientDto patientDto, boolean isPublishEnabled) {
 
         // consent by identifier on FHIR server
         Consent fhirConsent = createFhirConsent(c2sConsent, patientDto);
@@ -105,7 +105,7 @@ public class FhirConsentServiceImpl implements FhirConsentService {
         }
 
         //revoke fhir consent to fhir server if publish is enabled
-        if(isEnabled)
+        if(isPublishEnabled)
         fhirClient.update().resource(fhirConsent)
                 .conditional()
                 .where(Consent.IDENTIFIER.exactly().systemAndCode(fhirProperties.getMrn().getSystem(),c2sConsent.getConsentReferenceId()))
