@@ -22,7 +22,7 @@ import java.util.List;
 @ScriptAssert(
         lang = "javascript",
         alias = "_",
-        script = "_.startDate != null && _.endDate != null && _.startDate < _.endDate",
+        script = "_.startDate != null && _.endDate != null && _.startDate.isBefore(_.endDate)",
         message = "consent end date must be after consent start date")
 public class DetailedConsentDto {
 
