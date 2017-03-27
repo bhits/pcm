@@ -53,3 +53,14 @@ spring:
     include: ssl-default
 server:
   context-path: /pcm
+---
+spring:
+  profiles: docker
+  datasource:
+    url: jdbc:mysql://${C2S_DB_HOST:pcm-db.c2s.com}:${C2S_DB_PORT:3306}/pcm?autoReconnect=true
+c2s:
+  pcm:
+    consent:
+      publish:
+        # configure fhir server base url
+        serverUrl: http://fhir.c2s.com/hapi-fhir-jpaserver/baseStu3
