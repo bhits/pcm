@@ -352,7 +352,7 @@ public class ConsentServiceImpl implements ConsentService {
             consentAttestation.setConsentAttestationPdf(consentPdfGenerator.generate42CfrPart2Pdf(consent, patientDto, true, new Date(), consentAttestationTerm.getText()));
 
             // generate FHIR Consent and publish consent to FHIR server if enabled
-            consentAttestation.setFhirConsent(fhirConsentService.publishFhirConsent(consent, patientDto,pcmProperties.getConsent().getPublish().isEnabled()));
+            consentAttestation.setFhirConsent(fhirConsentService.getAttestedFhirConsent(consent, patientDto,pcmProperties.getConsent().getPublish().isEnabled()));
 
             consentRepository.save(consent);
 
@@ -460,7 +460,7 @@ public class ConsentServiceImpl implements ConsentService {
             consent.setConsentRevocation(consentRevocation);
 
             //revoke consent on FHIR server
-            consent.getConsentAttestation().setFhirConsent(fhirConsentService.revokeFhirConsent(consent, patientDto, pcmProperties.getConsent().getPublish().isEnabled()));
+            consent.getConsentAttestation().setFhirConsent(fhirConsentService.getRevokedFhirConsent(consent, patientDto, pcmProperties.getConsent().getPublish().isEnabled()));
 
             consentRepository.save(consent);
         } else throw new BadRequestException();

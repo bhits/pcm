@@ -19,6 +19,7 @@ import org.hl7.fhir.dstu3.model.Organization;
 import org.hl7.fhir.dstu3.model.Patient;
 import org.hl7.fhir.dstu3.model.Practitioner;
 import org.hl7.fhir.dstu3.model.Reference;
+import org.hl7.fhir.dstu3.model.codesystems.V3ActCode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -55,13 +56,8 @@ public class FhirConsentServiceImpl implements FhirConsentService {
     private VssService vssService;
 
 
-    // FHIR resource identifiers for inline/embedded objects
-    private String CONFIDENTIALITY_CODE_CODE_SYSTEM = "urn:oid:2.16.840.1.113883.5.25";
-    private String CODE_SYSTEM_SET_OPERATOR = "http://hl7.org/fhir/v3/SetOperator";
-
-
     @Override
-    public byte[] publishFhirConsent(gov.samhsa.c2s.pcm.domain.Consent c2sConsent, PatientDto patientDto, boolean isEnabled) {
+    public byte[] getAttestedFhirConsent(gov.samhsa.c2s.pcm.domain.Consent c2sConsent, PatientDto patientDto, boolean isPublishEnabled) {
         /*
         Use the client to store a new consent resource instance
         Invoke the server create method (and send pretty-printed JSON
@@ -80,8 +76,8 @@ public class FhirConsentServiceImpl implements FhirConsentService {
             throw new FHIRFormatErrorException("Consent Validation is not successful" + validationResult.getMessages());
         }
         //publish fhir consent to fhir server if publish is enabled
-        if(isEnabled)
-        fhirClient.create().resource(fhirConsent).execute();
+        if (isPublishEnabled)
+            fhirClient.create().resource(fhirConsent).execute();
 
         return fhirContext.newJsonParser().setPrettyPrint(true)
                 .encodeResourceToString(fhirConsent).getBytes();
@@ -89,7 +85,7 @@ public class FhirConsentServiceImpl implements FhirConsentService {
     }
 
     @Override
-    public byte[] revokeFhirConsent(gov.samhsa.c2s.pcm.domain.Consent c2sConsent, PatientDto patientDto, boolean isEnabled) {
+    public byte[] getRevokedFhirConsent(gov.samhsa.c2s.pcm.domain.Consent c2sConsent, PatientDto patientDto, boolean isPublishEnabled) {
 
         // consent by identifier on FHIR server
         Consent fhirConsent = createFhirConsent(c2sConsent, patientDto);
@@ -105,11 +101,11 @@ public class FhirConsentServiceImpl implements FhirConsentService {
         }
 
         //revoke fhir consent to fhir server if publish is enabled
-        if(isEnabled)
-        fhirClient.update().resource(fhirConsent)
-                .conditional()
-                .where(Consent.IDENTIFIER.exactly().systemAndCode(fhirProperties.getMrn().getSystem(),c2sConsent.getConsentReferenceId()))
-                .execute();
+        if (isPublishEnabled)
+            fhirClient.update().resource(fhirConsent)
+                    .conditional()
+                    .where(Consent.IDENTIFIER.exactly().systemAndCode(fhirProperties.getMrn().getSystem(), c2sConsent.getConsentReferenceId()))
+                    .execute();
 
         return fhirContext.newJsonParser().setPrettyPrint(true)
                 .encodeResourceToString(fhirConsent).getBytes();
@@ -218,10 +214,11 @@ public class FhirConsentServiceImpl implements FhirConsentService {
         //set category
         CodeableConcept categoryConcept = new CodeableConcept();
 
-        //TODO need to replace DISL from enum value
-        categoryConcept.addCoding(new Coding().setCode(fhirProperties.getConsentType().getCode())
-                .setSystem(fhirProperties.getConsentType().getSystem())
-                .setDisplay(fhirProperties.getConsentType().getLabel()));
+        categoryConcept.addCoding(
+                new Coding().setCode(V3ActCode.IDSCL.toCode())
+                        .setSystem(V3ActCode.IDSCL.getSystem())
+                        .setDisplay(V3ActCode.IDSCL.getDisplay())
+        );
         fhirConsent.getCategory().add(categoryConcept);
 
         return fhirConsent;
@@ -267,9 +264,9 @@ public class FhirConsentServiceImpl implements FhirConsentService {
 
         // get share categories from consent
         List<String> shareCodes = c2sConsent.getShareSensitivityCategories()
-                                                    .stream()
-                                                    .map(codes -> codes.getIdentifier().getValue())
-                                                    .collect(Collectors.toList());
+                .stream()
+                .map(codes -> codes.getIdentifier().getValue())
+                .collect(Collectors.toList());
 
 
         List<Coding> includeCodingList = new ArrayList<>();
@@ -280,10 +277,18 @@ public class FhirConsentServiceImpl implements FhirConsentService {
         // go over full list and add obligation as exclusions
         for (ValueSetCategoryDto valueSetCategoryDto : allSensitiveCategories) {
             if (shareCodes.contains(valueSetCategoryDto.getCode())) {
+                String systemUrl = valueSetCategoryDto.getSystem();
+                String code = valueSetCategoryDto.getCode();
+                if(!( code.equalsIgnoreCase(V3ActCode.ETH.toCode() )
+                        || code.equalsIgnoreCase(V3ActCode.PSY.toCode() )
+                        || code.equalsIgnoreCase(V3ActCode.SEX.toCode() )
+                        )) {
+                    systemUrl = fhirProperties.getMrn().getSystem();
+                }
                 // include it
                 includeCodingList.add(
-                        new Coding(valueSetCategoryDto.getSystem()
-                                , valueSetCategoryDto.getCode()
+                        new Coding(systemUrl
+                                , code
                                 , valueSetCategoryDto.getDisplayName()));
             }
         }
