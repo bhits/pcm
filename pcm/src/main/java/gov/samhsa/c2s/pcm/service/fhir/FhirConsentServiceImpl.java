@@ -282,7 +282,7 @@ public class FhirConsentServiceImpl implements FhirConsentService {
                 if(!( code.equalsIgnoreCase(V3ActCode.ETH.toCode() )
                         || code.equalsIgnoreCase(V3ActCode.PSY.toCode() )
                         || code.equalsIgnoreCase(V3ActCode.SEX.toCode())
-                                || code.equalsIgnoreCase(V3ActCode.HIV.toCode())
+                        || code.equalsIgnoreCase(V3ActCode.HIV.toCode())
                         )) {
                     systemUrl = fhirProperties.getMrn().getSystem();
                 }
