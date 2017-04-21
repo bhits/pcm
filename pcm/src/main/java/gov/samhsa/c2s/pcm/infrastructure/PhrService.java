@@ -20,7 +20,7 @@ public interface PhrService {
     @RequestMapping(value = "/patients", method = RequestMethod.GET)
     default PatientDto getPatientProfile() {
         return PatientDto.builder()
-                .id(4L)
+                .id("4")
                 .firstName("Alice")
                 .lastName("Recruit")
                 .genderCode("female")
