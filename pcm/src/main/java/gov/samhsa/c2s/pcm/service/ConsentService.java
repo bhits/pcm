@@ -9,31 +9,31 @@ import java.util.Optional;
 
 public interface ConsentService {
     @Transactional
-    Page<DetailedConsentDto> getConsents(Long patientId, Optional<Integer> page, Optional<Integer> size);
+    Page<DetailedConsentDto> getConsents(String patientId, Optional<Integer> page, Optional<Integer> size);
 
     @Transactional
-    void saveConsent(Long patientId, ConsentDto consentDto);
+    void saveConsent(String patientId, ConsentDto consentDto);
 
     @Transactional
-    void deleteConsent(Long patientId, Long consentId);
+    void deleteConsent(String patientId, Long consentId);
 
     @Transactional
-    void updateConsent(Long patientId, Long consentId, ConsentDto consentDto);
+    void updateConsent(String patientId, Long consentId, ConsentDto consentDto);
 
     @Transactional
-    void attestConsent(Long patientId, Long consentId, ConsentAttestationDto consentAttestationDto);
+    void attestConsent(String patientId, Long consentId, ConsentAttestationDto consentAttestationDto);
 
     @Transactional
-    void revokeConsent(Long patientId, Long consentId, ConsentRevocationDto consentRevocationDto);
+    void revokeConsent(String patientId, Long consentId, ConsentRevocationDto consentRevocationDto);
 
     @Transactional(readOnly = true)
-    Object getConsent(Long patientId, Long consentId, String format);
+    Object getConsent(String patientId, Long consentId, String format);
 
     @Transactional(readOnly = true)
-    Object getAttestedConsent(Long patientId, Long consentId, String format);
+    Object getAttestedConsent(String patientId, Long consentId, String format);
 
     @Transactional(readOnly = true)
-    Object getRevokedConsent(Long patientId, Long consentId, String format);
+    Object getRevokedConsent(String patientId, Long consentId, String format);
 
     @Transactional(readOnly = true)
     ConsentTermDto getConsentAttestationTerm(Optional<Long> id);
@@ -42,6 +42,6 @@ public interface ConsentService {
     ConsentTermDto getConsentRevocationTerm(Optional<Long> id);
 
     @Transactional(readOnly = true)
-    List<SensitivityCategoryDto> getSharedSensitivityCategories(Long patientId, Long consentId);
+    List<SensitivityCategoryDto> getSharedSensitivityCategories(String patientId, Long consentId);
 
 }

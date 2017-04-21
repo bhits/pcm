@@ -108,7 +108,7 @@ public class ConsentServiceImpl implements ConsentService {
 
     @Override
     @Transactional
-    public Page<DetailedConsentDto> getConsents(Long patientId, Optional<Integer> page, Optional<Integer> size) {
+    public Page<DetailedConsentDto> getConsents(String patientId, Optional<Integer> page, Optional<Integer> size) {
         final PageRequest pageRequest = new PageRequest(page.filter(p -> p >= 0).orElse(0),
                 size.filter(s -> s > 0 && s <= pcmProperties.getConsent().getPagination().getMaxSize()).orElse(pcmProperties.getConsent().getPagination().getDefaultSize()));
         final Page<Consent> consentsPage = consentRepository.findAllByPatientId(patientId, pageRequest);
@@ -121,7 +121,7 @@ public class ConsentServiceImpl implements ConsentService {
     }
 
     @Override
-    public void saveConsent(Long patientId, ConsentDto consentDto) {
+    public void saveConsent(String patientId, ConsentDto consentDto) {
         final Patient patient = patientRepository.saveAndGet(patientId);
         final List<Provider> fromProviders = consentDto.getFromProviders().getIdentifiers().stream()
                 .map(toProvider(patient))
@@ -187,7 +187,7 @@ public class ConsentServiceImpl implements ConsentService {
     }
 
     @Override
-    public void deleteConsent(Long patientId, Long consentId) {
+    public void deleteConsent(String patientId, Long consentId) {
         final Consent consent = consentRepository.findOneByIdAndPatientIdAndConsentAttestationIsNullAndConsentRevocationIsNull(consentId, patientId).orElseThrow(PatientOrSavedConsentNotFoundException::new);
         Assert.isNull(consent.getConsentAttestation(), "Cannot delete an attested consent");
         Assert.isNull(consent.getConsentRevocation(), "Cannot delete an revoked consent");
@@ -277,7 +277,7 @@ public class ConsentServiceImpl implements ConsentService {
     }
 
     @Override
-    public void attestConsent(Long patientId, Long consentId, ConsentAttestationDto consentAttestationDto) {
+    public void attestConsent(String patientId, Long consentId, ConsentAttestationDto consentAttestationDto) {
         //get patient
         final Patient patient = patientRepository.saveAndGet(patientId);
 
@@ -400,7 +400,7 @@ public class ConsentServiceImpl implements ConsentService {
 
 
     @Override
-    public void updateConsent(Long patientId, Long consentId, ConsentDto consentDto) {
+    public void updateConsent(String patientId, Long consentId, ConsentDto consentDto) {
         final Patient patient = patientRepository.saveAndGet(patientId);
         Consent consent = consentRepository.findOneByIdAndPatientIdAndConsentAttestationIsNullAndConsentRevocationIsNull(consentId, patientId).orElseThrow(ConsentNotFoundException::new);
 
@@ -433,7 +433,7 @@ public class ConsentServiceImpl implements ConsentService {
 
 
     @Override
-    public void revokeConsent(Long patientId, Long consentId, ConsentRevocationDto consentRevocationDto) {
+    public void revokeConsent(String patientId, Long consentId, ConsentRevocationDto consentRevocationDto) {
 
         //get patient
         final Patient patient = patientRepository.saveAndGet(patientId);
@@ -467,7 +467,7 @@ public class ConsentServiceImpl implements ConsentService {
     }
 
     @Override
-    public Object getConsent(Long patientId, Long consentId, String format) {
+    public Object getConsent(String patientId, Long consentId, String format) {
         final Consent consent = consentRepository.findOneByIdAndPatientId(consentId, patientId).orElseThrow(ConsentNotFoundException::new);
         if (format != null && format.equals("pdf")) {
             if (consent.getConsentStage().equals(ConsentStage.SAVED))
@@ -483,7 +483,7 @@ public class ConsentServiceImpl implements ConsentService {
     }
 
     @Override
-    public Object getAttestedConsent(Long patientId, Long consentId, String format) {
+    public Object getAttestedConsent(String patientId, Long consentId, String format) {
         final Consent consent = consentRepository.findOneByIdAndPatientId(consentId, patientId).orElseThrow(ConsentNotFoundException::new);
         if (format != null && format.equals("pdf") && (!consent.getConsentStage().equals(ConsentStage.SAVED))) {
             return new ContentDto("application/pdf", consent.getConsentAttestation().getConsentAttestationPdf());
@@ -494,7 +494,7 @@ public class ConsentServiceImpl implements ConsentService {
 
 
     @Override
-    public Object getRevokedConsent(Long patientId, Long consentId, String format) {
+    public Object getRevokedConsent(String patientId, Long consentId, String format) {
         final Consent consent = consentRepository.findOneByIdAndPatientIdAndConsentAttestationIsNotNullAndConsentRevocationIsNotNull(consentId, patientId).orElseThrow(ConsentNotFoundException::new);
         if (format != null && format.equals("pdf")) {
             return new ContentDto("application/pdf", consent.getConsentRevocation().getConsentRevocationPdf());
@@ -553,7 +553,7 @@ public class ConsentServiceImpl implements ConsentService {
     }
 
     @Override
-    public List<SensitivityCategoryDto> getSharedSensitivityCategories(Long patientId, Long consentId){
+    public List<SensitivityCategoryDto> getSharedSensitivityCategories(String patientId, Long consentId){
         final Consent consent = consentRepository.findOneByIdAndPatientId(consentId, patientId).orElseThrow(ConsentNotFoundException::new);
 
         List<SensitivityCategoryDto> shareSensitivityCategories = consent.getShareSensitivityCategories().stream()

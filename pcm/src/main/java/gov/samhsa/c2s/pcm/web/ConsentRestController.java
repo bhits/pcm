@@ -32,7 +32,7 @@ public class ConsentRestController {
     private ConsentService consentService;
 
     @GetMapping("/consents")
-    public Page<DetailedConsentDto> getConsents(@PathVariable Long patientId,
+    public Page<DetailedConsentDto> getConsents(@PathVariable String patientId,
                                                 @RequestParam Optional<Integer> page,
                                                 @RequestParam Optional<Integer> size) {
         return consentService.getConsents(patientId, page, size);
@@ -40,60 +40,60 @@ public class ConsentRestController {
 
     @PostMapping("/consents")
     @ResponseStatus(HttpStatus.CREATED)
-    public void saveConsent(@PathVariable Long patientId,
+    public void saveConsent(@PathVariable String patientId,
                             @Valid @RequestBody ConsentDto consentDto) {
         consentService.saveConsent(patientId, consentDto);
     }
 
     @DeleteMapping("/consents/{consentId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deleteConsent(@PathVariable Long patientId,
+    public void deleteConsent(@PathVariable String patientId,
                               @PathVariable Long consentId) {
         consentService.deleteConsent(patientId, consentId);
     }
 
     @PutMapping("/consents/{consentId}")
     @ResponseStatus(HttpStatus.OK)
-    public void updateConsent(@PathVariable Long patientId, @PathVariable Long consentId,
+    public void updateConsent(@PathVariable String patientId, @PathVariable Long consentId,
                               @Valid @RequestBody ConsentDto consentDto) {
         consentService.updateConsent(patientId, consentId, consentDto);
     }
 
     @PutMapping("/consents/{consentId}/attestation")
     @ResponseStatus(HttpStatus.OK)
-    public void attestConsent(@PathVariable Long patientId, @PathVariable Long consentId,
+    public void attestConsent(@PathVariable String patientId, @PathVariable Long consentId,
                               @Valid @RequestBody ConsentAttestationDto consentAttestationDto) {
         consentService.attestConsent(patientId, consentId, consentAttestationDto);
     }
 
     @PutMapping("/consents/{consentId}/revocation")
     @ResponseStatus(HttpStatus.OK)
-    public void revokeConsent(@PathVariable Long patientId, @PathVariable Long consentId,
+    public void revokeConsent(@PathVariable String patientId, @PathVariable Long consentId,
                               @Valid @RequestBody ConsentRevocationDto consentRevocationDto) {
         consentService.revokeConsent(patientId, consentId, consentRevocationDto);
     }
 
 
     @GetMapping("/consents/{consentId}")
-    public Object getConsent(@PathVariable Long patientId, @PathVariable Long consentId,
+    public Object getConsent(@PathVariable String patientId, @PathVariable Long consentId,
                                         @RequestParam(required = false)  String format) {
         return consentService.getConsent(patientId, consentId, format);
     }
 
     @GetMapping("/consents/{consentId}/attestation")
-    public Object getAttestedConsent(@PathVariable Long patientId, @PathVariable Long consentId,
+    public Object getAttestedConsent(@PathVariable String patientId, @PathVariable Long consentId,
                              @RequestParam(required = false)  String format) {
         return consentService.getAttestedConsent(patientId, consentId, format);
     }
 
     @GetMapping("/consents/{consentId}/revocation")
-    public Object getRevokedConsent(@PathVariable Long patientId, @PathVariable Long consentId,
+    public Object getRevokedConsent(@PathVariable String patientId, @PathVariable Long consentId,
                                      @RequestParam(required = false)  String format) {
         return consentService.getRevokedConsent(patientId, consentId, format);
     }
 
     @GetMapping("/consents/{consentId}/shareSensitivityCategories")
-    public List<SensitivityCategoryDto> getSharedSensitivityCategories(@PathVariable Long patientId, @PathVariable Long consentId) {
+    public List<SensitivityCategoryDto> getSharedSensitivityCategories(@PathVariable String patientId, @PathVariable Long consentId) {
         return consentService.getSharedSensitivityCategories(patientId, consentId);
     }
 }

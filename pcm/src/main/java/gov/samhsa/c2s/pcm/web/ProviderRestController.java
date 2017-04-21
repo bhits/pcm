@@ -27,20 +27,20 @@ public class ProviderRestController {
     private ProviderService providerService;
 
     @GetMapping("/providers")
-    public List<AbstractProviderDto> getProviders(@PathVariable Long patientId) {
+    public List<AbstractProviderDto> getProviders(@PathVariable String patientId) {
         return providerService.getProviders(patientId);
     }
 
     @PostMapping("/providers")
     @ResponseStatus(HttpStatus.CREATED)
-    public void saveProviders(@PathVariable Long patientId,
+    public void saveProviders(@PathVariable String patientId,
                               @Valid @RequestBody IdentifiersDto providerIdentifiersDto) {
         providerService.saveProviders(patientId, providerIdentifiersDto.getIdentifiers());
     }
 
     @DeleteMapping("/providers/{providerId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deleteProvider(@PathVariable Long patientId,
+    public void deleteProvider(@PathVariable String patientId,
                                @PathVariable Long providerId) {
         providerService.deleteProvider(patientId, providerId);
     }

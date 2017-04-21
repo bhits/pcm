@@ -53,7 +53,7 @@ public class ProviderServiceImpl implements ProviderService {
 
     @Override
     @Transactional
-    public void saveProviders(Long patientId, Set<IdentifierDto> providerIdentifierDtos) {
+    public void saveProviders(String patientId, Set<IdentifierDto> providerIdentifierDtos) {
         // Assert provider identifier systems
         providerIdentifierDtos.stream()
                 .map(IdentifierDto::getSystem)
@@ -95,7 +95,7 @@ public class ProviderServiceImpl implements ProviderService {
 
     @Override
     @Transactional
-    public List<AbstractProviderDto> getProviders(Long patientId) {
+    public List<AbstractProviderDto> getProviders(String patientId) {
 
         final Patient patient = patientRepository.saveAndGet(patientId);
         final Set<Identifier> providerIdentifiersWithConsents = getProviderIdentifiersWithConsents(patient);
@@ -120,7 +120,7 @@ public class ProviderServiceImpl implements ProviderService {
     }
 
     @Override
-    public void deleteProvider(Long patientId, Long providerId) {
+    public void deleteProvider(String patientId, Long providerId) {
         final Patient patient = patientRepository
                 .findOneByIdAndProvidersId(patientId, providerId)
                 .orElseThrow(PatientOrProviderNotFoundException::new);

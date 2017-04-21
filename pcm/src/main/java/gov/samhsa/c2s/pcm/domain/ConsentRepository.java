@@ -7,15 +7,15 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.Optional;
 
 public interface ConsentRepository extends JpaRepository<Consent, Long> {
-    Optional<Consent> findOneByIdAndPatientIdAndConsentAttestationIsNullAndConsentRevocationIsNull(Long consentId, Long patientId);
+    Optional<Consent> findOneByIdAndPatientIdAndConsentAttestationIsNullAndConsentRevocationIsNull(Long consentId, String patientId);
 
-    Optional<Consent> findOneByIdAndPatientIdAndConsentAttestationIsNotNullAndConsentRevocationIsNull(Long consentId, Long patientId);
+    Optional<Consent> findOneByIdAndPatientIdAndConsentAttestationIsNotNullAndConsentRevocationIsNull(Long consentId, String patientId);
 
-    Optional<Consent> findOneByIdAndPatientIdAndConsentAttestationIsNotNullAndConsentRevocationIsNotNull(Long consentId, Long patientId);
+    Optional<Consent> findOneByIdAndPatientIdAndConsentAttestationIsNotNullAndConsentRevocationIsNotNull(Long consentId, String patientId);
 
-    Optional<Consent> findOneByIdAndPatientId(Long consentId, Long patientId);
+    Optional<Consent> findOneByIdAndPatientId(Long consentId, String patientId);
 
-    Page<Consent> findAllByPatientId(Long patientId, Pageable pageable);
+    Page<Consent> findAllByPatientId(String patientId, Pageable pageable);
 
 
 }

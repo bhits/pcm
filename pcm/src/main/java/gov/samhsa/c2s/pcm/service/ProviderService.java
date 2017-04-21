@@ -9,11 +9,11 @@ import java.util.Set;
 
 public interface ProviderService {
     @Transactional
-    void saveProviders(Long patientId, Set<IdentifierDto> providerIdentifierDtos);
+    void saveProviders(String patientId, Set<IdentifierDto> providerIdentifierDtos);
 
     @Transactional
-    List<AbstractProviderDto> getProviders(Long patientId);
+    List<AbstractProviderDto> getProviders(String patientId);
 
     @Transactional
-    void deleteProvider(Long patientId, Long providerId);
+    void deleteProvider(String patientId, Long providerId);
 }
