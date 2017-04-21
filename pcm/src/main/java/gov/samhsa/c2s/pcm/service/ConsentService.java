@@ -4,6 +4,7 @@ import gov.samhsa.c2s.pcm.service.dto.*;
 import org.springframework.data.domain.Page;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface ConsentService {
@@ -39,4 +40,8 @@ public interface ConsentService {
 
     @Transactional(readOnly = true)
     ConsentTermDto getConsentRevocationTerm(Optional<Long> id);
+
+    @Transactional(readOnly = true)
+    List<SensitivityCategoryDto> getSharedSensitivityCategories(Long patientId, Long consentId);
+
 }

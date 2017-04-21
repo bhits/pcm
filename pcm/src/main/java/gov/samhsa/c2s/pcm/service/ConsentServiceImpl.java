@@ -552,4 +552,16 @@ public class ConsentServiceImpl implements ConsentService {
 
     }
 
+    @Override
+    public List<SensitivityCategoryDto> getSharedSensitivityCategories(Long patientId, Long consentId){
+        final Consent consent = consentRepository.findOneByIdAndPatientId(consentId, patientId).orElseThrow(ConsentNotFoundException::new);
+
+        List<SensitivityCategoryDto> shareSensitivityCategories = consent.getShareSensitivityCategories().stream()
+                .map(sensitivityCategory -> modelMapper.map(sensitivityCategory, SensitivityCategoryDto.class))
+                .collect(toList());
+
+        return shareSensitivityCategories;
+    }
+
+
 }

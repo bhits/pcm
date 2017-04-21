@@ -5,6 +5,7 @@ import gov.samhsa.c2s.pcm.service.dto.ConsentAttestationDto;
 import gov.samhsa.c2s.pcm.service.dto.ConsentDto;
 import gov.samhsa.c2s.pcm.service.dto.ConsentRevocationDto;
 import gov.samhsa.c2s.pcm.service.dto.DetailedConsentDto;
+import gov.samhsa.c2s.pcm.service.dto.SensitivityCategoryDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
@@ -20,6 +21,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.Valid;
+import java.util.List;
 import java.util.Optional;
 
 @RestController
@@ -88,6 +90,11 @@ public class ConsentRestController {
     public Object getRevokedConsent(@PathVariable Long patientId, @PathVariable Long consentId,
                                      @RequestParam(required = false)  String format) {
         return consentService.getRevokedConsent(patientId, consentId, format);
+    }
+
+    @GetMapping("/consents/{consentId}/shareSensitivityCategories")
+    public List<SensitivityCategoryDto> getSharedSensitivityCategories(@PathVariable Long patientId, @PathVariable Long consentId) {
+        return consentService.getSharedSensitivityCategories(patientId, consentId);
     }
 }
 
