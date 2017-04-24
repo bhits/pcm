@@ -19,7 +19,7 @@ import java.util.List;
 public class PatientDto {
 
     @NotNull
-    private Long id;
+    private String id;
 
     @NotBlank
     private String lastName;

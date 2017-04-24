@@ -18,7 +18,7 @@ import java.util.List;
 @Audited
 public class Patient {
     @Id
-    private Long id;
+    private String id;
 
     @OneToMany(mappedBy = "patient")
     @NotAudited
