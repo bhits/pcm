@@ -42,7 +42,7 @@ public interface PatientRepository extends JpaRepository<Patient, String> {
                 .orElseGet(() -> {
                     final PhrService phrService = SpringContext.getBean(PhrService.class);
                     final PatientDto patientProfile = phrService.getPatientProfile();
-                    Assert.isTrue(id == patientProfile.getId(), "Invalid patient ID");
+                    Assert.isTrue(id.equals(patientProfile.getId()), "Invalid patient ID");
                     final Patient p = new Patient();
                     p.setId(id);
                     save(p);
