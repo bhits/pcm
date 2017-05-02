@@ -4,6 +4,7 @@ package gov.samhsa.c2s.pcm.service.fhir;
 import gov.samhsa.c2s.pcm.config.FhirProperties;
 import gov.samhsa.c2s.pcm.infrastructure.dto.PatientDto;
 import gov.samhsa.c2s.pcm.infrastructure.dto.PatientIdentifierDto;
+import gov.samhsa.c2s.pcm.infrastructure.dto.TelecomDto;
 import org.hl7.fhir.dstu3.model.ContactPoint;
 import org.hl7.fhir.dstu3.model.Enumerations.AdministrativeGender;
 import org.hl7.fhir.dstu3.model.IdType;
@@ -12,6 +13,8 @@ import org.hl7.fhir.dstu3.model.Patient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.sql.Date;
+import java.util.Optional;
 import java.util.function.Function;
 
 @Service
@@ -36,8 +39,10 @@ public class FhirPatientServiceImpl implements FhirPatientService {
             //setting mandatory fields
 
             fhirPatient.addName().setFamily(patientDto.getLastName()).addGiven(patientDto.getFirstName());
-            fhirPatient.addTelecom().setValue(patientDto.getEmail()).setSystem(ContactPoint.ContactPointSystem.EMAIL);
-            fhirPatient.setBirthDate(patientDto.getBirthDate());
+            Optional<TelecomDto> email= patientDto.getTelecoms().stream().filter(telecomDto -> telecomDto.getSystem().equalsIgnoreCase(ContactPoint.ContactPointSystem.EMAIL.toString())).findFirst();
+            if(email.isPresent())
+            fhirPatient.addTelecom().setValue(email.get().getValue()).setSystem(ContactPoint.ContactPointSystem.EMAIL);
+            fhirPatient.setBirthDate(Date.valueOf(patientDto.getBirthDate()));
             fhirPatient.setGender(getPatientGender.apply(patientDto.getGenderCode()));
             fhirPatient.setActive(true);
 
@@ -45,7 +50,7 @@ public class FhirPatientServiceImpl implements FhirPatientService {
             setIdentifiers(fhirPatient, patientDto);
 
             //optional fields
-            fhirPatient.addAddress().addLine(patientDto.getAddress()).setCity(patientDto.getCity()).setState(patientDto.getStateCode()).setPostalCode(patientDto.getZip());
+            fhirPatient.addAddress().addLine(patientDto.getAddresses().get(0).getLine1()).setCity(patientDto.getAddresses().get(0).getCity()).setState(patientDto.getAddresses().get(0).getStateCode()).setPostalCode(patientDto.getAddresses().get(0).getPostalCode());
             return fhirPatient;
         }
     };
@@ -68,10 +73,10 @@ public class FhirPatientServiceImpl implements FhirPatientService {
                             .setValue(ssnValue);
             }
         }
-        if (null != patientDto.getTelephone() && !patientDto.getTelephone().isEmpty())
-            patient.addTelecom().setValue(patientDto.getTelephone()).setSystem(ContactPoint.ContactPointSystem.PHONE);
+        Optional<TelecomDto> telephone=patientDto.getTelecoms().stream().filter(telecomDto -> telecomDto.getSystem().equalsIgnoreCase(ContactPoint.ContactPointSystem.PHONE.toString())).findFirst();
+        if (telephone.isPresent())
 
-
+            patient.addTelecom().setValue(telephone.get().getValue()).setSystem(ContactPoint.ContactPointSystem.PHONE);
     }
 
     Function<String, AdministrativeGender> getPatientGender = new Function<String, AdministrativeGender>() {

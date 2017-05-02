@@ -1,7 +1,7 @@
 package gov.samhsa.c2s.pcm.domain;
 
 import gov.samhsa.c2s.pcm.config.SpringContext;
-import gov.samhsa.c2s.pcm.infrastructure.PhrService;
+import gov.samhsa.c2s.pcm.infrastructure.UmsService;
 import gov.samhsa.c2s.pcm.infrastructure.dto.PatientDto;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
@@ -37,14 +37,14 @@ public interface PatientRepository extends JpaRepository<Patient, String> {
         return !existsByIdAndProvidersIdentifierSystemAndProvidersIdentifierValue(patientId, identifierSystem, identifierValue);
     }
 
-    default Patient saveAndGet(String id) {
-        return findOneById(id)
+    default Patient saveAndGet(String mrn) {
+        return findOneById(mrn)
                 .orElseGet(() -> {
-                    final PhrService phrService = SpringContext.getBean(PhrService.class);
-                    final PatientDto patientProfile = phrService.getPatientProfile();
-                    Assert.isTrue(id.equals(patientProfile.getId()), "Invalid patient ID");
+                    final UmsService umsService = SpringContext.getBean(UmsService.class);
+                    final PatientDto patientProfile = umsService.getPatientProfile(mrn);
+                    Assert.isTrue(mrn.equals(patientProfile.getMrn()), "Invalid patient ID");
                     final Patient p = new Patient();
-                    p.setId(id);
+                    p.setId(mrn);
                     save(p);
                     return p;
                 });
