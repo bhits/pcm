@@ -8,8 +8,7 @@ import org.hibernate.validator.constraints.NotBlank;
 
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Past;
-import javax.validation.constraints.Pattern;
-import java.util.Date;
+import java.time.LocalDate;
 import java.util.List;
 
 @Data
@@ -24,29 +23,25 @@ public class PatientDto {
     @NotBlank
     private String lastName;
 
+    private String middleName;
+
     @NotBlank
     private String firstName;
 
-    @NotBlank
-    @Pattern(regexp = "^[\\w-]+(\\.[\\w-]+)*@([a-zA-Z0-9-]+(\\.[a-zA-Z0-9-]+)*?\\.[a-zA-Z]{2,6}|(\\d{1,3}\\.){3}\\d{1,3})(:\\d{4})?$")
-    private String email;
-
     @Past
-    private Date birthDate;
+    private LocalDate birthDate;
 
     @NotBlank
     private String genderCode;
 
     private String socialSecurityNumber;
-    private String telephone;
-    private String address;
-    private String city;
-    private String stateCode;
-    private String zip;
+    private List<AddressDto> addresses;
+
+    private List<TelecomDto> telecoms;
 
     private List<PatientIdentifierDto> patientIdentifiers;
     private String resourceIdentifier;
-    //private String medicalRecordNumber;
+    private String mrn;
     private String enterpriseIdentifier;
 
 

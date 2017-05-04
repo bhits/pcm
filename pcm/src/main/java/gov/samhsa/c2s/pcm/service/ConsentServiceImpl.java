@@ -23,8 +23,8 @@ import gov.samhsa.c2s.pcm.domain.SensitivityCategoryRepository;
 import gov.samhsa.c2s.pcm.domain.valueobject.Address;
 import gov.samhsa.c2s.pcm.domain.valueobject.ConsentStage;
 import gov.samhsa.c2s.pcm.domain.valueobject.Identifier;
-import gov.samhsa.c2s.pcm.infrastructure.PhrService;
 import gov.samhsa.c2s.pcm.infrastructure.PlsService;
+import gov.samhsa.c2s.pcm.infrastructure.UmsService;
 import gov.samhsa.c2s.pcm.infrastructure.dto.FlattenedSmallProviderDto;
 import gov.samhsa.c2s.pcm.infrastructure.dto.PatientDto;
 import gov.samhsa.c2s.pcm.infrastructure.pdf.ConsentPdfGenerator;
@@ -92,7 +92,7 @@ public class ConsentServiceImpl implements ConsentService {
     @Autowired
     private PcmProperties pcmProperties;
     @Autowired
-    private PhrService phrService;
+    private UmsService umsService;
     @Autowired
     private PlsService plsService;
     @Autowired
@@ -177,7 +177,7 @@ public class ConsentServiceImpl implements ConsentService {
                 .build();
 
         //generate pdf
-        PatientDto patientDto = phrService.getPatientProfile();
+        PatientDto patientDto = umsService.getPatientProfile(patientId);
 
         consent.setSavedPdf(consentPdfGenerator.generate42CfrPart2Pdf(consent, patientDto, false, null, consentAttestationTermRepository.findOne(Long.valueOf(1)).getText()));
 
@@ -346,7 +346,7 @@ public class ConsentServiceImpl implements ConsentService {
             consent.setConsentStage(ConsentStage.SIGNED);
             consent.setConsentAttestation(consentAttestation);
 
-            PatientDto patientDto = phrService.getPatientProfile();
+            PatientDto patientDto = umsService.getPatientProfile(patientId);
 
             //generate consent pdf
             consentAttestation.setConsentAttestationPdf(consentPdfGenerator.generate42CfrPart2Pdf(consent, patientDto, true, new Date(), consentAttestationTerm.getText()));
@@ -424,7 +424,7 @@ public class ConsentServiceImpl implements ConsentService {
         consent.setShareSensitivityCategories(shareSensitivityCategories);
         consent.setSharePurposes(sharePurposes);
         //generate pdf
-        PatientDto patientDto = phrService.getPatientProfile();
+        PatientDto patientDto = umsService.getPatientProfile(patientId);
         consent.setSavedPdf(consentPdfGenerator.generate42CfrPart2Pdf(consent, patientDto, false, new Date(), consentAttestationTermRepository.findOne(Long.valueOf(1)).getText()));
 
         consentRepository.save(consent);
@@ -454,7 +454,7 @@ public class ConsentServiceImpl implements ConsentService {
             consent.setConsentStage(ConsentStage.REVOKED);
 
 
-            PatientDto patientDto = phrService.getPatientProfile();
+            PatientDto patientDto = umsService.getPatientProfile(patientId);
             consentRevocation.setConsentRevocationPdf(consentRevocationPdfGenerator.generateConsentRevocationPdf(consent, patientDto, new Date(), consentRevocationTerm.getText()));
 
             consent.setConsentRevocation(consentRevocation);
