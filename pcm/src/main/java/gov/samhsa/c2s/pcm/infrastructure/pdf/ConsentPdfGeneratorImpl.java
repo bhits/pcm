@@ -38,6 +38,8 @@ public class ConsentPdfGeneratorImpl implements ConsentPdfGenerator {
     @Autowired
     private PlsService plsService;
 
+    final String EMAIL="EMAIL";
+
 
     @Override
     public byte[] generate42CfrPart2Pdf(Consent consent, PatientDto patientProfile, boolean isSigned, Date attestedOn, String consentTerms) {
@@ -65,7 +67,7 @@ public class ConsentPdfGeneratorImpl implements ConsentPdfGenerator {
             document.add(iTextPdfService.createConsentReferenceNumberTable(consent));
 
             //Patient Name and date of birth
-            document.add(iTextPdfService.createPatientNameAndDOBTable(patientProfile.getFirstName(), patientProfile.getLastName(), patientProfile.getBirthDate()));
+            document.add(iTextPdfService.createPatientNameAndDOBTable(patientProfile.getFirstName(), patientProfile.getLastName(), java.sql.Date.valueOf(patientProfile.getBirthDate())));
 
             document.add(new Paragraph(" "));
 
@@ -101,10 +103,10 @@ public class ConsentPdfGeneratorImpl implements ConsentPdfGenerator {
             document.add(createStartAndEndDateTable(consent));
 
             document.add(new Paragraph(" "));
-
+            String email= patientProfile.getTelecoms().stream().filter(telecomDto -> telecomDto.getSystem().equalsIgnoreCase(EMAIL)).findFirst().get().getValue();
 
             //Signing details
-            document.add(iTextPdfService.createSigningDetailsTable(patientProfile.getFirstName(), patientProfile.getLastName(), patientProfile.getEmail(), isSigned, attestedOn));
+            document.add(iTextPdfService.createSigningDetailsTable(patientProfile.getFirstName(), patientProfile.getLastName(), email, isSigned, attestedOn));
 
 
             document.close();
@@ -333,8 +335,9 @@ public class ConsentPdfGeneratorImpl implements ConsentPdfGenerator {
 
         if (isSigned && consent != null && attestedOn != null) {
             Font patientInfoFont = new Font(Font.FontFamily.TIMES_ROMAN, 13, Font.BOLD);
+            String email= patientProfile.getTelecoms().stream().filter(telecomDto -> telecomDto.getSystem().equalsIgnoreCase(EMAIL)).findFirst().get().getValue();
 
-            PdfPCell attesterEmailCell = new PdfPCell(iTextPdfService.createCellContent("Email: ", patientInfoFont, patientProfile.getEmail(), null));
+            PdfPCell attesterEmailCell = new PdfPCell(iTextPdfService.createCellContent("Email: ", patientInfoFont, email, null));
             attesterEmailCell.setBorder(Rectangle.NO_BORDER);
             signingDetailsTable.addCell(attesterEmailCell);
 

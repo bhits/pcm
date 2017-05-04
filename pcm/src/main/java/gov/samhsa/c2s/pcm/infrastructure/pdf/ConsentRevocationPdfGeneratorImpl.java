@@ -22,6 +22,8 @@ public class ConsentRevocationPdfGeneratorImpl implements ConsentRevocationPdfGe
     @Autowired
     private ITextPdfService iTextPdfService;
 
+    final String EMAIL="EMAIL";
+
     @Override
     public byte[] generateConsentRevocationPdf(Consent consent, PatientDto patient, Date attestedOnDateTime, String consentRevocationTerm) {
         Assert.notNull(consent, "Consent is required.");
@@ -48,16 +50,17 @@ public class ConsentRevocationPdfGeneratorImpl implements ConsentRevocationPdfGe
             document.add(new Paragraph(" "));
 
             //Patient Name and date of birth
-            document.add(iTextPdfService.createPatientNameAndDOBTable(patient.getFirstName(), patient.getLastName(), patient.getBirthDate()));
+            document.add(iTextPdfService.createPatientNameAndDOBTable(patient.getFirstName(), patient.getLastName(),  java.sql.Date.valueOf(patient.getBirthDate())));
 
             document.add(new Paragraph(" "));
 
             document.add(new Paragraph(consentRevocationTerm));
 
             document.add(new Paragraph(" "));
+            String email= patient.getTelecoms().stream().filter(telecomDto -> telecomDto.getSystem().equalsIgnoreCase(EMAIL)).findFirst().get().getValue();
 
             //Signing details
-            document.add(iTextPdfService.createSigningDetailsTable(patient.getFirstName(), patient.getLastName(), patient.getEmail(), true, attestedOnDateTime));
+            document.add(iTextPdfService.createSigningDetailsTable(patient.getFirstName(), patient.getLastName(), email, true, attestedOnDateTime));
 
             document.close();
 
