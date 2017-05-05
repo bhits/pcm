@@ -122,7 +122,6 @@ public class FhirConsentServiceImpl implements FhirConsentService {
         Consent fhirConsent = new Consent();
 
         // set the id as a concatenated "OID.consentId"
-        //final String xdsDocumentEntryUniqueId = uniqueOidProvider.getOid();
         fhirConsent.setId(new IdType(c2sConsent.getId()));
 
         // Set patient reference and add patient as contained resource

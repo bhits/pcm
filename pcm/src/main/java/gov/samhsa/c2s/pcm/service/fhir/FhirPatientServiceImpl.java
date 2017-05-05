@@ -118,11 +118,11 @@ public class FhirPatientServiceImpl implements FhirPatientService {
                 .execute();
 
         if(patientSearchResponse == null || patientSearchResponse.getEntry().size() < 1){
-            throw new PatientNotFoundException("No patient found for the given MRN:" + patientMrn);
+            throw new PatientNotFoundException("No patient found for the given MRN:" + patientMrn + " in FHIR Server" + fhirClient.getServerBase());
         }
 
         if(patientSearchResponse.getEntry().size() > 1){
-            throw new MultiplePatientsFoundException("Multiple patients found for the given MRN:" + patientMrn);
+            throw new MultiplePatientsFoundException("Multiple patients found for the given MRN:" + patientMrn + " in FHIR Server" + fhirClient.getServerBase());
         }
 
         Patient patientObj = (Patient) patientSearchResponse.getEntry().get(0).getResource();
