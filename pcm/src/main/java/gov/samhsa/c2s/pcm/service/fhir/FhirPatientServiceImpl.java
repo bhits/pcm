@@ -1,8 +1,13 @@
 package gov.samhsa.c2s.pcm.service.fhir;
 
 
+import ca.uhn.fhir.rest.client.IGenericClient;
+import ca.uhn.fhir.rest.gclient.TokenClientParam;
 import gov.samhsa.c2s.pcm.config.FhirProperties;
 import gov.samhsa.c2s.pcm.infrastructure.dto.PatientDto;
+import gov.samhsa.c2s.pcm.service.exception.MultiplePatientsFoundException;
+import gov.samhsa.c2s.pcm.service.exception.PatientNotFoundException;
+import org.hl7.fhir.dstu3.model.Bundle;
 import org.hl7.fhir.dstu3.model.ContactPoint;
 import org.hl7.fhir.dstu3.model.Enumerations;
 import org.hl7.fhir.dstu3.model.Enumerations.AdministrativeGender;
@@ -20,6 +25,9 @@ public class FhirPatientServiceImpl implements FhirPatientService {
 
     @Autowired
     private FhirProperties fhirProperties;
+
+    @Autowired
+    private IGenericClient fhirClient;
 
     @Override
     public Patient getFhirPatient(PatientDto patientDto) {
@@ -98,5 +106,27 @@ public class FhirPatientServiceImpl implements FhirPatientService {
         }
     };
 
+    @Override
+    public String  getPatientResourceId(String patientMrnSystem,  String patientMrn){
 
+        Bundle patientSearchResponse = fhirClient.search()
+                .forResource(Patient.class)
+                .where(new TokenClientParam("identifier")
+                        .exactly()
+                        .systemAndCode(patientMrnSystem, patientMrn))
+                .returnBundle(Bundle.class)
+                .execute();
+
+        if(patientSearchResponse == null || patientSearchResponse.getEntry().size() < 1){
+            throw new PatientNotFoundException("No patient found for the given MRN:" + patientMrn + " in FHIR Server" + fhirClient.getServerBase());
+        }
+
+        if(patientSearchResponse.getEntry().size() > 1){
+            throw new MultiplePatientsFoundException("Multiple patients found for the given MRN:" + patientMrn + " in FHIR Server" + fhirClient.getServerBase());
+        }
+
+        Patient patientObj = (Patient) patientSearchResponse.getEntry().get(0).getResource();
+
+        return patientObj.getIdElement().getIdPart();
+    }
 }
