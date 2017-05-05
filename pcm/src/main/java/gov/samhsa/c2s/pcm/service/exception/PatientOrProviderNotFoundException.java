@@ -3,7 +3,7 @@ package gov.samhsa.c2s.pcm.service.exception;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
-@ResponseStatus(code=HttpStatus.NOT_FOUND, reason="Patient Not found in given  FHIR Server")
+@ResponseStatus(HttpStatus.NOT_FOUND)
 public class PatientOrProviderNotFoundException extends RuntimeException {
     public PatientOrProviderNotFoundException() {
     }
