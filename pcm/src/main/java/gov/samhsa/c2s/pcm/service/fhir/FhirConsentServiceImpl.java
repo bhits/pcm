@@ -122,19 +122,33 @@ public class FhirConsentServiceImpl implements FhirConsentService {
         Consent fhirConsent = new Consent();
 
         // set the id as a concatenated "OID.consentId"
-        final String xdsDocumentEntryUniqueId = uniqueOidProvider.getOid();
-        fhirConsent.setId(new IdType(xdsDocumentEntryUniqueId));
+        //final String xdsDocumentEntryUniqueId = uniqueOidProvider.getOid();
+        fhirConsent.setId(new IdType(c2sConsent.getId()));
 
         // Set patient reference and add patient as contained resource
-        Patient fhirPatient = fhirPatientService.getFhirPatient(patientDto);
-        fhirConsent.getPatient().setReference("#" + fhirPatient.getId());
-        fhirConsent.getContained().add(fhirPatient);
+        if(fhirProperties.isPatientReference()){
+            String patientResourceId = fhirPatientService.getPatientResourceId(fhirProperties.getMrn().getSystem(), patientDto.getMrn());
+            fhirConsent.getPatient().setReference("Patient/" + patientResourceId);
 
-        // Consent signature details
-        Reference consentSignature = new Reference();
-        consentSignature.setDisplay(fhirPatient.getNameFirstRep().getNameAsSingleString());
-        consentSignature.setReference("#" + patientDto.getId());
-        fhirConsent.getConsentor().add(consentSignature);
+            // Consent signature details
+            Reference consentSignature = new Reference();
+            consentSignature.setDisplay(patientDto.getFirstName() +" " +  patientDto.getLastName());
+            consentSignature.setReference("#" + patientDto.getMrn());
+            fhirConsent.getConsentor().add(consentSignature);
+
+        } else {
+            Patient fhirPatient = fhirPatientService.getFhirPatient(patientDto);
+            fhirConsent.getPatient().setReference("#" + fhirPatient.getId());
+            fhirConsent.getContained().add(fhirPatient);
+
+            // Consent signature details
+            Reference consentSignature = new Reference();
+            consentSignature.setDisplay(fhirPatient.getNameFirstRep().getNameAsSingleString());
+            consentSignature.setReference("#" + patientDto.getId());
+            fhirConsent.getConsentor().add(consentSignature);
+
+        }
+
 
         // consent status
         fhirConsent.setStatus(Consent.ConsentStatus.ACTIVE);
@@ -310,6 +324,8 @@ public class FhirConsentServiceImpl implements FhirConsentService {
         return fhirConsent;
 
     }
+
+
 
 
     private void logFHIRConsent(Consent fhirConsent) {

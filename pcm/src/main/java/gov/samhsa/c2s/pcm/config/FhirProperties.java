@@ -16,6 +16,8 @@ public class FhirProperties {
     private Npi npi;
     private Pou pou;
     private Mrn mrn;
+    @NotNull
+    private boolean patientReference;
 
     @Data
     public static class Identifier {

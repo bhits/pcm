@@ -43,6 +43,7 @@ c2s:
         system: https://bhits.github.io/consent2share/
         oid: urn:oid:1.3.6.1.4.1.21367.13.20.200
         label: MRN
+      patientReference: false
 ---
 spring.profiles: standalone-ssl
 spring:
