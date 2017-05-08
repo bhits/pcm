@@ -57,4 +57,4 @@ c2s:
     consent:
       publish:
         # configure fhir server base url
-        serverUrl: http://fhir.c2s.com/hapi-fhir-jpaserver/baseStu3
+        serverUrl: http://hapi-fhir.c2s.com:8080/hapi-fhir-jpaserver/baseStu3
