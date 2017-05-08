@@ -19,7 +19,9 @@ public class PurposeRestController {
     private PurposeService purposeService;
 
     @GetMapping("/purposes")
-    public List<PurposeDto> getPurposes(@RequestHeader("Accept-Language") Locale locale) {
-        return purposeService.getPurposes(locale);
+    public List<PurposeDto> getPurposes() {
+        List<PurposeDto> temp =  purposeService.getPurposes();
+
+        return temp;
     }
 }
