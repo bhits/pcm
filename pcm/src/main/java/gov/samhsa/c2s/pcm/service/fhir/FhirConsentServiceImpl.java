@@ -132,7 +132,7 @@ public class FhirConsentServiceImpl implements FhirConsentService {
             // Consent signature details
             Reference consentSignature = new Reference();
             consentSignature.setDisplay(patientDto.getFirstName() +" " +  patientDto.getLastName());
-            consentSignature.setReference("#" + patientDto.getMrn());
+            consentSignature.setReference("Patient/" + patientResourceId);
             fhirConsent.getConsentor().add(consentSignature);
 
         } else {
