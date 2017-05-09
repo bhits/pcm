@@ -5,11 +5,11 @@ PCM provides service to manage patient provider lists and enables patients to ma
 
 # Supported Source Code Tags and Current `Dockerfile` Link
 
-[`2.0.0 (latest)`](https://github.com/bhits/pcm/releases/tag/2.0.0)
+[`2.1.0 (latest)`](https://github.com/bhits-dev/pcm/releases/tag/2.1.0), [`2.0.0`](https://github.com/bhits-dev/pcm/releases/tag/2.0.0)
 
-[`Current Dockerfile`](https://github.com/bhits/pcm/blob/master/pcm/src/main/docker/Dockerfile)
+[`Current Dockerfile`](https://github.com/bhits-dev/pcm/blob/master/pcm/src/main/docker/Dockerfile)
 
-For more information about this image, the source code, and its history, please see the [GitHub repository](https://github.com/bhits/pcm).
+For more information about this image, the source code, and its history, please see the [GitHub repository](https://github.com/bhits-dev/pcm).
 
 # What is PCM?
 
@@ -29,19 +29,19 @@ For more information and related downloads for Consent2Share, please visit [Cons
 
 ## Start a PCM instance
 
-Be sure to familiarize yourself with the repository's [README.md](https://github.com/bhits/pcm) file before starting the instance.
+Be sure to familiarize yourself with the repository's [README.md](https://github.com/bhits-dev/pcm) file before starting the instance.
 
-`docker run  --name pcm -d bhits/pcm:latest <additional program arguments>`
+`docker run  --name pcm -d bhitsdev/pcm:latest <additional program arguments>`
 
-*NOTE: In order for this Service to fully function as a microservice in the Consent2Share application, it is required to setup the dependency microservices and the support level infrastructure. Please refer to the Consent2Share Deployment Guide in the corresponding Consent2Share release (see [Consent2Share Releases Page](https://github.com/bhits/consent2share/releases)) for instructions to setup the Consent2Share infrastructure.*
+*NOTE: In order for this Service to fully function as a microservice in the Consent2Share application, it is required to setup the dependency microservices and the support level infrastructure. Please refer to the Consent2Share Deployment Guide in the corresponding Consent2Share release (see [Consent2Share Releases Page](https://github.com/bhits-dev/consent2share/releases)) for instructions to setup the Consent2Share infrastructure.*
 
 ## Configure
 
 The Spring profiles `application-default` and `docker` are activated by default when building images.
 
-This service can run with the default configuration which is from three places: `bootstrap.yml`, `application.yml`, and the data which the [`Configuration Server`](https://github.com/bhits/config-server) reads from the `Configuration Data Git Repository`. Both `bootstrap.yml` and `application.yml` files are located in the class path of the running application.
+This service can run with the default configuration which is from three places: `bootstrap.yml`, `application.yml`, and the data which the [`Configuration Server`](https://github.com/bhits-dev/config-server) reads from the `Configuration Data Git Repository`. Both `bootstrap.yml` and `application.yml` files are located in the class path of the running application.
 
-`docker run -d bhits/pcm:latest --spring.datasource.password=strongpassword`
+`docker run -d bhitsdev/pcm:latest --spring.datasource.password=strongpassword`
 
 ## Environment Variables
 
@@ -51,19 +51,19 @@ When you start the PCM image, you can edit the configuration of the PCM instance
 
 This environment variable is used to setup which jar file will run. you need mount the jar file to the root of container.
 
-`docker run --name pcm -e JAR_FILE="pcm-latest.jar" -v "/path/on/dockerhost/pcm-latest.jar:/pcm-latest.jar" -d bhits/pcm:latest`
+`docker run --name pcm -e JAR_FILE="pcm-latest.jar" -v "/path/on/dockerhost/pcm-latest.jar:/pcm-latest.jar" -d bhitsdev/pcm:latest`
 
 ### JAVA_OPTS 
 
 This environment variable is used to setup JVM argument, such as memory configuration.
 
-`docker run --name pcm -e "JAVA_OPTS=-Xms512m -Xmx700m -Xss1m" -d bhits/pcm:latest`
+`docker run --name pcm -e "JAVA_OPTS=-Xms512m -Xmx700m -Xss1m" -d bhitsdev/pcm:latest`
 
 ### DEFAULT_PROGRAM_ARGS 
 
 This environment variable is used to setup an application argument. The default value is "--spring.profiles.active=application-default, docker".
 
-`docker run --name pcm -e DEFAULT_PROGRAM_ARGS="--spring.profiles.active=application-default,ssl,docker" -d bhits/pcm:latest`
+`docker run --name pcm -e DEFAULT_PROGRAM_ARGS="--spring.profiles.active=application-default,ssl,docker" -d bhitsdev/pcm:latest`
 
 # Supported Docker versions
 
@@ -75,14 +75,14 @@ Please see the [Docker installation documentation](https://docs.docker.com/engin
 
 # License
 
-View [license](https://github.com/bhits/pcm/blob/master/LICENSE) information for the software contained in this image.
+View [license](https://github.com/bhits-dev/pcm/blob/master/LICENSE) information for the software contained in this image.
 
 # User Feedback
 
 ## Documentation 
 
-Documentation for this image is stored in the [bhits/pcm](https://github.com/bhits/pcm) GitHub repository. Be sure to familiarize yourself with the repository's README.md file before attempting a pull request.
+Documentation for this image is stored in the [bhitsdev/pcm](https://github.com/bhits-dev/pcm) GitHub repository. Be sure to familiarize yourself with the repository's README.md file before attempting a pull request.
 
 ## Issues
 
-If you have any problems with or questions about this image, please contact us through a [GitHub issue](https://github.com/bhits/pcm/issues).
+If you have any problems with or questions about this image, please contact us through a [GitHub issue](https://github.com/bhits-dev/pcm/issues).
