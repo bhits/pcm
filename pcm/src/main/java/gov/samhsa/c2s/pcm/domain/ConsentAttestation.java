@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.envers.Audited;
 import org.hibernate.envers.NotAudited;
+import org.springframework.data.annotation.CreatedDate;
 
 import javax.persistence.Basic;
 import javax.persistence.CascadeType;
@@ -19,6 +20,7 @@ import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.validation.constraints.NotNull;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 @Entity
@@ -35,6 +37,13 @@ public class ConsentAttestation {
     @OneToOne
     @NotNull
     private Consent consent;
+
+    @CreatedDate
+    private Date attestedDate;
+
+    private String attestedBy;
+
+    private boolean attestedByPatient;
 
     @ManyToOne
     @NotNull
