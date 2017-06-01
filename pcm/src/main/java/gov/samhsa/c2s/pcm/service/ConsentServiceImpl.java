@@ -142,8 +142,7 @@ public class ConsentServiceImpl implements ConsentService {
         final List<DetailedConsentDto> detailedConsentDtos = consents.stream()
                 .map(this::mapToDetailedConsentDto)
                 .collect(toList());
-        Page<DetailedConsentDto> newPage = new PageImpl<>(detailedConsentDtos, pageRequest, consentsPage.getTotalElements());
-        return newPage;
+        return new PageImpl<>(detailedConsentDtos, pageRequest, consentsPage.getTotalElements());
     }
 
     @Override
@@ -579,11 +578,9 @@ public class ConsentServiceImpl implements ConsentService {
     public List<SensitivityCategoryDto> getSharedSensitivityCategories(String patientId, Long consentId) {
         final Consent consent = consentRepository.findOneByIdAndPatientId(consentId, patientId).orElseThrow(ConsentNotFoundException::new);
 
-        List<SensitivityCategoryDto> shareSensitivityCategories = consent.getShareSensitivityCategories().stream()
+        return consent.getShareSensitivityCategories().stream()
                 .map(sensitivityCategory -> modelMapper.map(sensitivityCategory, SensitivityCategoryDto.class))
                 .collect(toList());
-
-        return shareSensitivityCategories;
     }
 
 
