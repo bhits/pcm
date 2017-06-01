@@ -108,11 +108,39 @@ public class ConsentServiceImpl implements ConsentService {
 
     @Override
     @Transactional
-    public Page<DetailedConsentDto> getConsents(String patientId, Optional<Integer> page, Optional<Integer> size) {
+    public Page<DetailedConsentDto> getConsents(String patientId, Optional<String> purposeOfUse,
+                                                Optional<Long> fromProvider, Optional<Long> toProvider,
+                                                Optional<Integer> page, Optional<Integer> size) {
         final PageRequest pageRequest = new PageRequest(page.filter(p -> p >= 0).orElse(0),
                 size.filter(s -> s > 0 && s <= pcmProperties.getConsent().getPagination().getMaxSize()).orElse(pcmProperties.getConsent().getPagination().getDefaultSize()));
         final Page<Consent> consentsPage = consentRepository.findAllByPatientId(patientId, pageRequest);
-        final List<Consent> consents = consentsPage.getContent();
+        List<Consent> consents = consentsPage.getContent();
+
+        if (purposeOfUse.isPresent()) {
+            consents = consents.stream().filter(oneConsent ->
+                    oneConsent.getSharePurposes().stream()
+                            .anyMatch(onePurpose ->
+                                    onePurpose.getDisplay()
+                                            .equalsIgnoreCase(purposeOfUse.get()))
+            ).collect(toList());
+        }
+
+        if (fromProvider.isPresent()) {
+            consents = consents.stream().filter(oneConsent ->
+                    oneConsent.getFromProviders().stream()
+                            .anyMatch(oneProvider ->
+                                    oneProvider.getId().equals(fromProvider.get()))
+            ).collect(toList());
+        }
+
+        if (toProvider.isPresent()) {
+            consents = consents.stream().filter(oneConsent ->
+                    oneConsent.getToProviders().stream()
+                            .anyMatch(oneProvider ->
+                                    oneProvider.getId().equals(toProvider.get()))
+            ).collect(toList());
+        }
+
         final List<DetailedConsentDto> detailedConsentDtos = consents.stream()
                 .map(this::mapToDetailedConsentDto)
                 .collect(toList());
@@ -352,7 +380,7 @@ public class ConsentServiceImpl implements ConsentService {
             consentAttestation.setConsentAttestationPdf(consentPdfGenerator.generate42CfrPart2Pdf(consent, patientDto, true, new Date(), consentAttestationTerm.getText()));
 
             // generate FHIR Consent and publish consent to FHIR server if enabled
-            consentAttestation.setFhirConsent(fhirConsentService.getAttestedFhirConsent(consent, patientDto,pcmProperties.getConsent().getPublish().isEnabled()));
+            consentAttestation.setFhirConsent(fhirConsentService.getAttestedFhirConsent(consent, patientDto, pcmProperties.getConsent().getPublish().isEnabled()));
 
             consentRepository.save(consent);
 
@@ -553,7 +581,7 @@ public class ConsentServiceImpl implements ConsentService {
     }
 
     @Override
-    public List<SensitivityCategoryDto> getSharedSensitivityCategories(String patientId, Long consentId){
+    public List<SensitivityCategoryDto> getSharedSensitivityCategories(String patientId, Long consentId) {
         final Consent consent = consentRepository.findOneByIdAndPatientId(consentId, patientId).orElseThrow(ConsentNotFoundException::new);
 
         List<SensitivityCategoryDto> shareSensitivityCategories = consent.getShareSensitivityCategories().stream()

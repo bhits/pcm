@@ -9,7 +9,7 @@ import java.util.Optional;
 
 public interface ConsentService {
     @Transactional
-    Page<DetailedConsentDto> getConsents(String patientId, Optional<Integer> page, Optional<Integer> size);
+    Page<DetailedConsentDto> getConsents(String patientId, Optional<String> purposeOfUse, Optional<Long> fromProvider, Optional<Long> toProvider, Optional<Integer> page, Optional<Integer> size);
 
     @Transactional
     void saveConsent(String patientId, ConsentDto consentDto);

@@ -9,11 +9,19 @@ import gov.samhsa.c2s.pcm.service.dto.SensitivityCategoryDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.Valid;
 import java.util.List;
-import java.util.Locale;
 import java.util.Optional;
 
 @RestController
@@ -25,9 +33,12 @@ public class ConsentRestController {
 
     @GetMapping("/consents")
     public Page<DetailedConsentDto> getConsents(@PathVariable String patientId,
+                                                @RequestParam(value = "purposeOfUse") Optional<String> purposeOfUse,
+                                                @RequestParam(value = "fromProvider") Optional<Long> fromProvider,
+                                                @RequestParam(value = "toProvider") Optional<Long> toProvider,
                                                 @RequestParam Optional<Integer> page,
                                                 @RequestParam Optional<Integer> size) {
-        return consentService.getConsents(patientId, page, size);
+        return consentService.getConsents(patientId, purposeOfUse, fromProvider, toProvider, page, size);
     }
 
     @PostMapping("/consents")
