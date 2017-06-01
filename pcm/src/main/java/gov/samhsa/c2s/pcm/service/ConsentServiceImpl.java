@@ -461,9 +461,6 @@ public class ConsentServiceImpl implements ConsentService {
     @Override
     public void revokeConsent(String patientId, Long consentId, ConsentRevocationDto consentRevocationDto) {
 
-        //get patient
-        final Patient patient = patientRepository.saveAndGet(patientId);
-
         Consent consent = consentRepository.findOneByIdAndPatientIdAndConsentAttestationIsNotNullAndConsentRevocationIsNull(consentId, patientId).orElseThrow(ConsentNotFoundException::new);
 
         ConsentRevocationTerm consentRevocationTerm = consentRevocationTermRepository.findOne(Long.valueOf(1));
