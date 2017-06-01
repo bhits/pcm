@@ -321,14 +321,14 @@ public class ConsentServiceImpl implements ConsentService {
             //save fromPractitioners
             List<Practitioner> fromPractitioners = fromProviderDtos.stream()
                     .filter(flattenedSmallProviderDto -> flattenedSmallProviderDto.getEntityTypeDisplayName().equals("Individual"))
-                    .map(flattenedSmallProviderDto -> mapFlattenedSmallProviderToPractitioner(flattenedSmallProviderDto, patient, consent))
+                    .map(flattenedSmallProviderDto -> mapFlattenedSmallProviderToPractitioner(flattenedSmallProviderDto, patient))
                     .collect(toList());
 
 
             //save fromOrganizations
             List<Organization> fromOrganizations = fromProviderDtos.stream()
                     .filter(flattenedSmallProviderDto -> flattenedSmallProviderDto.getEntityTypeDisplayName().equals("Organization"))
-                    .map(flattenedSmallProviderDto -> mapFlattenedSmallProviderToOrganization(flattenedSmallProviderDto, patient, consent))
+                    .map(flattenedSmallProviderDto -> mapFlattenedSmallProviderToOrganization(flattenedSmallProviderDto, patient))
                     .collect(toList());
 
 
@@ -342,13 +342,13 @@ public class ConsentServiceImpl implements ConsentService {
             //save toPractitioners
             List<Practitioner> toPractitioners = toProviderDtos.stream()
                     .filter(flattenedSmallProviderDto -> flattenedSmallProviderDto.getEntityTypeDisplayName().equals("Individual"))
-                    .map(flattenedSmallProviderDto -> mapFlattenedSmallProviderToPractitioner(flattenedSmallProviderDto, patient, consent))
+                    .map(flattenedSmallProviderDto -> mapFlattenedSmallProviderToPractitioner(flattenedSmallProviderDto, patient))
                     .collect(toList());
 
             //save toOrganizations
             List<Organization> toOrganizations = toProviderDtos.stream()
                     .filter(flattenedSmallProviderDto -> flattenedSmallProviderDto.getEntityTypeDisplayName().equals("Organization"))
-                    .map(flattenedSmallProviderDto -> mapFlattenedSmallProviderToOrganization(flattenedSmallProviderDto, patient, consent))
+                    .map(flattenedSmallProviderDto -> mapFlattenedSmallProviderToOrganization(flattenedSmallProviderDto, patient))
                     .collect(toList());
 
             ConsentAttestationTerm consentAttestationTerm = consentAttestationTermRepository.findOne(Long.valueOf(1));
@@ -385,7 +385,7 @@ public class ConsentServiceImpl implements ConsentService {
         } else throw new BadRequestException();
     }
 
-    private Practitioner mapFlattenedSmallProviderToPractitioner(FlattenedSmallProviderDto flattenedSmallProviderDto, Patient patient, Consent consent) {
+    private Practitioner mapFlattenedSmallProviderToPractitioner(FlattenedSmallProviderDto flattenedSmallProviderDto, Patient patient) {
         return Practitioner.builder().lastName(flattenedSmallProviderDto.getLastName())
                 .firstName(flattenedSmallProviderDto.getFirstName())
                 .middleName(flattenedSmallProviderDto.getMiddleName())
@@ -402,7 +402,7 @@ public class ConsentServiceImpl implements ConsentService {
     }
 
 
-    private Organization mapFlattenedSmallProviderToOrganization(FlattenedSmallProviderDto flattenedSmallProviderDto, Patient patient, Consent consent) {
+    private Organization mapFlattenedSmallProviderToOrganization(FlattenedSmallProviderDto flattenedSmallProviderDto, Patient patient) {
         return Organization.builder().name(flattenedSmallProviderDto.getOrganizationName())
                 .address(Address.builder().line1(flattenedSmallProviderDto.getFirstLinePracticeLocationAddress())
                         .line2(flattenedSmallProviderDto.getSecondLinePracticeLocationAddress())
