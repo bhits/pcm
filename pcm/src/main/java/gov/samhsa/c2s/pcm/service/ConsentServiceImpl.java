@@ -1,6 +1,5 @@
 package gov.samhsa.c2s.pcm.service;
 
-import gov.samhsa.c2s.pcm.config.FhirProperties;
 import gov.samhsa.c2s.pcm.config.PcmProperties;
 import gov.samhsa.c2s.pcm.domain.Consent;
 import gov.samhsa.c2s.pcm.domain.ConsentAttestation;
@@ -15,7 +14,6 @@ import gov.samhsa.c2s.pcm.domain.Patient;
 import gov.samhsa.c2s.pcm.domain.PatientRepository;
 import gov.samhsa.c2s.pcm.domain.Practitioner;
 import gov.samhsa.c2s.pcm.domain.Provider;
-import gov.samhsa.c2s.pcm.domain.ProviderRepository;
 import gov.samhsa.c2s.pcm.domain.Purpose;
 import gov.samhsa.c2s.pcm.domain.PurposeRepository;
 import gov.samhsa.c2s.pcm.domain.SensitivityCategory;
@@ -85,14 +83,12 @@ public class ConsentServiceImpl implements ConsentService {
     private final PcmProperties pcmProperties;
     private final UmsService umsService;
     private final PlsService plsService;
-    private final ProviderRepository providerRepository;
     private final PurposeRepository purposeRepository;
     private final SensitivityCategoryRepository sensitivityCategoryRepository;
-    private final FhirProperties fhirProperties;
     private final FhirConsentService fhirConsentService;
 
     @Autowired
-    public ConsentServiceImpl(ConsentAttestationTermRepository consentAttestationTermRepository, ConsentPdfGenerator consentPdfGenerator, ConsentRepository consentRepository, ConsentRevocationPdfGenerator consentRevocationPdfGenerator, ConsentRevocationTermRepository consentRevocationTermRepository, ModelMapper modelMapper, PatientRepository patientRepository, PcmProperties pcmProperties, UmsService umsService, PlsService plsService, ProviderRepository providerRepository, PurposeRepository purposeRepository, SensitivityCategoryRepository sensitivityCategoryRepository, FhirProperties fhirProperties, FhirConsentService fhirConsentService) {
+    public ConsentServiceImpl(ConsentAttestationTermRepository consentAttestationTermRepository, ConsentPdfGenerator consentPdfGenerator, ConsentRepository consentRepository, ConsentRevocationPdfGenerator consentRevocationPdfGenerator, ConsentRevocationTermRepository consentRevocationTermRepository, ModelMapper modelMapper, PatientRepository patientRepository, PcmProperties pcmProperties, UmsService umsService, PlsService plsService, PurposeRepository purposeRepository, SensitivityCategoryRepository sensitivityCategoryRepository, FhirConsentService fhirConsentService) {
         this.consentAttestationTermRepository = consentAttestationTermRepository;
         this.consentPdfGenerator = consentPdfGenerator;
         this.consentRepository = consentRepository;
@@ -103,10 +99,8 @@ public class ConsentServiceImpl implements ConsentService {
         this.pcmProperties = pcmProperties;
         this.umsService = umsService;
         this.plsService = plsService;
-        this.providerRepository = providerRepository;
         this.purposeRepository = purposeRepository;
         this.sensitivityCategoryRepository = sensitivityCategoryRepository;
-        this.fhirProperties = fhirProperties;
         this.fhirConsentService = fhirConsentService;
     }
 
