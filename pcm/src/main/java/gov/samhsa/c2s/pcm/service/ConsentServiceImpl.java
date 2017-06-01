@@ -75,36 +75,40 @@ import static java.util.stream.Collectors.toSet;
 @Service
 public class ConsentServiceImpl implements ConsentService {
 
+    private final ConsentAttestationTermRepository consentAttestationTermRepository;
+    private final ConsentPdfGenerator consentPdfGenerator;
+    private final ConsentRepository consentRepository;
+    private final ConsentRevocationPdfGenerator consentRevocationPdfGenerator;
+    private final ConsentRevocationTermRepository consentRevocationTermRepository;
+    private final ModelMapper modelMapper;
+    private final PatientRepository patientRepository;
+    private final PcmProperties pcmProperties;
+    private final UmsService umsService;
+    private final PlsService plsService;
+    private final ProviderRepository providerRepository;
+    private final PurposeRepository purposeRepository;
+    private final SensitivityCategoryRepository sensitivityCategoryRepository;
+    private final FhirProperties fhirProperties;
+    private final FhirConsentService fhirConsentService;
+
     @Autowired
-    private ConsentAttestationTermRepository consentAttestationTermRepository;
-    @Autowired
-    private ConsentPdfGenerator consentPdfGenerator;
-    @Autowired
-    private ConsentRepository consentRepository;
-    @Autowired
-    private ConsentRevocationPdfGenerator consentRevocationPdfGenerator;
-    @Autowired
-    private ConsentRevocationTermRepository consentRevocationTermRepository;
-    @Autowired
-    private ModelMapper modelMapper;
-    @Autowired
-    private PatientRepository patientRepository;
-    @Autowired
-    private PcmProperties pcmProperties;
-    @Autowired
-    private UmsService umsService;
-    @Autowired
-    private PlsService plsService;
-    @Autowired
-    private ProviderRepository providerRepository;
-    @Autowired
-    private PurposeRepository purposeRepository;
-    @Autowired
-    private SensitivityCategoryRepository sensitivityCategoryRepository;
-    @Autowired
-    private FhirProperties fhirProperties;
-    @Autowired
-    private FhirConsentService fhirConsentService;
+    public ConsentServiceImpl(ConsentAttestationTermRepository consentAttestationTermRepository, ConsentPdfGenerator consentPdfGenerator, ConsentRepository consentRepository, ConsentRevocationPdfGenerator consentRevocationPdfGenerator, ConsentRevocationTermRepository consentRevocationTermRepository, ModelMapper modelMapper, PatientRepository patientRepository, PcmProperties pcmProperties, UmsService umsService, PlsService plsService, ProviderRepository providerRepository, PurposeRepository purposeRepository, SensitivityCategoryRepository sensitivityCategoryRepository, FhirProperties fhirProperties, FhirConsentService fhirConsentService) {
+        this.consentAttestationTermRepository = consentAttestationTermRepository;
+        this.consentPdfGenerator = consentPdfGenerator;
+        this.consentRepository = consentRepository;
+        this.consentRevocationPdfGenerator = consentRevocationPdfGenerator;
+        this.consentRevocationTermRepository = consentRevocationTermRepository;
+        this.modelMapper = modelMapper;
+        this.patientRepository = patientRepository;
+        this.pcmProperties = pcmProperties;
+        this.umsService = umsService;
+        this.plsService = plsService;
+        this.providerRepository = providerRepository;
+        this.purposeRepository = purposeRepository;
+        this.sensitivityCategoryRepository = sensitivityCategoryRepository;
+        this.fhirProperties = fhirProperties;
+        this.fhirConsentService = fhirConsentService;
+    }
 
     @Override
     @Transactional
