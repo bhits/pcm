@@ -10,6 +10,8 @@ import lombok.NoArgsConstructor;
 import lombok.ToString;
 import org.hibernate.envers.Audited;
 import org.hibernate.validator.constraints.ScriptAssert;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
 
 import javax.persistence.Basic;
 import javax.persistence.CascadeType;
@@ -27,6 +29,7 @@ import javax.validation.constraints.Future;
 import javax.validation.constraints.NotNull;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 @Entity
@@ -45,6 +48,17 @@ public class Consent {
     @Id
     @GeneratedValue
     private Long id;
+
+    @CreatedDate
+    private Date createdDate;
+
+    private String createdBy;
+
+    @LastModifiedDate
+    private Date lastUpdatedDate;
+
+    private String lastUpdatedBy;
+
 
     @ManyToOne
     @JsonIgnore
