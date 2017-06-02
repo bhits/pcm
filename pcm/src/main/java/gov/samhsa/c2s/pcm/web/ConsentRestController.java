@@ -33,7 +33,7 @@ public class ConsentRestController {
 
     @GetMapping("/consents")
     public Page<DetailedConsentDto> getConsents(@PathVariable String patientId,
-                                                @RequestParam(value = "purposeOfUse") Optional<String> purposeOfUse,
+                                                @RequestParam(value = "purposeOfUse") Optional<Long> purposeOfUse,
                                                 @RequestParam(value = "fromProvider") Optional<Long> fromProvider,
                                                 @RequestParam(value = "toProvider") Optional<Long> toProvider,
                                                 @RequestParam Optional<Integer> page,

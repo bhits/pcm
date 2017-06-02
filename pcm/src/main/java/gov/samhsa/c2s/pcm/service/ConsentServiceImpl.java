@@ -106,7 +106,7 @@ public class ConsentServiceImpl implements ConsentService {
 
     @Override
     @Transactional
-    public Page<DetailedConsentDto> getConsents(String patientId, Optional<String> purposeOfUse,
+    public Page<DetailedConsentDto> getConsents(String patientId, Optional<Long> purposeOfUse,
                                                 Optional<Long> fromProvider, Optional<Long> toProvider,
                                                 Optional<Integer> page, Optional<Integer> size) {
         final PageRequest pageRequest = new PageRequest(page.filter(p -> p >= 0).orElse(0),
@@ -118,8 +118,7 @@ public class ConsentServiceImpl implements ConsentService {
             consents = consents.stream().filter(oneConsent ->
                     oneConsent.getSharePurposes().stream()
                             .anyMatch(onePurpose ->
-                                    onePurpose.getDisplay()
-                                            .equalsIgnoreCase(purposeOfUse.get()))
+                                    onePurpose.getId().equals(purposeOfUse.get()))
             ).collect(toList());
         }
 
