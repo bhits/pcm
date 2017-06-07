@@ -145,7 +145,7 @@ public class ConsentServiceImpl implements ConsentService {
     }
 
     @Override
-    public void saveConsent(String patientId, ConsentDto consentDto) {
+    public void saveConsent(String patientId, ConsentDto consentDto, Optional<String> createdBy, Optional<String> lastUpdatedBy) {
         final Patient patient = patientRepository.saveAndGet(patientId);
         final List<Provider> fromProviders = consentDto.getFromProviders().getIdentifiers().stream()
                 .map(toProvider(patient))
@@ -198,6 +198,10 @@ public class ConsentServiceImpl implements ConsentService {
                 .consentStage(ConsentStage.SAVED)
                 .consentReferenceId(RandomStringUtils
                         .randomAlphanumeric(10))
+                .createdBy(createdBy.isPresent()? createdBy.get():"")
+                .lastUpdatedBy(lastUpdatedBy.isPresent()?lastUpdatedBy.get():"")
+                .createdDate(new Date())
+                .lastUpdatedDate(new Date())
                 .build();
 
         //generate pdf
