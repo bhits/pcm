@@ -460,7 +460,7 @@ public class ConsentServiceImpl implements ConsentService {
 
             consent.setConsentRevocation(consentRevocation);
 
-            //revoke consent on FHIR server
+            //revoke consent on FHIR server if enabled
             if (pcmProperties.getConsent().getPublish().isEnabled()) {
                 consent.getConsentAttestation().setFhirConsent(fhirConsentService.getRevokedFhirConsent(consent, patientDto));
             }
