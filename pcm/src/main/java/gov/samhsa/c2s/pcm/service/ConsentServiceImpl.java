@@ -145,7 +145,7 @@ public class ConsentServiceImpl implements ConsentService {
     }
 
     @Override
-    public void saveConsent(String patientId, ConsentDto consentDto, Optional<String> createdBy, Optional<String> lastUpdatedBy) {
+    public void saveConsent(String patientId, ConsentDto consentDto, Optional<String> createdBy) {
         final Patient patient = patientRepository.saveAndGet(patientId);
         final List<Provider> fromProviders = consentDto.getFromProviders().getIdentifiers().stream()
                 .map(toProvider(patient))
