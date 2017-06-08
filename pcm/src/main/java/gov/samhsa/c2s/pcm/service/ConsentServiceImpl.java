@@ -429,7 +429,7 @@ public class ConsentServiceImpl implements ConsentService {
 
 
     @Override
-    public void updateConsent(String patientId, Long consentId, ConsentDto consentDto, Optional<String> createdBy, Optional<String> lastUpdatedBy) {
+    public void updateConsent(String patientId, Long consentId, ConsentDto consentDto, Optional<String> lastUpdatedBy) {
         final Patient patient = patientRepository.saveAndGet(patientId);
         Consent consent = consentRepository.findOneByIdAndPatientIdAndConsentAttestationIsNullAndConsentRevocationIsNull(consentId, patientId).orElseThrow(ConsentNotFoundException::new);
 
@@ -452,9 +452,7 @@ public class ConsentServiceImpl implements ConsentService {
         consent.setToProviders(toProviders);
         consent.setShareSensitivityCategories(shareSensitivityCategories);
         consent.setSharePurposes(sharePurposes);
-        consent.setCreatedBy(createdBy.orElse(null));
-        consent.setLastUpdatedBy(createdBy.orElse(null));
-        consent.setCreatedDate(new Date());
+        consent.setLastUpdatedBy(lastUpdatedBy.orElse(null));
         consent.setLastUpdatedDate(new Date());
 
         //generate pdf
