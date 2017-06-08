@@ -17,9 +17,9 @@ public class ValueSetCategoryDto {
     private String code;
 
     /**
-     * The display name.
+     * The name.
      */
-    private String displayName;
+    private String name;
 
     /**
      * The description.
