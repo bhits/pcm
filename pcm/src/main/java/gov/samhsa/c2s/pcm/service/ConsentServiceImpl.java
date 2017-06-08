@@ -2,24 +2,7 @@ package gov.samhsa.c2s.pcm.service;
 
 import gov.samhsa.c2s.pcm.config.FhirProperties;
 import gov.samhsa.c2s.pcm.config.PcmProperties;
-import gov.samhsa.c2s.pcm.domain.Consent;
-import gov.samhsa.c2s.pcm.domain.ConsentAttestation;
-import gov.samhsa.c2s.pcm.domain.ConsentAttestationTerm;
-import gov.samhsa.c2s.pcm.domain.ConsentAttestationTermRepository;
-import gov.samhsa.c2s.pcm.domain.ConsentRepository;
-import gov.samhsa.c2s.pcm.domain.ConsentRevocation;
-import gov.samhsa.c2s.pcm.domain.ConsentRevocationTerm;
-import gov.samhsa.c2s.pcm.domain.ConsentRevocationTermRepository;
-import gov.samhsa.c2s.pcm.domain.Organization;
-import gov.samhsa.c2s.pcm.domain.Patient;
-import gov.samhsa.c2s.pcm.domain.PatientRepository;
-import gov.samhsa.c2s.pcm.domain.Practitioner;
-import gov.samhsa.c2s.pcm.domain.Provider;
-import gov.samhsa.c2s.pcm.domain.ProviderRepository;
-import gov.samhsa.c2s.pcm.domain.Purpose;
-import gov.samhsa.c2s.pcm.domain.PurposeRepository;
-import gov.samhsa.c2s.pcm.domain.SensitivityCategory;
-import gov.samhsa.c2s.pcm.domain.SensitivityCategoryRepository;
+import gov.samhsa.c2s.pcm.domain.*;
 import gov.samhsa.c2s.pcm.domain.valueobject.Address;
 import gov.samhsa.c2s.pcm.domain.valueobject.ConsentStage;
 import gov.samhsa.c2s.pcm.domain.valueobject.Identifier;
@@ -29,26 +12,8 @@ import gov.samhsa.c2s.pcm.infrastructure.dto.FlattenedSmallProviderDto;
 import gov.samhsa.c2s.pcm.infrastructure.dto.PatientDto;
 import gov.samhsa.c2s.pcm.infrastructure.pdf.ConsentPdfGenerator;
 import gov.samhsa.c2s.pcm.infrastructure.pdf.ConsentRevocationPdfGenerator;
-import gov.samhsa.c2s.pcm.service.dto.AbstractProviderDto;
-import gov.samhsa.c2s.pcm.service.dto.ConsentAttestationDto;
-import gov.samhsa.c2s.pcm.service.dto.ConsentDto;
-import gov.samhsa.c2s.pcm.service.dto.ConsentRevocationDto;
-import gov.samhsa.c2s.pcm.service.dto.ConsentTermDto;
-import gov.samhsa.c2s.pcm.service.dto.ContentDto;
-import gov.samhsa.c2s.pcm.service.dto.DetailedConsentDto;
-import gov.samhsa.c2s.pcm.service.dto.IdentifierDto;
-import gov.samhsa.c2s.pcm.service.dto.IdentifiersDto;
-import gov.samhsa.c2s.pcm.service.dto.OrganizationDto;
-import gov.samhsa.c2s.pcm.service.dto.PractitionerDto;
-import gov.samhsa.c2s.pcm.service.dto.PurposeDto;
-import gov.samhsa.c2s.pcm.service.dto.SensitivityCategoryDto;
-import gov.samhsa.c2s.pcm.service.exception.BadRequestException;
-import gov.samhsa.c2s.pcm.service.exception.ConsentNotFoundException;
-import gov.samhsa.c2s.pcm.service.exception.DuplicateConsentException;
-import gov.samhsa.c2s.pcm.service.exception.InvalidProviderException;
-import gov.samhsa.c2s.pcm.service.exception.InvalidProviderTypeException;
-import gov.samhsa.c2s.pcm.service.exception.InvalidPurposeException;
-import gov.samhsa.c2s.pcm.service.exception.PatientOrSavedConsentNotFoundException;
+import gov.samhsa.c2s.pcm.service.dto.*;
+import gov.samhsa.c2s.pcm.service.exception.*;
 import gov.samhsa.c2s.pcm.service.fhir.FhirConsentService;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.modelmapper.ModelMapper;
@@ -352,8 +317,9 @@ public class ConsentServiceImpl implements ConsentService {
             consentAttestation.setConsentAttestationPdf(consentPdfGenerator.generate42CfrPart2Pdf(consent, patientDto, true, new Date(), consentAttestationTerm.getText()));
 
             // generate FHIR Consent and publish consent to FHIR server if enabled
-            consentAttestation.setFhirConsent(fhirConsentService.getAttestedFhirConsent(consent, patientDto,pcmProperties.getConsent().getPublish().isEnabled()));
-
+            if (pcmProperties.getConsent().getPublish().isEnabled()) {
+                consentAttestation.setFhirConsent(fhirConsentService.getAttestedFhirConsent(consent, patientDto));
+            }
             consentRepository.save(consent);
 
         } else throw new BadRequestException();
@@ -460,8 +426,9 @@ public class ConsentServiceImpl implements ConsentService {
             consent.setConsentRevocation(consentRevocation);
 
             //revoke consent on FHIR server
-            consent.getConsentAttestation().setFhirConsent(fhirConsentService.getRevokedFhirConsent(consent, patientDto, pcmProperties.getConsent().getPublish().isEnabled()));
-
+            if (pcmProperties.getConsent().getPublish().isEnabled()) {
+                consent.getConsentAttestation().setFhirConsent(fhirConsentService.getRevokedFhirConsent(consent, patientDto));
+            }
             consentRepository.save(consent);
         } else throw new BadRequestException();
     }
@@ -553,7 +520,7 @@ public class ConsentServiceImpl implements ConsentService {
     }
 
     @Override
-    public List<SensitivityCategoryDto> getSharedSensitivityCategories(String patientId, Long consentId){
+    public List<SensitivityCategoryDto> getSharedSensitivityCategories(String patientId, Long consentId) {
         final Consent consent = consentRepository.findOneByIdAndPatientId(consentId, patientId).orElseThrow(ConsentNotFoundException::new);
 
         List<SensitivityCategoryDto> shareSensitivityCategories = consent.getShareSensitivityCategories().stream()
