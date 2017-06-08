@@ -429,7 +429,7 @@ public class ConsentServiceImpl implements ConsentService {
 
 
     @Override
-    public void updateConsent(String patientId, Long consentId, ConsentDto consentDto) {
+    public void updateConsent(String patientId, Long consentId, ConsentDto consentDto, Optional<String> createdBy, Optional<String> lastUpdatedBy) {
         final Patient patient = patientRepository.saveAndGet(patientId);
         Consent consent = consentRepository.findOneByIdAndPatientIdAndConsentAttestationIsNullAndConsentRevocationIsNull(consentId, patientId).orElseThrow(ConsentNotFoundException::new);
 
@@ -452,6 +452,11 @@ public class ConsentServiceImpl implements ConsentService {
         consent.setToProviders(toProviders);
         consent.setShareSensitivityCategories(shareSensitivityCategories);
         consent.setSharePurposes(sharePurposes);
+        consent.setCreatedBy(createdBy.orElse(null));
+        consent.setLastUpdatedBy(createdBy.orElse(null));
+        consent.setCreatedDate(new Date());
+        consent.setLastUpdatedDate(new Date());
+
         //generate pdf
         PatientDto patientDto = umsService.getPatientProfile(patientId);
         consent.setSavedPdf(consentPdfGenerator.generate42CfrPart2Pdf(consent, patientDto, false, new Date(), consentAttestationTermRepository.findOne(Long.valueOf(1)).getText()));

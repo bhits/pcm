@@ -28,8 +28,12 @@ import java.util.Optional;
 @RequestMapping("/patients/{patientId}")
 public class ConsentRestController {
 
+    private final ConsentService consentService;
+
     @Autowired
-    private ConsentService consentService;
+    public ConsentRestController(ConsentService consentService) {
+        this.consentService = consentService;
+    }
 
     @GetMapping("/consents")
     public Page<DetailedConsentDto> getConsents(@PathVariable String patientId,
@@ -60,8 +64,10 @@ public class ConsentRestController {
     @PutMapping("/consents/{consentId}")
     @ResponseStatus(HttpStatus.OK)
     public void updateConsent(@PathVariable String patientId, @PathVariable Long consentId,
-                              @Valid @RequestBody ConsentDto consentDto) {
-        consentService.updateConsent(patientId, consentId, consentDto);
+                              @Valid @RequestBody ConsentDto consentDto,
+                              @RequestParam(value = "createdBy") Optional<String> createdBy,
+                              @RequestParam(value = "lastUpdatedBy") Optional<String> lastUpdatedBy) {
+        consentService.updateConsent(patientId, consentId, consentDto, createdBy, lastUpdatedBy);
     }
 
     @PutMapping("/consents/{consentId}/attestation")
