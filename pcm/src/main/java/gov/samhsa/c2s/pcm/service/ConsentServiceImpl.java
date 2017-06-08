@@ -352,8 +352,9 @@ public class ConsentServiceImpl implements ConsentService {
             consentAttestation.setConsentAttestationPdf(consentPdfGenerator.generate42CfrPart2Pdf(consent, patientDto, true, new Date(), consentAttestationTerm.getText()));
 
             // generate FHIR Consent and publish consent to FHIR server if enabled
-            consentAttestation.setFhirConsent(fhirConsentService.getAttestedFhirConsent(consent, patientDto,pcmProperties.getConsent().getPublish().isEnabled()));
-
+            if (pcmProperties.getConsent().getPublish().isEnabled()) {
+                consentAttestation.setFhirConsent(fhirConsentService.getAttestedFhirConsent(consent, patientDto));
+            }
             consentRepository.save(consent);
 
         } else throw new BadRequestException();
@@ -459,9 +460,10 @@ public class ConsentServiceImpl implements ConsentService {
 
             consent.setConsentRevocation(consentRevocation);
 
-            //revoke consent on FHIR server
-            consent.getConsentAttestation().setFhirConsent(fhirConsentService.getRevokedFhirConsent(consent, patientDto, pcmProperties.getConsent().getPublish().isEnabled()));
-
+            //revoke consent on FHIR server if enabled
+            if (pcmProperties.getConsent().getPublish().isEnabled()) {
+                consent.getConsentAttestation().setFhirConsent(fhirConsentService.getRevokedFhirConsent(consent, patientDto));
+            }
             consentRepository.save(consent);
         } else throw new BadRequestException();
     }
@@ -553,7 +555,7 @@ public class ConsentServiceImpl implements ConsentService {
     }
 
     @Override
-    public List<SensitivityCategoryDto> getSharedSensitivityCategories(String patientId, Long consentId){
+    public List<SensitivityCategoryDto> getSharedSensitivityCategories(String patientId, Long consentId) {
         final Consent consent = consentRepository.findOneByIdAndPatientId(consentId, patientId).orElseThrow(ConsentNotFoundException::new);
 
         List<SensitivityCategoryDto> shareSensitivityCategories = consent.getShareSensitivityCategories().stream()

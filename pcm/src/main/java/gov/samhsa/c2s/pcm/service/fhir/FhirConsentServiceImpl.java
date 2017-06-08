@@ -57,7 +57,7 @@ public class FhirConsentServiceImpl implements FhirConsentService {
 
 
     @Override
-    public byte[] getAttestedFhirConsent(gov.samhsa.c2s.pcm.domain.Consent c2sConsent, PatientDto patientDto, boolean isPublishEnabled) {
+    public byte[] getAttestedFhirConsent(gov.samhsa.c2s.pcm.domain.Consent c2sConsent, PatientDto patientDto) {
         /*
         Use the client to store a new consent resource instance
         Invoke the server create method (and send pretty-printed JSON
@@ -75,9 +75,8 @@ public class FhirConsentServiceImpl implements FhirConsentService {
         if (!validationResult.isSuccessful()) {
             throw new FHIRFormatErrorException("Consent Validation is not successful" + validationResult.getMessages());
         }
-        //publish fhir consent to fhir server if publish is enabled
-        if (isPublishEnabled)
-            fhirClient.create().resource(fhirConsent).execute();
+        //publish fhir consent to fhir server
+        fhirClient.create().resource(fhirConsent).execute();
 
         return fhirContext.newJsonParser().setPrettyPrint(true)
                 .encodeResourceToString(fhirConsent).getBytes();
@@ -85,7 +84,7 @@ public class FhirConsentServiceImpl implements FhirConsentService {
     }
 
     @Override
-    public byte[] getRevokedFhirConsent(gov.samhsa.c2s.pcm.domain.Consent c2sConsent, PatientDto patientDto, boolean isPublishEnabled) {
+    public byte[] getRevokedFhirConsent(gov.samhsa.c2s.pcm.domain.Consent c2sConsent, PatientDto patientDto) {
 
         // consent by identifier on FHIR server
         Consent fhirConsent = createFhirConsent(c2sConsent, patientDto);
@@ -100,12 +99,11 @@ public class FhirConsentServiceImpl implements FhirConsentService {
             throw new FHIRFormatErrorException("Consent Validation is not successful" + validationResult.getMessages());
         }
 
-        //revoke fhir consent to fhir server if publish is enabled
-        if (isPublishEnabled)
-            fhirClient.update().resource(fhirConsent)
-                    .conditional()
-                    .where(Consent.IDENTIFIER.exactly().systemAndCode(fhirProperties.getMrn().getSystem(), c2sConsent.getConsentReferenceId()))
-                    .execute();
+        //revoke fhir consent to fhir server
+        fhirClient.update().resource(fhirConsent)
+                .conditional()
+                .where(Consent.IDENTIFIER.exactly().systemAndCode(fhirProperties.getMrn().getSystem(), c2sConsent.getConsentReferenceId()))
+                .execute();
 
         return fhirContext.newJsonParser().setPrettyPrint(true)
                 .encodeResourceToString(fhirConsent).getBytes();
@@ -125,13 +123,13 @@ public class FhirConsentServiceImpl implements FhirConsentService {
         fhirConsent.setId(new IdType(c2sConsent.getId()));
 
         // Set patient reference and add patient as contained resource
-        if(fhirProperties.isPatientReference()){
+        if (fhirProperties.isPatientReference()) {
             String patientResourceId = fhirPatientService.getPatientResourceId(fhirProperties.getMrn().getSystem(), patientDto.getMrn());
             fhirConsent.getPatient().setReference("Patient/" + patientResourceId);
 
             // Consent signature details
             Reference consentSignature = new Reference();
-            consentSignature.setDisplay(patientDto.getFirstName() +" " +  patientDto.getLastName());
+            consentSignature.setDisplay(patientDto.getFirstName() + " " + patientDto.getLastName());
             consentSignature.setReference("Patient/" + patientResourceId);
             fhirConsent.getConsentor().add(consentSignature);
 
@@ -292,11 +290,11 @@ public class FhirConsentServiceImpl implements FhirConsentService {
             if (shareCodes.contains(valueSetCategoryDto.getCode())) {
                 String systemUrl = valueSetCategoryDto.getSystem();
                 String code = valueSetCategoryDto.getCode();
-                if(!( code.equalsIgnoreCase(V3ActCode.ETH.toCode() )
-                        || code.equalsIgnoreCase(V3ActCode.PSY.toCode() )
+                if (!(code.equalsIgnoreCase(V3ActCode.ETH.toCode())
+                        || code.equalsIgnoreCase(V3ActCode.PSY.toCode())
                         || code.equalsIgnoreCase(V3ActCode.SEX.toCode())
                         || code.equalsIgnoreCase(V3ActCode.HIV.toCode())
-                        )) {
+                )) {
                     systemUrl = fhirProperties.getMrn().getSystem();
                 }
                 // include it
@@ -323,9 +321,6 @@ public class FhirConsentServiceImpl implements FhirConsentService {
         return fhirConsent;
 
     }
-
-
-
 
     private void logFHIRConsent(Consent fhirConsent) {
         log.debug(fhirContext.newXmlParser().setPrettyPrint(true)
