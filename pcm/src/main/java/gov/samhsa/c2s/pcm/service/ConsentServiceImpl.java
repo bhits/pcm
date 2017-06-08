@@ -198,8 +198,8 @@ public class ConsentServiceImpl implements ConsentService {
                 .consentStage(ConsentStage.SAVED)
                 .consentReferenceId(RandomStringUtils
                         .randomAlphanumeric(10))
-                .createdBy(createdBy.isPresent()? createdBy.get():"")
-                .lastUpdatedBy(lastUpdatedBy.isPresent()?lastUpdatedBy.get():"")
+                .createdBy(createdBy.orElse(null))
+                .lastUpdatedBy(createdBy.orElse(null))
                 .createdDate(new Date())
                 .lastUpdatedDate(new Date())
                 .build();
