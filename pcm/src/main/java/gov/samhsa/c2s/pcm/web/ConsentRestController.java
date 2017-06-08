@@ -56,8 +56,9 @@ public class ConsentRestController {
     @DeleteMapping("/consents/{consentId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteConsent(@PathVariable String patientId,
-                              @PathVariable Long consentId) {
-        consentService.deleteConsent(patientId, consentId);
+                              @PathVariable Long consentId,
+                              @RequestParam(value = "lastUpdatedBy") Optional<String> lastUpdatedBy) {
+        consentService.deleteConsent(patientId, consentId, lastUpdatedBy);
     }
 
     @PutMapping("/consents/{consentId}")

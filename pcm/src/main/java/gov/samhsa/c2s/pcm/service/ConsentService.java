@@ -15,7 +15,7 @@ public interface ConsentService {
     void saveConsent(String patientId, ConsentDto consentDto, Optional<String> createdBy);
 
     @Transactional
-    void deleteConsent(String patientId, Long consentId);
+    void deleteConsent(String patientId, Long consentId, Optional<String> lastUpdatedBy);
 
     @Transactional
     void updateConsent(String patientId, Long consentId, ConsentDto consentDto, Optional<String> lastUpdatedBy);

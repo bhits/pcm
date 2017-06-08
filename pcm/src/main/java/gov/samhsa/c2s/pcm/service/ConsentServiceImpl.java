@@ -215,11 +215,13 @@ public class ConsentServiceImpl implements ConsentService {
     }
 
     @Override
-    public void deleteConsent(String patientId, Long consentId) {
-        final Consent consent = consentRepository.findOneByIdAndPatientIdAndConsentAttestationIsNullAndConsentRevocationIsNull(consentId, patientId).orElseThrow(PatientOrSavedConsentNotFoundException::new);
+    public void deleteConsent(String patientId, Long consentId, Optional<String> lastUpdatedBy) {
+        Consent consent = consentRepository.findOneByIdAndPatientIdAndConsentAttestationIsNullAndConsentRevocationIsNull(consentId, patientId).orElseThrow(PatientOrSavedConsentNotFoundException::new);
         Assert.isNull(consent.getConsentAttestation(), "Cannot delete an attested consent");
         Assert.isNull(consent.getConsentRevocation(), "Cannot delete an revoked consent");
         Assert.isTrue(ConsentStage.SAVED.equals(consent.getConsentStage()), "Cannot delete a consent that is not in 'SAVED' stage");
+        consent.setLastUpdatedBy(lastUpdatedBy.orElse(null));
+        consent.setLastUpdatedDate(new Date());
         consentRepository.delete(consent);
     }
 
