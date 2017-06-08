@@ -301,7 +301,7 @@ public class FhirConsentServiceImpl implements FhirConsentService {
                 includeCodingList.add(
                         new Coding(systemUrl
                                 , code
-                                , valueSetCategoryDto.getDisplayName()));
+                                , valueSetCategoryDto.getName()));
             }
         }
 

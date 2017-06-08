@@ -25,7 +25,7 @@ public interface SensitivityCategoryRepository extends JpaRepository<Sensitivity
                     final SensitivityCategory sensitivityCategory = SensitivityCategory.builder()
                             .identifier(Identifier.builder().system(valueSetCategoryDto.getSystem()).value(valueSetCategoryDto.getCode()).build())
                             .description(valueSetCategoryDto.getDescription())
-                            .display(valueSetCategoryDto.getDisplayName())
+                            .display(valueSetCategoryDto.getName())
                             .build();
                     return save(sensitivityCategory);
                 });
