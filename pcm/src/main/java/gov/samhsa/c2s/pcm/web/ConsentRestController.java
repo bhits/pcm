@@ -72,8 +72,10 @@ public class ConsentRestController {
     @PutMapping("/consents/{consentId}/attestation")
     @ResponseStatus(HttpStatus.OK)
     public void attestConsent(@PathVariable String patientId, @PathVariable Long consentId,
-                              @Valid @RequestBody ConsentAttestationDto consentAttestationDto) {
-        consentService.attestConsent(patientId, consentId, consentAttestationDto);
+                              @Valid @RequestBody ConsentAttestationDto consentAttestationDto,
+                              @RequestParam(value = "attestedBy") Optional<String> attestedBy,
+                              @RequestParam(value = "attestedByPatient") Optional<Boolean> attestedByPatient) {
+        consentService.attestConsent(patientId, consentId, consentAttestationDto, attestedBy, attestedByPatient);
     }
 
     @PutMapping("/consents/{consentId}/revocation")

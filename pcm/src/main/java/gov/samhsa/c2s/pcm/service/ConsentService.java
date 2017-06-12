@@ -1,6 +1,11 @@
 package gov.samhsa.c2s.pcm.service;
 
-import gov.samhsa.c2s.pcm.service.dto.*;
+import gov.samhsa.c2s.pcm.service.dto.ConsentAttestationDto;
+import gov.samhsa.c2s.pcm.service.dto.ConsentDto;
+import gov.samhsa.c2s.pcm.service.dto.ConsentRevocationDto;
+import gov.samhsa.c2s.pcm.service.dto.ConsentTermDto;
+import gov.samhsa.c2s.pcm.service.dto.DetailedConsentDto;
+import gov.samhsa.c2s.pcm.service.dto.SensitivityCategoryDto;
 import org.springframework.data.domain.Page;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,7 +26,7 @@ public interface ConsentService {
     void updateConsent(String patientId, Long consentId, ConsentDto consentDto, Optional<String> lastUpdatedBy);
 
     @Transactional
-    void attestConsent(String patientId, Long consentId, ConsentAttestationDto consentAttestationDto);
+    void attestConsent(String patientId, Long consentId, ConsentAttestationDto consentAttestationDto, Optional<String> attestedBy, Optional<Boolean> attestedByPatient);
 
     @Transactional
     void revokeConsent(String patientId, Long consentId, ConsentRevocationDto consentRevocationDto);

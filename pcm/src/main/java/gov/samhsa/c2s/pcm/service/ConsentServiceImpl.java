@@ -313,7 +313,7 @@ public class ConsentServiceImpl implements ConsentService {
     }
 
     @Override
-    public void attestConsent(String patientId, Long consentId, ConsentAttestationDto consentAttestationDto) {
+    public void attestConsent(String patientId, Long consentId, ConsentAttestationDto consentAttestationDto, Optional<String> attestedBy, Optional<Boolean> attestedByPatient) {
         //get patient
         final Patient patient = patientRepository.saveAndGet(patientId);
 
@@ -371,6 +371,9 @@ public class ConsentServiceImpl implements ConsentService {
                     .toPractitioners(toPractitioners)
                     .consentAttestationTerm(consentAttestationTerm)
                     .consent(consent)
+                    .attestedBy(attestedBy.orElse(null))
+                    .attestedByPatient(attestedByPatient.orElse(false))
+                    .attestedDate(new Date())
                     .build();
 
             fromOrganizations.forEach(organization -> organization.setConsentAttestation(consentAttestation));
