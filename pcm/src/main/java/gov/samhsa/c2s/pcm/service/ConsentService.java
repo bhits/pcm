@@ -29,7 +29,7 @@ public interface ConsentService {
     void attestConsent(String patientId, Long consentId, ConsentAttestationDto consentAttestationDto, Optional<String> attestedBy, Optional<Boolean> attestedByPatient);
 
     @Transactional
-    void revokeConsent(String patientId, Long consentId, ConsentRevocationDto consentRevocationDto);
+    void revokeConsent(String patientId, Long consentId, ConsentRevocationDto consentRevocationDto, Optional<String> revokedBy, Optional<Boolean> revokedByPatient);
 
     @Transactional(readOnly = true)
     Object getConsent(String patientId, Long consentId, String format);

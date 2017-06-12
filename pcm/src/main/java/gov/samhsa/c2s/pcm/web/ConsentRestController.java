@@ -81,8 +81,10 @@ public class ConsentRestController {
     @PutMapping("/consents/{consentId}/revocation")
     @ResponseStatus(HttpStatus.OK)
     public void revokeConsent(@PathVariable String patientId, @PathVariable Long consentId,
-                              @Valid @RequestBody ConsentRevocationDto consentRevocationDto) {
-        consentService.revokeConsent(patientId, consentId, consentRevocationDto);
+                              @Valid @RequestBody ConsentRevocationDto consentRevocationDto,
+                              @RequestParam(value = "revokedBy") Optional<String> revokedBy,
+                              @RequestParam(value = "revokedByPatient") Optional<Boolean> revokedByPatient) {
+        consentService.revokeConsent(patientId, consentId, consentRevocationDto, revokedBy, revokedByPatient);
     }
 
 

@@ -1,0 +1,2 @@
+ALTER TABLE consent_revocation ADD revoked_date datetime, ADD revoked_by  VARCHAR(255), ADD revoked_by_patient boolean;
+ALTER TABLE consent_revocation_aud ADD revoked_date datetime, ADD revoked_by  VARCHAR(255), ADD revoked_by_patient boolean;
