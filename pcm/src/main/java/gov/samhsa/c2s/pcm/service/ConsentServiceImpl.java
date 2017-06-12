@@ -222,6 +222,12 @@ public class ConsentServiceImpl implements ConsentService {
         Assert.isTrue(ConsentStage.SAVED.equals(consent.getConsentStage()), "Cannot delete a consent that is not in 'SAVED' stage");
         consent.setLastUpdatedBy(lastUpdatedBy.orElse(null));
         consent.setLastUpdatedDate(new Date());
+        /*
+          An entity when deleted will only contain the id of the entity and no data in the audit table.
+          Therefore, saving the consent before deleting to track the lastUpdatedBy info
+          TODO: Find a better way
+         */
+        consentRepository.save(consent);
         consentRepository.delete(consent);
     }
 
