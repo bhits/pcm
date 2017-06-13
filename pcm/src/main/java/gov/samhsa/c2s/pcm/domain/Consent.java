@@ -12,10 +12,12 @@ import org.hibernate.envers.Audited;
 import org.hibernate.validator.constraints.ScriptAssert;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import javax.persistence.Basic;
 import javax.persistence.CascadeType;
 import javax.persistence.Entity;
+import javax.persistence.EntityListeners;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.persistence.FetchType;
@@ -33,6 +35,7 @@ import java.util.Date;
 import java.util.List;
 
 @Entity
+@EntityListeners(AuditingEntityListener.class)
 @Audited
 @ScriptAssert(
         lang = "javascript",
@@ -58,7 +61,6 @@ public class Consent {
     private Date lastUpdatedDate;
 
     private String lastUpdatedBy;
-
 
     @ManyToOne
     @JsonIgnore

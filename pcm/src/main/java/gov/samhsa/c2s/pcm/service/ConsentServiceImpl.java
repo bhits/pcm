@@ -200,8 +200,6 @@ public class ConsentServiceImpl implements ConsentService {
                         .randomAlphanumeric(10))
                 .createdBy(createdBy.orElse(null))
                 .lastUpdatedBy(createdBy.orElse(null))
-                .createdDate(new Date())
-                .lastUpdatedDate(new Date())
                 .build();
 
         //generate pdf
@@ -221,7 +219,6 @@ public class ConsentServiceImpl implements ConsentService {
         Assert.isNull(consent.getConsentRevocation(), "Cannot delete an revoked consent");
         Assert.isTrue(ConsentStage.SAVED.equals(consent.getConsentStage()), "Cannot delete a consent that is not in 'SAVED' stage");
         consent.setLastUpdatedBy(lastUpdatedBy.orElse(null));
-        consent.setLastUpdatedDate(new Date());
         /*
           An entity when deleted will only contain the id of the entity and no data in the audit table.
           Therefore, saving the consent before deleting to track the lastUpdatedBy info
@@ -373,7 +370,6 @@ public class ConsentServiceImpl implements ConsentService {
                     .consent(consent)
                     .attestedBy(attestedBy.orElse(null))
                     .attestedByPatient(attestedByPatient.orElse(false))
-                    .attestedDate(new Date())
                     .build();
 
             fromOrganizations.forEach(organization -> organization.setConsentAttestation(consentAttestation));
@@ -464,7 +460,6 @@ public class ConsentServiceImpl implements ConsentService {
         consent.setShareSensitivityCategories(shareSensitivityCategories);
         consent.setSharePurposes(sharePurposes);
         consent.setLastUpdatedBy(lastUpdatedBy.orElse(null));
-        consent.setLastUpdatedDate(new Date());
 
         //generate pdf
         PatientDto patientDto = umsService.getPatientProfile(patientId);
@@ -490,7 +485,6 @@ public class ConsentServiceImpl implements ConsentService {
                     .consent(consent)
                     .revokedBy(revokedBy.orElse(null))
                     .revokedByPatient(revokedByPatient.orElse(true))
-                    .revokedDate(new Date())
                     .build();
 
             //update consent
