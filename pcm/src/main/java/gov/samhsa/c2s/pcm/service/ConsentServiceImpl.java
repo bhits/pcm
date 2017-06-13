@@ -105,7 +105,7 @@ public class ConsentServiceImpl implements ConsentService {
     }
 
     @Override
-    @Transactional
+    @Transactional(readOnly = true)
     public Page<DetailedConsentDto> getConsents(String patientId, Optional<Long> purposeOfUse,
                                                 Optional<Long> fromProvider, Optional<Long> toProvider,
                                                 Optional<Integer> page, Optional<Integer> size) {
@@ -145,6 +145,7 @@ public class ConsentServiceImpl implements ConsentService {
     }
 
     @Override
+    @Transactional
     public void saveConsent(String patientId, ConsentDto consentDto, Optional<String> createdBy) {
         final Patient patient = patientRepository.saveAndGet(patientId);
         final List<Provider> fromProviders = consentDto.getFromProviders().getIdentifiers().stream()
@@ -213,6 +214,7 @@ public class ConsentServiceImpl implements ConsentService {
     }
 
     @Override
+    @Transactional
     public void deleteConsent(String patientId, Long consentId, Optional<String> lastUpdatedBy) {
         Consent consent = consentRepository.findOneByIdAndPatientIdAndConsentAttestationIsNullAndConsentRevocationIsNull(consentId, patientId).orElseThrow(PatientOrSavedConsentNotFoundException::new);
         Assert.isNull(consent.getConsentAttestation(), "Cannot delete an attested consent");
@@ -310,6 +312,7 @@ public class ConsentServiceImpl implements ConsentService {
     }
 
     @Override
+    @Transactional
     public void attestConsent(String patientId, Long consentId, ConsentAttestationDto consentAttestationDto, Optional<String> attestedBy, Optional<Boolean> attestedByPatient) {
         //get patient
         final Patient patient = patientRepository.saveAndGet(patientId);
@@ -436,6 +439,7 @@ public class ConsentServiceImpl implements ConsentService {
 
 
     @Override
+    @Transactional
     public void updateConsent(String patientId, Long consentId, ConsentDto consentDto, Optional<String> lastUpdatedBy) {
         final Patient patient = patientRepository.saveAndGet(patientId);
         Consent consent = consentRepository.findOneByIdAndPatientIdAndConsentAttestationIsNullAndConsentRevocationIsNull(consentId, patientId).orElseThrow(ConsentNotFoundException::new);
@@ -471,6 +475,7 @@ public class ConsentServiceImpl implements ConsentService {
 
 
     @Override
+    @Transactional
     public void revokeConsent(String patientId, Long consentId, ConsentRevocationDto consentRevocationDto, Optional<String> revokedBy, Optional<Boolean> revokedByPatient) {
 
         Consent consent = consentRepository.findOneByIdAndPatientIdAndConsentAttestationIsNotNullAndConsentRevocationIsNull(consentId, patientId).orElseThrow(ConsentNotFoundException::new);
@@ -505,6 +510,7 @@ public class ConsentServiceImpl implements ConsentService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public Object getConsent(String patientId, Long consentId, String format) {
         final Consent consent = consentRepository.findOneByIdAndPatientId(consentId, patientId).orElseThrow(ConsentNotFoundException::new);
         if (format != null && format.equals("pdf")) {
@@ -521,6 +527,7 @@ public class ConsentServiceImpl implements ConsentService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public Object getAttestedConsent(String patientId, Long consentId, String format) {
         final Consent consent = consentRepository.findOneByIdAndPatientId(consentId, patientId).orElseThrow(ConsentNotFoundException::new);
         if (format != null && format.equals("pdf") && (!consent.getConsentStage().equals(ConsentStage.SAVED))) {
@@ -532,6 +539,7 @@ public class ConsentServiceImpl implements ConsentService {
 
 
     @Override
+    @Transactional(readOnly = true)
     public Object getRevokedConsent(String patientId, Long consentId, String format) {
         final Consent consent = consentRepository.findOneByIdAndPatientIdAndConsentAttestationIsNotNullAndConsentRevocationIsNotNull(consentId, patientId).orElseThrow(ConsentNotFoundException::new);
         if (format != null && format.equals("pdf")) {
@@ -541,6 +549,7 @@ public class ConsentServiceImpl implements ConsentService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public ConsentTermDto getConsentAttestationTerm(Optional<Long> id) {
         final Long termId = id.filter(i -> i != 1L).orElse(1L);
         ConsentAttestationTerm consentAttestationTerm = consentAttestationTermRepository.findOne(termId);
@@ -549,6 +558,7 @@ public class ConsentServiceImpl implements ConsentService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public ConsentTermDto getConsentRevocationTerm(Optional<Long> id) {
         final Long termId = id.filter(i -> i != 1L).orElse(1L);
         ConsentRevocationTerm consentRevocationTerm = consentRevocationTermRepository.findOne(termId);
@@ -591,6 +601,7 @@ public class ConsentServiceImpl implements ConsentService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<SensitivityCategoryDto> getSharedSensitivityCategories(String patientId, Long consentId) {
         final Consent consent = consentRepository.findOneByIdAndPatientId(consentId, patientId).orElseThrow(ConsentNotFoundException::new);
 

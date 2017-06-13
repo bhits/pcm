@@ -13,7 +13,7 @@ import java.util.List;
 import java.util.Optional;
 
 public interface ConsentService {
-    @Transactional
+    @Transactional(readOnly = true)
     Page<DetailedConsentDto> getConsents(String patientId, Optional<Long> purposeOfUse, Optional<Long> fromProvider, Optional<Long> toProvider, Optional<Integer> page, Optional<Integer> size);
 
     @Transactional
