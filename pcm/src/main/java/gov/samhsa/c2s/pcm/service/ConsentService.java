@@ -17,7 +17,7 @@ public interface ConsentService {
     Page<DetailedConsentDto> getConsents(String patientId, Optional<Long> purposeOfUse, Optional<Long> fromProvider, Optional<Long> toProvider, Optional<Integer> page, Optional<Integer> size);
 
     @Transactional
-    void saveConsent(String patientId, ConsentDto consentDto, Optional<String> createdBy);
+    void saveConsent(String patientId, ConsentDto consentDto, Optional<String> createdBy, Optional<Boolean> createdByPatient);
 
     @Transactional
     void deleteConsent(String patientId, Long consentId, Optional<String> lastUpdatedBy);

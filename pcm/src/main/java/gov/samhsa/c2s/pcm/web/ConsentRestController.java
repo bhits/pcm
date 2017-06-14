@@ -49,8 +49,9 @@ public class ConsentRestController {
     @ResponseStatus(HttpStatus.CREATED)
     public void saveConsent(@PathVariable String patientId,
                             @Valid @RequestBody ConsentDto consentDto,
-                            @RequestParam(value = "createdBy") Optional<String> createdBy) {
-        consentService.saveConsent(patientId, consentDto, createdBy);
+                            @RequestParam(value = "createdBy") Optional<String> createdBy,
+                            @RequestParam(value = "createdByPatient") Optional<Boolean> createdByPatient) {
+        consentService.saveConsent(patientId, consentDto, createdBy, createdByPatient);
     }
 
     @DeleteMapping("/consents/{consentId}")

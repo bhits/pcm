@@ -1,0 +1,1 @@
+ALTER TABLE consent ADD created_by_patient boolean;

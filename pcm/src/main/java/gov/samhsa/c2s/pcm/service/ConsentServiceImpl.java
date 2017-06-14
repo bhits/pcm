@@ -146,7 +146,7 @@ public class ConsentServiceImpl implements ConsentService {
 
     @Override
     @Transactional
-    public void saveConsent(String patientId, ConsentDto consentDto, Optional<String> createdBy) {
+    public void saveConsent(String patientId, ConsentDto consentDto, Optional<String> createdBy, Optional<Boolean> createdByPatient) {
         final Patient patient = patientRepository.saveAndGet(patientId);
         final List<Provider> fromProviders = consentDto.getFromProviders().getIdentifiers().stream()
                 .map(toProvider(patient))
@@ -200,6 +200,7 @@ public class ConsentServiceImpl implements ConsentService {
                 .consentReferenceId(RandomStringUtils
                         .randomAlphanumeric(10))
                 .createdBy(createdBy.orElse(null))
+                .createdByPatient(createdByPatient.orElse(null))
                 .lastUpdatedBy(createdBy.orElse(null))
                 .build();
 
@@ -372,7 +373,7 @@ public class ConsentServiceImpl implements ConsentService {
                     .consentAttestationTerm(consentAttestationTerm)
                     .consent(consent)
                     .attestedBy(attestedBy.orElse(null))
-                    .attestedByPatient(attestedByPatient.orElse(false))
+                    .attestedByPatient(attestedByPatient.orElse(null))
                     .build();
 
             fromOrganizations.forEach(organization -> organization.setConsentAttestation(consentAttestation));
@@ -489,7 +490,7 @@ public class ConsentServiceImpl implements ConsentService {
                     .consentRevocationTerm(consentRevocationTerm)
                     .consent(consent)
                     .revokedBy(revokedBy.orElse(null))
-                    .revokedByPatient(revokedByPatient.orElse(true))
+                    .revokedByPatient(revokedByPatient.orElse(null))
                     .build();
 
             //update consent
