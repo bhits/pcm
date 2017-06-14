@@ -46,7 +46,7 @@ public class ConsentAttestation {
 
     private String attestedBy;
 
-    private boolean attestedByPatient;
+    private Boolean attestedByPatient;
 
     @ManyToOne
     @NotNull

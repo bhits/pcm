@@ -41,7 +41,7 @@ public class ConsentRevocation {
 
     private String revokedBy;
 
-    private boolean revokedByPatient;
+    private Boolean revokedByPatient;
 
     @ManyToOne
     @NotNull

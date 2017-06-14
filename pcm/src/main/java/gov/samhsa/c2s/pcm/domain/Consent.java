@@ -57,7 +57,7 @@ public class Consent {
 
     private String createdBy;
 
-    private boolean createdByPatient;
+    private Boolean createdByPatient;
 
     @LastModifiedDate
     private Date lastUpdatedDate;
