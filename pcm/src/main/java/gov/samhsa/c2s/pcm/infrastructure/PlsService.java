@@ -2,12 +2,14 @@ package gov.samhsa.c2s.pcm.infrastructure;
 
 import gov.samhsa.c2s.pcm.infrastructure.dto.FlattenedSmallProviderDto;
 import org.springframework.cloud.netflix.feign.FeignClient;
+import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 
 @FeignClient("pls")
+@Service
 public interface PlsService {
 
     @RequestMapping(value = "/providers/{npi}", method = RequestMethod.GET)
