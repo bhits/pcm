@@ -48,4 +48,9 @@ public class ConsentDto {
     @NotNull
     @Future
     private LocalDate endDate;
+
+    @NotNull
+    private String consentReferenceId;
+
+
 }
