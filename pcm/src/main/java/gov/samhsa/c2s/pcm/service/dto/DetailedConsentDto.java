@@ -54,4 +54,7 @@ public class DetailedConsentDto {
 
     @NotNull
     private ConsentStage consentStage;
+
+    @NotNull
+    private String consentReferenceId;
 }
