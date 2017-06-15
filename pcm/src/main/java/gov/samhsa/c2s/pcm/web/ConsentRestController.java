@@ -6,6 +6,7 @@ import gov.samhsa.c2s.pcm.service.dto.ConsentDto;
 import gov.samhsa.c2s.pcm.service.dto.ConsentRevocationDto;
 import gov.samhsa.c2s.pcm.service.dto.DetailedConsentDto;
 import gov.samhsa.c2s.pcm.service.dto.SensitivityCategoryDto;
+import gov.samhsa.c2s.pcm.service.dto.XacmlRequestDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
@@ -87,6 +88,11 @@ public class ConsentRestController {
     @GetMapping("/consents/{consentId}/shareSensitivityCategories")
     public List<SensitivityCategoryDto> getSharedSensitivityCategories(@PathVariable String patientId, @PathVariable Long consentId) {
         return consentService.getSharedSensitivityCategories(patientId, consentId);
+    }
+
+    @PostMapping("/consents/search")
+    public Object searchConsent(@RequestParam XacmlRequestDto xacmlRequestDto){
+        return consentService.searchConsent(xacmlRequestDto);
     }
 }
 

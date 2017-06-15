@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.validator.constraints.NotEmpty;
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.cloud.netflix.feign.FeignClient;
 import org.springframework.context.annotation.Configuration;
 
 import javax.validation.Valid;
@@ -28,6 +29,9 @@ public class PcmProperties {
 
     @NotNull
     private Consent consent;
+
+
+    private FhirProperties fhirProperties;
 
     @Data
     @Builder

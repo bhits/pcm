@@ -42,6 +42,7 @@ import gov.samhsa.c2s.pcm.service.dto.OrganizationDto;
 import gov.samhsa.c2s.pcm.service.dto.PractitionerDto;
 import gov.samhsa.c2s.pcm.service.dto.PurposeDto;
 import gov.samhsa.c2s.pcm.service.dto.SensitivityCategoryDto;
+import gov.samhsa.c2s.pcm.service.dto.XacmlRequestDto;
 import gov.samhsa.c2s.pcm.service.exception.BadRequestException;
 import gov.samhsa.c2s.pcm.service.exception.ConsentNotFoundException;
 import gov.samhsa.c2s.pcm.service.exception.DuplicateConsentException;
@@ -564,6 +565,31 @@ public class ConsentServiceImpl implements ConsentService {
 
         return shareSensitivityCategories;
     }
+
+    @Override
+    public Object searchConsent(XacmlRequestDto xacmlRequestDto){
+
+        String patientId = xacmlRequestDto.getPatientId().getExtension();
+        Provider fromProvider = new Provider();
+        fromProvider.setIdentifier(new Identifier(pcmProperties.getSupportedProviderSystems().get(0),
+                                        xacmlRequestDto.getIntermediaryNpi()));
+
+        Provider toProvider = new Provider();
+        toProvider.setIdentifier(new Identifier(pcmProperties.getSupportedProviderSystems().get(0),
+                xacmlRequestDto.getRecipientNpi()));
+
+        Purpose sharedPurpose = new Purpose();
+        sharedPurpose.setIdentifier(new Identifier(pcmProperties.getFhirProperties().getPou().getSystem(),
+                xacmlRequestDto.getPurposeOfUse().getPurpose()));
+
+        final Consent searchConsent = consentRepository
+                .findOneByPatientIdAndFromProvidersContainingAndToProvidersContainingAndSharePurposesContainingAndStartDateBeforeAndEndDateAfterAndConsentAttestationNotNull(
+                        xacmlRequestDto.getPatientId().getExtension(), fromProvider, toProvider, sharedPurpose,
+                        LocalDate.now(), LocalDate.now()).orElseThrow(ConsentNotFoundException::new);
+        return mapToDetailedConsentDto(searchConsent);
+    }
+
+
 
 
 }
