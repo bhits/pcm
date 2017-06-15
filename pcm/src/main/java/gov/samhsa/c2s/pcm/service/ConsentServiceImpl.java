@@ -567,29 +567,17 @@ public class ConsentServiceImpl implements ConsentService {
     }
 
     @Override
-    public Object searchConsent(XacmlRequestDto xacmlRequestDto){
+    public Object searchConsent(XacmlRequestDto xacmlRequestDto) {
 
-        String patientId = xacmlRequestDto.getPatientId().getExtension();
-        Provider fromProvider = new Provider();
-        fromProvider.setIdentifier(new Identifier(pcmProperties.getSupportedProviderSystems().get(0),
-                                        xacmlRequestDto.getIntermediaryNpi()));
-
-        Provider toProvider = new Provider();
-        toProvider.setIdentifier(new Identifier(pcmProperties.getSupportedProviderSystems().get(0),
-                xacmlRequestDto.getRecipientNpi()));
-
-        Purpose sharedPurpose = new Purpose();
-        sharedPurpose.setIdentifier(new Identifier(pcmProperties.getFhirProperties().getPou().getSystem(),
-                xacmlRequestDto.getPurposeOfUse().getPurpose()));
-
-        final Consent searchConsent = consentRepository
-                .findOneByPatientIdAndFromProvidersContainingAndToProvidersContainingAndSharePurposesContainingAndStartDateBeforeAndEndDateAfterAndConsentAttestationNotNull(
-                        xacmlRequestDto.getPatientId().getExtension(), fromProvider, toProvider, sharedPurpose,
-                        LocalDate.now(), LocalDate.now()).orElseThrow(ConsentNotFoundException::new);
+        final Consent searchConsent = consentRepository.findOneByPatientIdAndFromProvidersIdentifierValueAndToProvidersIdentifierValueAndSharePurposesIdentifierValueAndStartDateBeforeAndEndDateAfterAndConsentAttestationNotNull(
+                xacmlRequestDto.getPatientId().getExtension(),
+                xacmlRequestDto.getIntermediaryNpi(),
+                xacmlRequestDto.getRecipientNpi(),
+                xacmlRequestDto.getPurposeOfUse().getPurposeFhir(),
+                LocalDate.now(),
+                LocalDate.now()).orElseThrow(ConsentNotFoundException::new);
         return mapToDetailedConsentDto(searchConsent);
     }
-
-
 
 
 }

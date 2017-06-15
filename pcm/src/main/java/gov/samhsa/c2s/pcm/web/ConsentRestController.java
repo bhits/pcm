@@ -91,7 +91,7 @@ public class ConsentRestController {
     }
 
     @PostMapping("/consents/search")
-    public Object searchConsent(@RequestParam XacmlRequestDto xacmlRequestDto){
+    public Object searchConsent(@Valid @RequestBody  XacmlRequestDto xacmlRequestDto){
         return consentService.searchConsent(xacmlRequestDto);
     }
 }
