@@ -30,9 +30,6 @@ public class PcmProperties {
     @NotNull
     private Consent consent;
 
-
-    private FhirProperties fhirProperties;
-
     @Data
     @Builder
     @AllArgsConstructor
