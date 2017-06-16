@@ -4,7 +4,9 @@ import gov.samhsa.c2s.pcm.domain.valueobject.Address;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 import org.hibernate.envers.Audited;
 import org.hibernate.validator.constraints.NotBlank;
 import org.hibernate.validator.constraints.ScriptAssert;
@@ -23,6 +25,8 @@ import javax.validation.constraints.NotNull;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
+@ToString(exclude = {"consentAttestationFrom", "consentAttestationTo"})
+@EqualsAndHashCode(exclude = {"consentAttestationFrom", "consentAttestationTo"})
 @ScriptAssert(
         lang = "javascript",
         alias = "_",
