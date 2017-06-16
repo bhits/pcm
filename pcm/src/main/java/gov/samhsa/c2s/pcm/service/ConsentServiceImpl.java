@@ -236,6 +236,7 @@ public class ConsentServiceImpl implements ConsentService {
                 .startDate(consent.getStartDate())
                 .endDate(consent.getEndDate())
                 .consentStage(consent.getConsentStage())
+                .consentReferenceId(consent.getConsentReferenceId())
                 .build();
     }
 
@@ -551,6 +552,7 @@ public class ConsentServiceImpl implements ConsentService {
                 .fromProviders(fromProviders)
                 .toProviders(toProviders)
                 .id(consent.getId())
+                .consentReferenceId(consent.getConsentReferenceId())
                 .build();
 
     }
