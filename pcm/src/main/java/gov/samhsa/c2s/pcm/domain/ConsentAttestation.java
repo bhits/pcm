@@ -3,7 +3,9 @@ package gov.samhsa.c2s.pcm.domain;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 import org.hibernate.envers.Audited;
 import org.hibernate.envers.NotAudited;
 import org.springframework.data.annotation.CreatedDate;
@@ -32,6 +34,8 @@ import java.util.List;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
+@ToString(exclude = "consent")
+@EqualsAndHashCode(exclude = {"consent"})
 public class ConsentAttestation {
     @Id
     @GeneratedValue
@@ -60,19 +64,19 @@ public class ConsentAttestation {
     @Basic(fetch = FetchType.LAZY)
     private byte[] fhirConsent;
 
-    @OneToMany(mappedBy = "consentAttestation", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "consentAttestationFrom", cascade = CascadeType.ALL)
     @NotAudited
     private List<Practitioner> fromPractitioners = new ArrayList<>();
 
-    @OneToMany(mappedBy = "consentAttestation", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "consentAttestationFrom", cascade = CascadeType.ALL)
     @NotAudited
     private List<Organization> fromOrganizations = new ArrayList<>();
 
-    @OneToMany(mappedBy = "consentAttestation", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "consentAttestationTo", cascade = CascadeType.ALL)
     @NotAudited
     private List<Practitioner> toPractitioners = new ArrayList<>();
 
-    @OneToMany(mappedBy = "consentAttestation", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "consentAttestationTo", cascade = CascadeType.ALL)
     @NotAudited
     private List<Organization> toOrganizations = new ArrayList<>();
 }

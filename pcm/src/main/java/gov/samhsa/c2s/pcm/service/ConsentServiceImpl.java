@@ -376,10 +376,10 @@ public class ConsentServiceImpl implements ConsentService {
                     .attestedByPatient(attestedByPatient.orElse(null))
                     .build();
 
-            fromOrganizations.forEach(organization -> organization.setConsentAttestation(consentAttestation));
-            toOrganizations.forEach(organization -> organization.setConsentAttestation(consentAttestation));
-            fromPractitioners.forEach(practitioner -> practitioner.setConsentAttestation(consentAttestation));
-            toPractitioners.forEach(practitioner -> practitioner.setConsentAttestation(consentAttestation));
+            fromOrganizations.forEach(organization -> organization.setConsentAttestationFrom(consentAttestation));
+            toOrganizations.forEach(organization -> organization.setConsentAttestationTo(consentAttestation));
+            fromPractitioners.forEach(practitioner -> practitioner.setConsentAttestationFrom(consentAttestation));
+            toPractitioners.forEach(practitioner -> practitioner.setConsentAttestationTo(consentAttestation));
 
             //update consent
             consent.setConsentStage(ConsentStage.SIGNED);
