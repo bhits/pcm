@@ -1,6 +1,5 @@
 package gov.samhsa.c2s.pcm.service;
 
-import gov.samhsa.c2s.pcm.config.FhirProperties;
 import gov.samhsa.c2s.pcm.config.PcmProperties;
 import gov.samhsa.c2s.pcm.domain.Consent;
 import gov.samhsa.c2s.pcm.domain.ConsentAttestation;
@@ -15,7 +14,6 @@ import gov.samhsa.c2s.pcm.domain.Patient;
 import gov.samhsa.c2s.pcm.domain.PatientRepository;
 import gov.samhsa.c2s.pcm.domain.Practitioner;
 import gov.samhsa.c2s.pcm.domain.Provider;
-import gov.samhsa.c2s.pcm.domain.ProviderRepository;
 import gov.samhsa.c2s.pcm.domain.Purpose;
 import gov.samhsa.c2s.pcm.domain.PurposeRepository;
 import gov.samhsa.c2s.pcm.domain.SensitivityCategory;
@@ -76,53 +74,80 @@ import static java.util.stream.Collectors.toSet;
 @Service
 public class ConsentServiceImpl implements ConsentService {
 
-    @Autowired
-    private ConsentAttestationTermRepository consentAttestationTermRepository;
-    @Autowired
-    private ConsentPdfGenerator consentPdfGenerator;
-    @Autowired
-    private ConsentRepository consentRepository;
-    @Autowired
-    private ConsentRevocationPdfGenerator consentRevocationPdfGenerator;
-    @Autowired
-    private ConsentRevocationTermRepository consentRevocationTermRepository;
-    @Autowired
-    private ModelMapper modelMapper;
-    @Autowired
-    private PatientRepository patientRepository;
-    @Autowired
-    private PcmProperties pcmProperties;
-    @Autowired
-    private UmsService umsService;
-    @Autowired
-    private PlsService plsService;
-    @Autowired
-    private ProviderRepository providerRepository;
-    @Autowired
-    private PurposeRepository purposeRepository;
-    @Autowired
-    private SensitivityCategoryRepository sensitivityCategoryRepository;
-    @Autowired
-    private FhirProperties fhirProperties;
-    @Autowired
-    private FhirConsentService fhirConsentService;
+    private final ConsentAttestationTermRepository consentAttestationTermRepository;
+    private final ConsentPdfGenerator consentPdfGenerator;
+    private final ConsentRepository consentRepository;
+    private final ConsentRevocationPdfGenerator consentRevocationPdfGenerator;
+    private final ConsentRevocationTermRepository consentRevocationTermRepository;
+    private final ModelMapper modelMapper;
+    private final PatientRepository patientRepository;
+    private final PcmProperties pcmProperties;
+    private final UmsService umsService;
+    private final PlsService plsService;
+    private final PurposeRepository purposeRepository;
+    private final SensitivityCategoryRepository sensitivityCategoryRepository;
+    private final FhirConsentService fhirConsentService;
 
-    @Override
-    @Transactional
-    public Page<DetailedConsentDto> getConsents(String patientId, Optional<Integer> page, Optional<Integer> size) {
-        final PageRequest pageRequest = new PageRequest(page.filter(p -> p >= 0).orElse(0),
-                size.filter(s -> s > 0 && s <= pcmProperties.getConsent().getPagination().getMaxSize()).orElse(pcmProperties.getConsent().getPagination().getDefaultSize()));
-        final Page<Consent> consentsPage = consentRepository.findAllByPatientId(patientId, pageRequest);
-        final List<Consent> consents = consentsPage.getContent();
-        final List<DetailedConsentDto> detailedConsentDtos = consents.stream()
-                .map(this::mapToDetailedConsentDto)
-                .collect(toList());
-        Page<DetailedConsentDto> newPage = new PageImpl<>(detailedConsentDtos, pageRequest, consentsPage.getTotalElements());
-        return newPage;
+    @Autowired
+    public ConsentServiceImpl(ConsentAttestationTermRepository consentAttestationTermRepository, ConsentPdfGenerator consentPdfGenerator, ConsentRepository consentRepository, ConsentRevocationPdfGenerator consentRevocationPdfGenerator, ConsentRevocationTermRepository consentRevocationTermRepository, ModelMapper modelMapper, PatientRepository patientRepository, PcmProperties pcmProperties, UmsService umsService, PlsService plsService, PurposeRepository purposeRepository, SensitivityCategoryRepository sensitivityCategoryRepository, FhirConsentService fhirConsentService) {
+        this.consentAttestationTermRepository = consentAttestationTermRepository;
+        this.consentPdfGenerator = consentPdfGenerator;
+        this.consentRepository = consentRepository;
+        this.consentRevocationPdfGenerator = consentRevocationPdfGenerator;
+        this.consentRevocationTermRepository = consentRevocationTermRepository;
+        this.modelMapper = modelMapper;
+        this.patientRepository = patientRepository;
+        this.pcmProperties = pcmProperties;
+        this.umsService = umsService;
+        this.plsService = plsService;
+        this.purposeRepository = purposeRepository;
+        this.sensitivityCategoryRepository = sensitivityCategoryRepository;
+        this.fhirConsentService = fhirConsentService;
     }
 
     @Override
-    public void saveConsent(String patientId, ConsentDto consentDto) {
+    @Transactional(readOnly = true)
+    public Page<DetailedConsentDto> getConsents(String patientId, Optional<Long> purposeOfUse,
+                                                Optional<Long> fromProvider, Optional<Long> toProvider,
+                                                Optional<Integer> page, Optional<Integer> size) {
+        final PageRequest pageRequest = new PageRequest(page.filter(p -> p >= 0).orElse(0),
+                size.filter(s -> s > 0 && s <= pcmProperties.getConsent().getPagination().getMaxSize()).orElse(pcmProperties.getConsent().getPagination().getDefaultSize()));
+        final Page<Consent> consentsPage = consentRepository.findAllByPatientId(patientId, pageRequest);
+        List<Consent> consents = consentsPage.getContent();
+
+        if (purposeOfUse.isPresent()) {
+            consents = consents.stream().filter(oneConsent ->
+                    oneConsent.getSharePurposes().stream()
+                            .anyMatch(onePurpose ->
+                                    onePurpose.getId().equals(purposeOfUse.get()))
+            ).collect(toList());
+        }
+
+        if (fromProvider.isPresent()) {
+            consents = consents.stream().filter(oneConsent ->
+                    oneConsent.getFromProviders().stream()
+                            .anyMatch(oneProvider ->
+                                    oneProvider.getId().equals(fromProvider.get()))
+            ).collect(toList());
+        }
+
+        if (toProvider.isPresent()) {
+            consents = consents.stream().filter(oneConsent ->
+                    oneConsent.getToProviders().stream()
+                            .anyMatch(oneProvider ->
+                                    oneProvider.getId().equals(toProvider.get()))
+            ).collect(toList());
+        }
+
+        final List<DetailedConsentDto> detailedConsentDtos = consents.stream()
+                .map(this::mapToDetailedConsentDto)
+                .collect(toList());
+        return new PageImpl<>(detailedConsentDtos, pageRequest, consentsPage.getTotalElements());
+    }
+
+    @Override
+    @Transactional
+    public void saveConsent(String patientId, ConsentDto consentDto, Optional<String> createdBy, Optional<Boolean> createdByPatient) {
         final Patient patient = patientRepository.saveAndGet(patientId);
         final List<Provider> fromProviders = consentDto.getFromProviders().getIdentifiers().stream()
                 .map(toProvider(patient))
@@ -175,6 +200,9 @@ public class ConsentServiceImpl implements ConsentService {
                 .consentStage(ConsentStage.SAVED)
                 .consentReferenceId(RandomStringUtils
                         .randomAlphanumeric(10))
+                .createdBy(createdBy.orElse(null))
+                .createdByPatient(createdByPatient.orElse(null))
+                .lastUpdatedBy(createdBy.orElse(null))
                 .build();
 
         //generate pdf
@@ -188,11 +216,19 @@ public class ConsentServiceImpl implements ConsentService {
     }
 
     @Override
-    public void deleteConsent(String patientId, Long consentId) {
-        final Consent consent = consentRepository.findOneByIdAndPatientIdAndConsentAttestationIsNullAndConsentRevocationIsNull(consentId, patientId).orElseThrow(PatientOrSavedConsentNotFoundException::new);
+    @Transactional
+    public void deleteConsent(String patientId, Long consentId, Optional<String> lastUpdatedBy) {
+        Consent consent = consentRepository.findOneByIdAndPatientIdAndConsentAttestationIsNullAndConsentRevocationIsNull(consentId, patientId).orElseThrow(PatientOrSavedConsentNotFoundException::new);
         Assert.isNull(consent.getConsentAttestation(), "Cannot delete an attested consent");
         Assert.isNull(consent.getConsentRevocation(), "Cannot delete an revoked consent");
         Assert.isTrue(ConsentStage.SAVED.equals(consent.getConsentStage()), "Cannot delete a consent that is not in 'SAVED' stage");
+        consent.setLastUpdatedBy(lastUpdatedBy.orElse(null));
+        /*
+          An entity when deleted will only contain the id of the entity and no data in the audit table.
+          Therefore, saving the consent before deleting to track the lastUpdatedBy info
+          TODO: Find a better way
+         */
+        consentRepository.save(consent);
         consentRepository.delete(consent);
     }
 
@@ -279,7 +315,8 @@ public class ConsentServiceImpl implements ConsentService {
     }
 
     @Override
-    public void attestConsent(String patientId, Long consentId, ConsentAttestationDto consentAttestationDto) {
+    @Transactional
+    public void attestConsent(String patientId, Long consentId, ConsentAttestationDto consentAttestationDto, Optional<String> attestedBy, Optional<Boolean> attestedByPatient) {
         //get patient
         final Patient patient = patientRepository.saveAndGet(patientId);
 
@@ -296,15 +333,15 @@ public class ConsentServiceImpl implements ConsentService {
 
             //save fromPractitioners
             List<Practitioner> fromPractitioners = fromProviderDtos.stream()
-                    .filter(flattenedSmallProviderDto -> flattenedSmallProviderDto.getEntityTypeDisplayName().equals("Individual"))
-                    .map(flattenedSmallProviderDto -> mapFlattenedSmallProviderToPractitioner(flattenedSmallProviderDto, patient, consent))
+                    .filter(flattenedSmallProviderDto -> flattenedSmallProviderDto.getEntityTypeDisplayName().equals(PlsService.ProviderType.INDIVIDUAL))
+                    .map(flattenedSmallProviderDto -> mapFlattenedSmallProviderToPractitioner(flattenedSmallProviderDto, patient))
                     .collect(toList());
 
 
             //save fromOrganizations
             List<Organization> fromOrganizations = fromProviderDtos.stream()
-                    .filter(flattenedSmallProviderDto -> flattenedSmallProviderDto.getEntityTypeDisplayName().equals("Organization"))
-                    .map(flattenedSmallProviderDto -> mapFlattenedSmallProviderToOrganization(flattenedSmallProviderDto, patient, consent))
+                    .filter(flattenedSmallProviderDto -> flattenedSmallProviderDto.getEntityTypeDisplayName().equals(PlsService.ProviderType.ORGANIZATION))
+                    .map(flattenedSmallProviderDto -> mapFlattenedSmallProviderToOrganization(flattenedSmallProviderDto, patient))
                     .collect(toList());
 
 
@@ -317,14 +354,14 @@ public class ConsentServiceImpl implements ConsentService {
 
             //save toPractitioners
             List<Practitioner> toPractitioners = toProviderDtos.stream()
-                    .filter(flattenedSmallProviderDto -> flattenedSmallProviderDto.getEntityTypeDisplayName().equals("Individual"))
-                    .map(flattenedSmallProviderDto -> mapFlattenedSmallProviderToPractitioner(flattenedSmallProviderDto, patient, consent))
+                    .filter(flattenedSmallProviderDto -> flattenedSmallProviderDto.getEntityTypeDisplayName().equals(PlsService.ProviderType.INDIVIDUAL))
+                    .map(flattenedSmallProviderDto -> mapFlattenedSmallProviderToPractitioner(flattenedSmallProviderDto, patient))
                     .collect(toList());
 
             //save toOrganizations
             List<Organization> toOrganizations = toProviderDtos.stream()
-                    .filter(flattenedSmallProviderDto -> flattenedSmallProviderDto.getEntityTypeDisplayName().equals("Organization"))
-                    .map(flattenedSmallProviderDto -> mapFlattenedSmallProviderToOrganization(flattenedSmallProviderDto, patient, consent))
+                    .filter(flattenedSmallProviderDto -> flattenedSmallProviderDto.getEntityTypeDisplayName().equals(PlsService.ProviderType.ORGANIZATION))
+                    .map(flattenedSmallProviderDto -> mapFlattenedSmallProviderToOrganization(flattenedSmallProviderDto, patient))
                     .collect(toList());
 
             ConsentAttestationTerm consentAttestationTerm = consentAttestationTermRepository.findOne(Long.valueOf(1));
@@ -337,12 +374,14 @@ public class ConsentServiceImpl implements ConsentService {
                     .toPractitioners(toPractitioners)
                     .consentAttestationTerm(consentAttestationTerm)
                     .consent(consent)
+                    .attestedBy(attestedBy.orElse(null))
+                    .attestedByPatient(attestedByPatient.orElse(null))
                     .build();
 
-            fromOrganizations.stream().forEach(organization -> organization.setConsentAttestation(consentAttestation));
-            toOrganizations.stream().forEach(organization -> organization.setConsentAttestation(consentAttestation));
-            fromPractitioners.stream().forEach(practitioner -> practitioner.setConsentAttestation(consentAttestation));
-            toPractitioners.stream().forEach(practitioner -> practitioner.setConsentAttestation(consentAttestation));
+            fromOrganizations.forEach(organization -> organization.setConsentAttestationFrom(consentAttestation));
+            toOrganizations.forEach(organization -> organization.setConsentAttestationTo(consentAttestation));
+            fromPractitioners.forEach(practitioner -> practitioner.setConsentAttestationFrom(consentAttestation));
+            toPractitioners.forEach(practitioner -> practitioner.setConsentAttestationTo(consentAttestation));
 
             //update consent
             consent.setConsentStage(ConsentStage.SIGNED);
@@ -362,7 +401,7 @@ public class ConsentServiceImpl implements ConsentService {
         } else throw new BadRequestException();
     }
 
-    private Practitioner mapFlattenedSmallProviderToPractitioner(FlattenedSmallProviderDto flattenedSmallProviderDto, Patient patient, Consent consent) {
+    private Practitioner mapFlattenedSmallProviderToPractitioner(FlattenedSmallProviderDto flattenedSmallProviderDto, Patient patient) {
         return Practitioner.builder().lastName(flattenedSmallProviderDto.getLastName())
                 .firstName(flattenedSmallProviderDto.getFirstName())
                 .middleName(flattenedSmallProviderDto.getMiddleName())
@@ -379,7 +418,7 @@ public class ConsentServiceImpl implements ConsentService {
     }
 
 
-    private Organization mapFlattenedSmallProviderToOrganization(FlattenedSmallProviderDto flattenedSmallProviderDto, Patient patient, Consent consent) {
+    private Organization mapFlattenedSmallProviderToOrganization(FlattenedSmallProviderDto flattenedSmallProviderDto, Patient patient) {
         return Organization.builder().name(flattenedSmallProviderDto.getOrganizationName())
                 .address(Address.builder().line1(flattenedSmallProviderDto.getFirstLinePracticeLocationAddress())
                         .line2(flattenedSmallProviderDto.getSecondLinePracticeLocationAddress())
@@ -403,7 +442,8 @@ public class ConsentServiceImpl implements ConsentService {
 
 
     @Override
-    public void updateConsent(String patientId, Long consentId, ConsentDto consentDto) {
+    @Transactional
+    public void updateConsent(String patientId, Long consentId, ConsentDto consentDto, Optional<String> lastUpdatedBy) {
         final Patient patient = patientRepository.saveAndGet(patientId);
         Consent consent = consentRepository.findOneByIdAndPatientIdAndConsentAttestationIsNullAndConsentRevocationIsNull(consentId, patientId).orElseThrow(ConsentNotFoundException::new);
 
@@ -426,6 +466,8 @@ public class ConsentServiceImpl implements ConsentService {
         consent.setToProviders(toProviders);
         consent.setShareSensitivityCategories(shareSensitivityCategories);
         consent.setSharePurposes(sharePurposes);
+        consent.setLastUpdatedBy(lastUpdatedBy.orElse(null));
+
         //generate pdf
         PatientDto patientDto = umsService.getPatientProfile(patientId);
         consent.setSavedPdf(consentPdfGenerator.generate42CfrPart2Pdf(consent, patientDto, false, new Date(), consentAttestationTermRepository.findOne(Long.valueOf(1)).getText()));
@@ -436,10 +478,8 @@ public class ConsentServiceImpl implements ConsentService {
 
 
     @Override
-    public void revokeConsent(String patientId, Long consentId, ConsentRevocationDto consentRevocationDto) {
-
-        //get patient
-        final Patient patient = patientRepository.saveAndGet(patientId);
+    @Transactional
+    public void revokeConsent(String patientId, Long consentId, ConsentRevocationDto consentRevocationDto, Optional<String> revokedBy, Optional<Boolean> revokedByPatient) {
 
         Consent consent = consentRepository.findOneByIdAndPatientIdAndConsentAttestationIsNotNullAndConsentRevocationIsNull(consentId, patientId).orElseThrow(ConsentNotFoundException::new);
 
@@ -451,6 +491,8 @@ public class ConsentServiceImpl implements ConsentService {
             final ConsentRevocation consentRevocation = ConsentRevocation.builder()
                     .consentRevocationTerm(consentRevocationTerm)
                     .consent(consent)
+                    .revokedBy(revokedBy.orElse(null))
+                    .revokedByPatient(revokedByPatient.orElse(null))
                     .build();
 
             //update consent
@@ -471,6 +513,7 @@ public class ConsentServiceImpl implements ConsentService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public Object getConsent(String patientId, Long consentId, String format) {
         final Consent consent = consentRepository.findOneByIdAndPatientId(consentId, patientId).orElseThrow(ConsentNotFoundException::new);
         if (format != null && format.equals("pdf")) {
@@ -487,6 +530,7 @@ public class ConsentServiceImpl implements ConsentService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public Object getAttestedConsent(String patientId, Long consentId, String format) {
         final Consent consent = consentRepository.findOneByIdAndPatientId(consentId, patientId).orElseThrow(ConsentNotFoundException::new);
         if (format != null && format.equals("pdf") && (!consent.getConsentStage().equals(ConsentStage.SAVED))) {
@@ -498,6 +542,7 @@ public class ConsentServiceImpl implements ConsentService {
 
 
     @Override
+    @Transactional(readOnly = true)
     public Object getRevokedConsent(String patientId, Long consentId, String format) {
         final Consent consent = consentRepository.findOneByIdAndPatientIdAndConsentAttestationIsNotNullAndConsentRevocationIsNotNull(consentId, patientId).orElseThrow(ConsentNotFoundException::new);
         if (format != null && format.equals("pdf")) {
@@ -507,6 +552,7 @@ public class ConsentServiceImpl implements ConsentService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public ConsentTermDto getConsentAttestationTerm(Optional<Long> id) {
         final Long termId = id.filter(i -> i != 1L).orElse(1L);
         ConsentAttestationTerm consentAttestationTerm = consentAttestationTermRepository.findOne(termId);
@@ -515,6 +561,7 @@ public class ConsentServiceImpl implements ConsentService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public ConsentTermDto getConsentRevocationTerm(Optional<Long> id) {
         final Long termId = id.filter(i -> i != 1L).orElse(1L);
         ConsentRevocationTerm consentRevocationTerm = consentRevocationTermRepository.findOne(termId);
@@ -558,14 +605,13 @@ public class ConsentServiceImpl implements ConsentService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<SensitivityCategoryDto> getSharedSensitivityCategories(String patientId, Long consentId) {
         final Consent consent = consentRepository.findOneByIdAndPatientId(consentId, patientId).orElseThrow(ConsentNotFoundException::new);
 
-        List<SensitivityCategoryDto> shareSensitivityCategories = consent.getShareSensitivityCategories().stream()
+        return consent.getShareSensitivityCategories().stream()
                 .map(sensitivityCategory -> modelMapper.map(sensitivityCategory, SensitivityCategoryDto.class))
                 .collect(toList());
-
-        return shareSensitivityCategories;
     }
 
     @Override

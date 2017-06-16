@@ -10,10 +10,14 @@ import lombok.NoArgsConstructor;
 import lombok.ToString;
 import org.hibernate.envers.Audited;
 import org.hibernate.validator.constraints.ScriptAssert;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import javax.persistence.Basic;
 import javax.persistence.CascadeType;
 import javax.persistence.Entity;
+import javax.persistence.EntityListeners;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.persistence.FetchType;
@@ -27,9 +31,11 @@ import javax.validation.constraints.Future;
 import javax.validation.constraints.NotNull;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 @Entity
+@EntityListeners(AuditingEntityListener.class)
 @Audited
 @ScriptAssert(
         lang = "javascript",
@@ -45,6 +51,18 @@ public class Consent {
     @Id
     @GeneratedValue
     private Long id;
+
+    @CreatedDate
+    private Date createdDate;
+
+    private String createdBy;
+
+    private Boolean createdByPatient;
+
+    @LastModifiedDate
+    private Date lastUpdatedDate;
+
+    private String lastUpdatedBy;
 
     @ManyToOne
     @JsonIgnore

@@ -3,13 +3,18 @@ package gov.samhsa.c2s.pcm.domain;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 import org.hibernate.envers.Audited;
 import org.hibernate.envers.NotAudited;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import javax.persistence.Basic;
 import javax.persistence.CascadeType;
 import javax.persistence.Entity;
+import javax.persistence.EntityListeners;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
@@ -19,14 +24,18 @@ import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.validation.constraints.NotNull;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 @Entity
+@EntityListeners(AuditingEntityListener.class)
 @Data
 @Audited
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
+@ToString(exclude = "consent")
+@EqualsAndHashCode(exclude = {"consent"})
 public class ConsentAttestation {
     @Id
     @GeneratedValue
@@ -35,6 +44,13 @@ public class ConsentAttestation {
     @OneToOne
     @NotNull
     private Consent consent;
+
+    @CreatedDate
+    private Date attestedDate;
+
+    private String attestedBy;
+
+    private Boolean attestedByPatient;
 
     @ManyToOne
     @NotNull
@@ -48,19 +64,19 @@ public class ConsentAttestation {
     @Basic(fetch = FetchType.LAZY)
     private byte[] fhirConsent;
 
-    @OneToMany(mappedBy = "consentAttestation", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "consentAttestationFrom", cascade = CascadeType.ALL)
     @NotAudited
     private List<Practitioner> fromPractitioners = new ArrayList<>();
 
-    @OneToMany(mappedBy = "consentAttestation", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "consentAttestationFrom", cascade = CascadeType.ALL)
     @NotAudited
     private List<Organization> fromOrganizations = new ArrayList<>();
 
-    @OneToMany(mappedBy = "consentAttestation", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "consentAttestationTo", cascade = CascadeType.ALL)
     @NotAudited
     private List<Practitioner> toPractitioners = new ArrayList<>();
 
-    @OneToMany(mappedBy = "consentAttestation", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "consentAttestationTo", cascade = CascadeType.ALL)
     @NotAudited
     private List<Organization> toOrganizations = new ArrayList<>();
 }

@@ -7,6 +7,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.envers.Audited;
 import org.hibernate.validator.constraints.NotBlank;
+import org.hibernate.validator.constraints.ScriptAssert;
 
 import javax.persistence.Embedded;
 import javax.persistence.Entity;
@@ -22,6 +23,11 @@ import javax.validation.constraints.NotNull;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
+@ScriptAssert(
+        lang = "javascript",
+        alias = "_",
+        script = "(_.consentAttestationFrom != null && _.consentAttestationTo == null)||(_.consentAttestationFrom == null && _.consentAttestationTo != null) ",
+        message = "Practitioner must be assigned to a consent attestation")
 public class Practitioner {
     @Id
     @GeneratedValue
@@ -44,6 +50,8 @@ public class Practitioner {
     private String phoneNumber;
 
     @ManyToOne
-    @NotNull
-    private ConsentAttestation consentAttestation;
+    private ConsentAttestation consentAttestationFrom;
+
+    @ManyToOne
+    private ConsentAttestation consentAttestationTo;
 }
