@@ -240,6 +240,7 @@ public class ConsentServiceImpl implements ConsentService {
         final List<PurposeDto> sharePurposes = consent.getSharePurposes().stream()
                 .map(purpose -> modelMapper.map(purpose, PurposeDto.class))
                 .collect(toList());
+        final Set<Identifier> providerIdentifiersWithConsents = ProviderServiceImpl.getProviderIdentifiersWithConsents(consent.getPatient());
 
         final List<AbstractProviderDto> fromProviders = Optional.ofNullable(consent.getConsentAttestation())
                 .map(consentAttestation -> Stream.concat(
@@ -250,6 +251,7 @@ public class ConsentServiceImpl implements ConsentService {
                                 .map(practitioner -> modelMapper.map(practitioner, PractitionerDto.class))
                                 .map(AbstractProviderDto.class::cast)))
                 .orElseGet(() -> consent.getFromProviders().stream().map(this::toAbstractProviderDto))
+                .peek(abstractProviderDto -> abstractProviderDto.setDeletable(!ProviderServiceImpl.isProviderInUse(providerIdentifiersWithConsents, abstractProviderDto.getIdentifiers())))
                 .collect(toList());
 
         final List<AbstractProviderDto> toProviders = Optional.ofNullable(consent.getConsentAttestation())
@@ -261,6 +263,7 @@ public class ConsentServiceImpl implements ConsentService {
                                 .map(practitioner -> modelMapper.map(practitioner, PractitionerDto.class))
                                 .map(AbstractProviderDto.class::cast)))
                 .orElseGet(() -> consent.getToProviders().stream().map(this::toAbstractProviderDto))
+                .peek(abstractProviderDto -> abstractProviderDto.setDeletable(!ProviderServiceImpl.isProviderInUse(providerIdentifiersWithConsents, abstractProviderDto.getIdentifiers())))
                 .collect(toList());
 
         return DetailedConsentDto.builder()

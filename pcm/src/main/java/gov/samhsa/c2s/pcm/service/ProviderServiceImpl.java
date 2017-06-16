@@ -51,6 +51,27 @@ public class ProviderServiceImpl implements ProviderService {
     @Autowired
     private ModelMapper modelMapper;
 
+    // TODO: refactor this static methods, so ConsentServiceImpl won't need to directly call these. The 'deletable' boolean can be potentially calculated by the Provider, Organization, Practitioner domain entities.
+    public static boolean isProviderInUse(Set<Identifier> providerIdentifiersWithConsents, Provider provider) {
+        return providerIdentifiersWithConsents.contains(provider.getIdentifier());
+    }
+
+    // TODO: refactor this static methods, so ConsentServiceImpl won't need to directly call these. The 'deletable' boolean can be potentially calculated by the Provider, Organization, Practitioner domain entities.
+    public static boolean isProviderInUse(Set<Identifier> providerIdentifiersWithConsents, Set<IdentifierDto> identifiers) {
+        return providerIdentifiersWithConsents.stream()
+                .anyMatch(identifier -> identifiers.stream()
+                        .anyMatch(dto -> identifier.getSystem().equals(dto.getSystem()) && identifier.getValue().equals(dto.getValue())));
+    }
+
+    // TODO: refactor this static methods, so ConsentServiceImpl won't need to directly call these. The 'deletable' boolean can be potentially calculated by the Provider, Organization, Practitioner domain entities.
+    public static Set<Identifier> getProviderIdentifiersWithConsents(Patient patient) {
+        return patient.getConsents().stream()
+                .flatMap(consent -> Stream.concat(
+                        consent.getFromProviders().stream().map(Provider::getIdentifier),
+                        consent.getToProviders().stream().map(Provider::getIdentifier)))
+                .collect(toSet());
+    }
+
     @Override
     @Transactional
     public void saveProviders(String patientId, Set<IdentifierDto> providerIdentifierDtos) {
@@ -133,17 +154,5 @@ public class ProviderServiceImpl implements ProviderService {
             patient.getProviders().remove(provider);
             patientRepository.save(patient);
         }
-    }
-
-    private boolean isProviderInUse(Set<Identifier> providerIdentifiersWithConsents, Provider provider) {
-        return providerIdentifiersWithConsents.contains(provider.getIdentifier());
-    }
-
-    private Set<Identifier> getProviderIdentifiersWithConsents(Patient patient) {
-        return patient.getConsents().stream()
-                .flatMap(consent -> Stream.concat(
-                        consent.getFromProviders().stream().map(Provider::getIdentifier),
-                        consent.getToProviders().stream().map(Provider::getIdentifier)))
-                .collect(toSet());
     }
 }
