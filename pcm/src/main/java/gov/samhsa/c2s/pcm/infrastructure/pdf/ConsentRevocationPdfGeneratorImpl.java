@@ -22,7 +22,7 @@ public class ConsentRevocationPdfGeneratorImpl implements ConsentRevocationPdfGe
     private final ITextPdfService iTextPdfService;
 
     private final String EMAIL = "EMAIL";
-    public static final String CONSENT_REVOCATION_TITLE = "Revocation of Consent to Share My Health Information";
+    private static final String CONSENT_REVOCATION_TITLE = "Revocation of Consent to Share My Health Information";
 
     @Autowired
     public ConsentRevocationPdfGeneratorImpl(ITextPdfService iTextPdfService) {
