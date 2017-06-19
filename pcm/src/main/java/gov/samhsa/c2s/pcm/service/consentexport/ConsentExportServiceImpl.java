@@ -32,7 +32,7 @@ public class ConsentExportServiceImpl implements ConsentExportService {
 
 
     @Override
-    public Object exportConsent2XACML(XacmlRequestDto xacmlRequestDto) {
+    public ConsentXacmlDto exportConsent2XACML(XacmlRequestDto xacmlRequestDto) {
 
         final DetailedConsentDto pcmConsentDto = (DetailedConsentDto)
                 consentService.searchConsent(xacmlRequestDto);
