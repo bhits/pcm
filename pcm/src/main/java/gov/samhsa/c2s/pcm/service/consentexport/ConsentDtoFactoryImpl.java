@@ -26,7 +26,7 @@ public class ConsentDtoFactoryImpl implements ConsentDtoFactory {
 
     @Override
     public ConsentDto createConsentDto(long consentId) {
-        return null;
+        throw new UnsupportedOperationException();
     }
 
     @Override

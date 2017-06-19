@@ -51,5 +51,5 @@ public interface ConsentService {
     List<SensitivityCategoryDto> getSharedSensitivityCategories(String patientId, Long consentId);
 
     @Transactional(readOnly = true)
-    public Object searchConsent(XacmlRequestDto xacmlRequestDto);
+    public DetailedConsentDto searchConsent(XacmlRequestDto xacmlRequestDto);
 }
