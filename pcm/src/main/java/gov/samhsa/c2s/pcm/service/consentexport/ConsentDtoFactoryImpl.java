@@ -2,15 +2,27 @@ package gov.samhsa.c2s.pcm.service.consentexport;
 
 import gov.samhsa.c2s.common.consentgen.ConsentDto;
 import gov.samhsa.c2s.common.consentgen.ConsentDtoFactory;
-import org.springframework.context.annotation.Bean;
+import gov.samhsa.c2s.pcm.infrastructure.UmsService;
+import gov.samhsa.c2s.pcm.service.ConsentService;
+import gov.samhsa.c2s.pcm.service.dto.DetailedConsentDto;
+import gov.samhsa.c2s.pcm.service.dto.XacmlRequestDto;
 import org.springframework.stereotype.Component;
 
 @Component
 public class ConsentDtoFactoryImpl implements ConsentDtoFactory {
 
-    public ConsentDtoFactoryImpl(){
-        super();
+    private final ConsentService consentService;
+    private final UmsService umsService;
+    private final ConsentExportMapper consentExportMapper;
+
+    public ConsentDtoFactoryImpl(ConsentService consentService, UmsService umsService, ConsentExportMapper
+            consentExportMapper, ConsentService consentService1, UmsService umsService1, ConsentExportMapper
+            consentExportMapper1) {
+        this.consentService = consentService1;
+        this.umsService = umsService1;
+        this.consentExportMapper = consentExportMapper1;
     }
+
 
     @Override
     public ConsentDto createConsentDto(long consentId) {
@@ -19,6 +31,15 @@ public class ConsentDtoFactoryImpl implements ConsentDtoFactory {
 
     @Override
     public ConsentDto createConsentDto(Object obj) {
-        return (ConsentDto) obj;
+        XacmlRequestDto xacmlRequestDto = (XacmlRequestDto)obj;
+        final DetailedConsentDto pcmConsentDto = (DetailedConsentDto)
+                consentService.searchConsent(xacmlRequestDto);
+        final gov.samhsa.c2s.pcm.infrastructure.dto.PatientDto pcmPatientDto = umsService.getPatientProfile
+                (xacmlRequestDto.getPatientId().getExtension());
+
+
+        final ConsentDto consentGenConsentDto = consentExportMapper.map(pcmConsentDto, pcmPatientDto);
+
+        return consentGenConsentDto;
     }
 }
