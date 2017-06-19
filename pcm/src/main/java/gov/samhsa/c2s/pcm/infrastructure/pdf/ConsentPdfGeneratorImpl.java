@@ -11,6 +11,7 @@ import com.itextpdf.text.pdf.PdfPCell;
 import com.itextpdf.text.pdf.PdfPTable;
 import com.itextpdf.text.pdf.PdfWriter;
 import gov.samhsa.c2s.pcm.domain.Consent;
+import gov.samhsa.c2s.pcm.domain.Purpose;
 import gov.samhsa.c2s.pcm.domain.SensitivityCategory;
 import gov.samhsa.c2s.pcm.domain.valueobject.Address;
 import gov.samhsa.c2s.pcm.infrastructure.PlsService;
@@ -310,11 +311,11 @@ public class ConsentPdfGeneratorImpl implements ConsentPdfGenerator {
     }
 
     private List<String> getMedicalInformation(Consent consent) {
-        return consent.getShareSensitivityCategories().stream().map(sensitivityCategory -> sensitivityCategory.getDisplay()).collect(toList());
+        return consent.getShareSensitivityCategories().stream().map(SensitivityCategory::getDisplay).collect(toList());
     }
 
     private List<String> getPurposeOfUse(Consent consent) {
-        return consent.getSharePurposes().stream().map(purpose -> purpose.getDisplay()).collect(toList());
+        return consent.getSharePurposes().stream().map(Purpose::getDisplay).collect(toList());
     }
 
     private PdfPTable createSigningDetailsTable(Consent consent, Boolean isSigned, Date attestedOn, PatientDto patientProfile) {
