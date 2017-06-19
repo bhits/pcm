@@ -72,9 +72,7 @@ public class ConsentRevocationPdfGeneratorImpl implements ConsentRevocationPdfGe
             throw new ConsentPdfGenerationException("Exception when trying to generate pdf", e);
         }
 
-        byte[] pdfBytes = pdfOutputStream.toByteArray();
-
-        return pdfBytes;
+        return pdfOutputStream.toByteArray();
     }
 
 }
