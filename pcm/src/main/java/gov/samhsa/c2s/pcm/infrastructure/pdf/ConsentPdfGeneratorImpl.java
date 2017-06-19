@@ -38,7 +38,9 @@ public class ConsentPdfGeneratorImpl implements ConsentPdfGenerator {
     @Autowired
     private PlsService plsService;
 
-    final String EMAIL="EMAIL";
+    final String EMAIL = "EMAIL";
+
+    public static final String CREATE_CONSENT_TITLE = "Consent to Share My Health Information";
 
 
     @Override
@@ -56,7 +58,7 @@ public class ConsentPdfGeneratorImpl implements ConsentPdfGenerator {
 
             // Title
             Font titleFont = new Font(Font.FontFamily.TIMES_ROMAN, 20, Font.BOLD);
-            document.add(iTextPdfService.createParagraphWithContent("Consent to Share My Health Information", titleFont));
+            document.add(iTextPdfService.createParagraphWithContent(CREATE_CONSENT_TITLE, titleFont));
 
             // Blank line
             document.add(Chunk.NEWLINE);
@@ -103,7 +105,7 @@ public class ConsentPdfGeneratorImpl implements ConsentPdfGenerator {
             document.add(createStartAndEndDateTable(consent));
 
             document.add(new Paragraph(" "));
-            String email= patientProfile.getTelecoms().stream().filter(telecomDto -> telecomDto.getSystem().equalsIgnoreCase(EMAIL)).findFirst().get().getValue();
+            String email = patientProfile.getTelecoms().stream().filter(telecomDto -> telecomDto.getSystem().equalsIgnoreCase(EMAIL)).findFirst().get().getValue();
 
             //Signing details
             document.add(iTextPdfService.createSigningDetailsTable(patientProfile.getFirstName(), patientProfile.getLastName(), email, isSigned, attestedOn));
@@ -335,7 +337,7 @@ public class ConsentPdfGeneratorImpl implements ConsentPdfGenerator {
 
         if (isSigned && consent != null && attestedOn != null) {
             Font patientInfoFont = new Font(Font.FontFamily.TIMES_ROMAN, 13, Font.BOLD);
-            String email= patientProfile.getTelecoms().stream().filter(telecomDto -> telecomDto.getSystem().equalsIgnoreCase(EMAIL)).findFirst().get().getValue();
+            String email = patientProfile.getTelecoms().stream().filter(telecomDto -> telecomDto.getSystem().equalsIgnoreCase(EMAIL)).findFirst().get().getValue();
 
             PdfPCell attesterEmailCell = new PdfPCell(iTextPdfService.createCellContent("Email: ", patientInfoFont, email, null));
             attesterEmailCell.setBorder(Rectangle.NO_BORDER);
