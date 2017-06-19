@@ -19,10 +19,14 @@ import java.util.Date;
 public class ConsentRevocationPdfGeneratorImpl implements ConsentRevocationPdfGenerator {
 
 
-    @Autowired
-    private ITextPdfService iTextPdfService;
+    private final ITextPdfService iTextPdfService;
 
-    final String EMAIL="EMAIL";
+    private final String EMAIL="EMAIL";
+
+    @Autowired
+    public ConsentRevocationPdfGeneratorImpl(ITextPdfService iTextPdfService) {
+        this.iTextPdfService = iTextPdfService;
+    }
 
     @Override
     public byte[] generateConsentRevocationPdf(Consent consent, PatientDto patient, Date attestedOnDateTime, String consentRevocationTerm) {
@@ -39,7 +43,7 @@ public class ConsentRevocationPdfGeneratorImpl implements ConsentRevocationPdfGe
 
             // Title
             Font titleFont = new Font(Font.FontFamily.TIMES_ROMAN, 20, Font.BOLD);
-            document.add(iTextPdfService.createParagraphWithContent("Revocation of Consent to Participate in Health Information Exchange", titleFont));
+            document.add(iTextPdfService.createParagraphWithContent("Revocation of Consent to Share My Health Information Exchange", titleFont));
 
             // Blank line
             document.add(Chunk.NEWLINE);
