@@ -32,15 +32,19 @@ import static java.util.stream.Collectors.toList;
 public class ConsentPdfGeneratorImpl implements ConsentPdfGenerator {
 
 
-    @Autowired
-    private ITextPdfService iTextPdfService;
+    private final ITextPdfService iTextPdfService;
 
-    @Autowired
-    private PlsService plsService;
+    private final PlsService plsService;
 
     final String EMAIL = "EMAIL";
 
     public static final String CREATE_CONSENT_TITLE = "Consent to Share My Health Information";
+
+    @Autowired
+    public ConsentPdfGeneratorImpl(ITextPdfService iTextPdfService, PlsService plsService) {
+        this.iTextPdfService = iTextPdfService;
+        this.plsService = plsService;
+    }
 
 
     @Override
