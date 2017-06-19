@@ -36,9 +36,9 @@ public class ConsentPdfGeneratorImpl implements ConsentPdfGenerator {
 
     private final PlsService plsService;
 
-    final String EMAIL = "EMAIL";
+    private final String EMAIL = "EMAIL";
 
-    public static final String CREATE_CONSENT_TITLE = "Consent to Share My Health Information";
+    private static final String CREATE_CONSENT_TITLE = "Consent to Share My Health Information";
 
     @Autowired
     public ConsentPdfGeneratorImpl(ITextPdfService iTextPdfService, PlsService plsService) {
@@ -121,9 +121,7 @@ public class ConsentPdfGeneratorImpl implements ConsentPdfGenerator {
             //TODO: throw exception
         }
 
-        byte[] pdfBytes = pdfOutputStream.toByteArray();
-
-        return pdfBytes;
+        return pdfOutputStream.toByteArray();
     }
 
     private String getFullName(PatientDto patientProfile) {
