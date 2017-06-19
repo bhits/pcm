@@ -184,20 +184,20 @@ public class ConsentPdfGeneratorImpl implements ConsentPdfGenerator {
     private String composeAddress(Address address) {
         StringBuilder addressString = new StringBuilder();
         if (address.getLine1() != null) {
-            addressString.append(address.getLine1() + ", ");
+            addressString.append(address.getLine1()).append(", ");
         }
 
         if (address.getLine2() != null) {
-            addressString.append(address.getLine2() + ", ");
+            addressString.append(address.getLine2()).append(", ");
         }
 
         if (address.getCity() != null) {
-            addressString.append(address.getCity() + ", ");
+            addressString.append(address.getCity()).append(", ");
         }
 
 
         if (address.getState() != null && address.getPostalCode() != null) {
-            addressString.append(address.getState() + ", " + address.getPostalCode());
+            addressString.append(address.getState()).append(", ").append(address.getPostalCode());
         }
 
         return addressString.toString();
@@ -206,20 +206,20 @@ public class ConsentPdfGeneratorImpl implements ConsentPdfGenerator {
     private String composeAddress(FlattenedSmallProviderDto providerDto) {
         StringBuilder addressString = new StringBuilder();
         if (providerDto.getFirstLinePracticeLocationAddress() != null) {
-            addressString.append(providerDto.getFirstLinePracticeLocationAddress() + ", ");
+            addressString.append(providerDto.getFirstLinePracticeLocationAddress()).append(", ");
         }
 
         if (providerDto.getSecondLinePracticeLocationAddress() != null) {
-            addressString.append(providerDto.getSecondLinePracticeLocationAddress() + ", ");
+            addressString.append(providerDto.getSecondLinePracticeLocationAddress()).append(", ");
         }
 
         if (providerDto.getPracticeLocationAddressCityName() != null) {
-            addressString.append(providerDto.getPracticeLocationAddressCityName() + ", ");
+            addressString.append(providerDto.getPracticeLocationAddressCityName()).append(", ");
         }
 
 
         if (providerDto.getPracticeLocationAddressStateName() != null && providerDto.getPracticeLocationAddressPostalCode() != null) {
-            addressString.append(providerDto.getPracticeLocationAddressStateName() + ", " + providerDto.getPracticeLocationAddressPostalCode());
+            addressString.append(providerDto.getPracticeLocationAddressStateName()).append(", ").append(providerDto.getPracticeLocationAddressPostalCode());
         }
 
         return addressString.toString();
