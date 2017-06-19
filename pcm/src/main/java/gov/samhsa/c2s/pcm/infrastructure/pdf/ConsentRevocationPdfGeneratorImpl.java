@@ -43,7 +43,7 @@ public class ConsentRevocationPdfGeneratorImpl implements ConsentRevocationPdfGe
 
             // Title
             Font titleFont = new Font(Font.FontFamily.TIMES_ROMAN, 20, Font.BOLD);
-            document.add(iTextPdfService.createParagraphWithContent("Revocation of Consent to Share My Health Information Exchange", titleFont));
+            document.add(iTextPdfService.createParagraphWithContent("Revocation of Consent to Share My Health Information", titleFont));
 
             // Blank line
             document.add(Chunk.NEWLINE);
