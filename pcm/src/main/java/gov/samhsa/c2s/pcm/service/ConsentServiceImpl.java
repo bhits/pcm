@@ -40,6 +40,7 @@ import gov.samhsa.c2s.pcm.service.dto.OrganizationDto;
 import gov.samhsa.c2s.pcm.service.dto.PractitionerDto;
 import gov.samhsa.c2s.pcm.service.dto.PurposeDto;
 import gov.samhsa.c2s.pcm.service.dto.SensitivityCategoryDto;
+import gov.samhsa.c2s.pcm.service.dto.XacmlRequestDto;
 import gov.samhsa.c2s.pcm.service.exception.BadRequestException;
 import gov.samhsa.c2s.pcm.service.exception.ConsentNotFoundException;
 import gov.samhsa.c2s.pcm.service.exception.DuplicateConsentException;
@@ -274,6 +275,7 @@ public class ConsentServiceImpl implements ConsentService {
                 .startDate(consent.getStartDate())
                 .endDate(consent.getEndDate())
                 .consentStage(consent.getConsentStage())
+                .consentReferenceId(consent.getConsentReferenceId())
                 .build();
     }
 
@@ -600,6 +602,7 @@ public class ConsentServiceImpl implements ConsentService {
                 .fromProviders(fromProviders)
                 .toProviders(toProviders)
                 .id(consent.getId())
+                .consentReferenceId(consent.getConsentReferenceId())
                 .build();
 
     }
@@ -612,6 +615,20 @@ public class ConsentServiceImpl implements ConsentService {
         return consent.getShareSensitivityCategories().stream()
                 .map(sensitivityCategory -> modelMapper.map(sensitivityCategory, SensitivityCategoryDto.class))
                 .collect(toList());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public DetailedConsentDto searchConsent(XacmlRequestDto xacmlRequestDto) {
+
+        final Consent searchConsent = consentRepository.findOneByPatientIdAndFromProvidersIdentifierValueAndToProvidersIdentifierValueAndSharePurposesIdentifierValueAndStartDateBeforeAndEndDateAfterAndConsentAttestationNotNull(
+                xacmlRequestDto.getPatientId().getExtension(),
+                xacmlRequestDto.getIntermediaryNpi(),
+                xacmlRequestDto.getRecipientNpi(),
+                xacmlRequestDto.getPurposeOfUse().getPurposeFhir(),
+                LocalDate.now(),
+                LocalDate.now()).orElseThrow(ConsentNotFoundException::new);
+        return mapToDetailedConsentDto(searchConsent);
     }
 
 

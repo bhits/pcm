@@ -6,6 +6,7 @@ import gov.samhsa.c2s.pcm.service.dto.ConsentRevocationDto;
 import gov.samhsa.c2s.pcm.service.dto.ConsentTermDto;
 import gov.samhsa.c2s.pcm.service.dto.DetailedConsentDto;
 import gov.samhsa.c2s.pcm.service.dto.SensitivityCategoryDto;
+import gov.samhsa.c2s.pcm.service.dto.XacmlRequestDto;
 import org.springframework.data.domain.Page;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -49,4 +50,6 @@ public interface ConsentService {
     @Transactional(readOnly = true)
     List<SensitivityCategoryDto> getSharedSensitivityCategories(String patientId, Long consentId);
 
+    @Transactional(readOnly = true)
+    public DetailedConsentDto searchConsent(XacmlRequestDto xacmlRequestDto);
 }
