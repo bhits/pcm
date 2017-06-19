@@ -2,10 +2,8 @@ package gov.samhsa.c2s.pcm.infrastructure.pdf;
 
 
 import com.google.common.collect.ImmutableMap;
-import com.itextpdf.text.BaseColor;
 import com.itextpdf.text.Chunk;
 import com.itextpdf.text.Document;
-import com.itextpdf.text.Element;
 import com.itextpdf.text.Font;
 import com.itextpdf.text.Paragraph;
 import com.itextpdf.text.Rectangle;
@@ -147,21 +145,6 @@ public class ConsentPdfGeneratorImpl implements ConsentPdfGenerator {
             consentStartAndEndDateTable.addCell(emptyCell);
         }
         return consentStartAndEndDateTable;
-    }
-
-    private PdfPTable createSectionTitle(String title) {
-        PdfPTable sectionTitle = iTextPdfService.createBorderlessTable(1);
-
-        Font cellFont = new Font(Font.FontFamily.TIMES_ROMAN, 13, Font.BOLD);
-        cellFont.setColor(BaseColor.WHITE);
-
-        PdfPCell cell = iTextPdfService.createBorderlessCell(title, cellFont);
-        cell.setBackgroundColor(new BaseColor(73, 89, 105));
-        cell.setVerticalAlignment(Element.ALIGN_MIDDLE);
-        cell.setPaddingBottom(5);
-        sectionTitle.addCell(cell);
-
-        return sectionTitle;
     }
 
     private Paragraph createConsentTerms(String terms, PatientDto patientProfile) {
