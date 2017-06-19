@@ -11,6 +11,7 @@ import com.itextpdf.text.pdf.PdfPCell;
 import com.itextpdf.text.pdf.PdfPTable;
 import com.itextpdf.text.pdf.PdfWriter;
 import gov.samhsa.c2s.pcm.domain.Consent;
+import gov.samhsa.c2s.pcm.domain.SensitivityCategory;
 import gov.samhsa.c2s.pcm.domain.valueobject.Address;
 import gov.samhsa.c2s.pcm.infrastructure.PlsService;
 import gov.samhsa.c2s.pcm.infrastructure.dto.FlattenedSmallProviderDto;
@@ -294,7 +295,7 @@ public class ConsentPdfGeneratorImpl implements ConsentPdfGenerator {
         medicalInformation.addElement(sensitivityCategoryParagraph);
 
         List<String> sensitivityCategoryList = consent.getShareSensitivityCategories().stream()
-                .map(sensitivityCategory -> sensitivityCategory.getDisplay()).collect(toList());
+                .map(SensitivityCategory::getDisplay).collect(toList());
 
         medicalInformation.addElement(iTextPdfService.createUnorderList(sensitivityCategoryList));
         healthInformationToBeDisclose.addCell(medicalInformation);
