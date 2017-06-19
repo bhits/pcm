@@ -127,13 +127,13 @@ public class ITextPdfServiceImpl implements ITextPdfService {
 
     @Override
     public String formatDate(Date aDate) {
-        String dateFormat = "MM/dd/yyyy";
+        String dateFormat = "MMM dd, yyyy";
         return new SimpleDateFormat(dateFormat).format(aDate);
     }
 
     @Override
     public String formatLocalDate(LocalDate aDate) {
-        String dateFormat = "MM/dd/yyyy";
+        String dateFormat = "MMM dd, yyyy";
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern(dateFormat);
         return aDate.format(formatter);
     }
