@@ -28,7 +28,7 @@ public class AbstractProviderDto {
         // Make providerType immutable
     }
 
-    enum ProviderType {
+    public enum ProviderType {
         PRACTITIONER, ORGANIZATION
     }
 }
