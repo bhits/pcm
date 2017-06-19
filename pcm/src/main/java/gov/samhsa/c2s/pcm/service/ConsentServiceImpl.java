@@ -621,7 +621,7 @@ public class ConsentServiceImpl implements ConsentService {
     @Transactional(readOnly = true)
     public DetailedConsentDto searchConsent(XacmlRequestDto xacmlRequestDto) {
 
-        final Consent searchConsent = consentRepository.findOneByPatientIdAndFromProvidersIdentifierValueAndToProvidersIdentifierValueAndSharePurposesIdentifierValueAndStartDateBeforeAndEndDateAfterAndConsentAttestationNotNull(
+        final Consent searchConsent = consentRepository.findOneByPatientIdAndFromProvidersIdentifierValueAndToProvidersIdentifierValueAndSharePurposesIdentifierValueAndStartDateLessThanEqualAndEndDateGreaterThanEqualAndConsentAttestationNotNull(
                 xacmlRequestDto.getPatientId().getExtension(),
                 xacmlRequestDto.getIntermediaryNpi(),
                 xacmlRequestDto.getRecipientNpi(),
