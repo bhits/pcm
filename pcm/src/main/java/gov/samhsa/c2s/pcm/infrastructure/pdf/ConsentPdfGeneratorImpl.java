@@ -166,7 +166,6 @@ public class ConsentPdfGeneratorImpl implements ConsentPdfGenerator {
 
     private Paragraph createConsentTerms(String terms, PatientDto patientProfile) {
         String userNameKey = "ATTESTER_FULL_NAME";
-//        String termsWithAttestedName =  terms.replace(userNameKey, getFullName(patientProfile));
         String termsWithAttestedName = StrSubstitutor.replace(terms, ImmutableMap.of("ATTESTER_FULL_NAME", getFullName(patientProfile)));
         return iTextPdfService.createParagraphWithContent(termsWithAttestedName, null);
     }
