@@ -21,7 +21,8 @@ public class ConsentRevocationPdfGeneratorImpl implements ConsentRevocationPdfGe
 
     private final ITextPdfService iTextPdfService;
 
-    private final String EMAIL="EMAIL";
+    private final String EMAIL = "EMAIL";
+    private static final String CONSENT_REVOCATION_TITLE = "Revocation of Consent to Share My Health Information";
 
     @Autowired
     public ConsentRevocationPdfGeneratorImpl(ITextPdfService iTextPdfService) {
@@ -43,7 +44,7 @@ public class ConsentRevocationPdfGeneratorImpl implements ConsentRevocationPdfGe
 
             // Title
             Font titleFont = new Font(Font.FontFamily.TIMES_ROMAN, 20, Font.BOLD);
-            document.add(iTextPdfService.createParagraphWithContent("Revocation of Consent to Share My Health Information", titleFont));
+            document.add(iTextPdfService.createParagraphWithContent(CONSENT_REVOCATION_TITLE, titleFont));
 
             // Blank line
             document.add(Chunk.NEWLINE);
@@ -54,14 +55,14 @@ public class ConsentRevocationPdfGeneratorImpl implements ConsentRevocationPdfGe
             document.add(new Paragraph(" "));
 
             //Patient Name and date of birth
-            document.add(iTextPdfService.createPatientNameAndDOBTable(patient.getFirstName(), patient.getLastName(),  java.sql.Date.valueOf(patient.getBirthDate())));
+            document.add(iTextPdfService.createPatientNameAndDOBTable(patient.getFirstName(), patient.getLastName(), java.sql.Date.valueOf(patient.getBirthDate())));
 
             document.add(new Paragraph(" "));
 
             document.add(new Paragraph(consentRevocationTerm));
 
             document.add(new Paragraph(" "));
-            String email= patient.getTelecoms().stream().filter(telecomDto -> telecomDto.getSystem().equalsIgnoreCase(EMAIL)).findFirst().get().getValue();
+            String email = patient.getTelecoms().stream().filter(telecomDto -> telecomDto.getSystem().equalsIgnoreCase(EMAIL)).findFirst().get().getValue();
 
             //Signing details
             document.add(iTextPdfService.createSigningDetailsTable(patient.getFirstName(), patient.getLastName(), email, true, attestedOnDateTime));

@@ -2,10 +2,8 @@ package gov.samhsa.c2s.pcm.infrastructure.pdf;
 
 
 import com.google.common.collect.ImmutableMap;
-import com.itextpdf.text.BaseColor;
 import com.itextpdf.text.Chunk;
 import com.itextpdf.text.Document;
-import com.itextpdf.text.Element;
 import com.itextpdf.text.Font;
 import com.itextpdf.text.Paragraph;
 import com.itextpdf.text.Rectangle;
@@ -13,6 +11,8 @@ import com.itextpdf.text.pdf.PdfPCell;
 import com.itextpdf.text.pdf.PdfPTable;
 import com.itextpdf.text.pdf.PdfWriter;
 import gov.samhsa.c2s.pcm.domain.Consent;
+import gov.samhsa.c2s.pcm.domain.Purpose;
+import gov.samhsa.c2s.pcm.domain.SensitivityCategory;
 import gov.samhsa.c2s.pcm.domain.valueobject.Address;
 import gov.samhsa.c2s.pcm.infrastructure.PlsService;
 import gov.samhsa.c2s.pcm.infrastructure.dto.FlattenedSmallProviderDto;
@@ -32,13 +32,19 @@ import static java.util.stream.Collectors.toList;
 public class ConsentPdfGeneratorImpl implements ConsentPdfGenerator {
 
 
-    @Autowired
-    private ITextPdfService iTextPdfService;
+    private final ITextPdfService iTextPdfService;
+
+    private final PlsService plsService;
+
+    private final String EMAIL = "EMAIL";
+
+    private static final String CREATE_CONSENT_TITLE = "Consent to Share My Health Information";
 
     @Autowired
-    private PlsService plsService;
-
-    final String EMAIL="EMAIL";
+    public ConsentPdfGeneratorImpl(ITextPdfService iTextPdfService, PlsService plsService) {
+        this.iTextPdfService = iTextPdfService;
+        this.plsService = plsService;
+    }
 
 
     @Override
@@ -56,7 +62,7 @@ public class ConsentPdfGeneratorImpl implements ConsentPdfGenerator {
 
             // Title
             Font titleFont = new Font(Font.FontFamily.TIMES_ROMAN, 20, Font.BOLD);
-            document.add(iTextPdfService.createParagraphWithContent("Consent to Share My Health Information", titleFont));
+            document.add(iTextPdfService.createParagraphWithContent(CREATE_CONSENT_TITLE, titleFont));
 
             // Blank line
             document.add(Chunk.NEWLINE);
@@ -103,7 +109,7 @@ public class ConsentPdfGeneratorImpl implements ConsentPdfGenerator {
             document.add(createStartAndEndDateTable(consent));
 
             document.add(new Paragraph(" "));
-            String email= patientProfile.getTelecoms().stream().filter(telecomDto -> telecomDto.getSystem().equalsIgnoreCase(EMAIL)).findFirst().get().getValue();
+            String email = patientProfile.getTelecoms().stream().filter(telecomDto -> telecomDto.getSystem().equalsIgnoreCase(EMAIL)).findFirst().get().getValue();
 
             //Signing details
             document.add(iTextPdfService.createSigningDetailsTable(patientProfile.getFirstName(), patientProfile.getLastName(), email, isSigned, attestedOn));
@@ -115,9 +121,7 @@ public class ConsentPdfGeneratorImpl implements ConsentPdfGenerator {
             //TODO: throw exception
         }
 
-        byte[] pdfBytes = pdfOutputStream.toByteArray();
-
-        return pdfBytes;
+        return pdfOutputStream.toByteArray();
     }
 
     private String getFullName(PatientDto patientProfile) {
@@ -145,24 +149,8 @@ public class ConsentPdfGeneratorImpl implements ConsentPdfGenerator {
         return consentStartAndEndDateTable;
     }
 
-    private PdfPTable createSectionTitle(String title) {
-        PdfPTable sectionTitle = iTextPdfService.createBorderlessTable(1);
-
-        Font cellFont = new Font(Font.FontFamily.TIMES_ROMAN, 13, Font.BOLD);
-        cellFont.setColor(BaseColor.WHITE);
-
-        PdfPCell cell = iTextPdfService.createBorderlessCell(title, cellFont);
-        cell.setBackgroundColor(new BaseColor(73, 89, 105));
-        cell.setVerticalAlignment(Element.ALIGN_MIDDLE);
-        cell.setPaddingBottom(5);
-        sectionTitle.addCell(cell);
-
-        return sectionTitle;
-    }
-
     private Paragraph createConsentTerms(String terms, PatientDto patientProfile) {
         String userNameKey = "ATTESTER_FULL_NAME";
-//        String termsWithAttestedName =  terms.replace(userNameKey, getFullName(patientProfile));
         String termsWithAttestedName = StrSubstitutor.replace(terms, ImmutableMap.of("ATTESTER_FULL_NAME", getFullName(patientProfile)));
         return iTextPdfService.createParagraphWithContent(termsWithAttestedName, null);
     }
@@ -181,20 +169,20 @@ public class ConsentPdfGeneratorImpl implements ConsentPdfGenerator {
     private String composeAddress(Address address) {
         StringBuilder addressString = new StringBuilder();
         if (address.getLine1() != null) {
-            addressString.append(address.getLine1() + ", ");
+            addressString.append(address.getLine1()).append(", ");
         }
 
         if (address.getLine2() != null) {
-            addressString.append(address.getLine2() + ", ");
+            addressString.append(address.getLine2()).append(", ");
         }
 
         if (address.getCity() != null) {
-            addressString.append(address.getCity() + ", ");
+            addressString.append(address.getCity()).append(", ");
         }
 
 
         if (address.getState() != null && address.getPostalCode() != null) {
-            addressString.append(address.getState() + ", " + address.getPostalCode());
+            addressString.append(address.getState()).append(", ").append(address.getPostalCode());
         }
 
         return addressString.toString();
@@ -203,20 +191,20 @@ public class ConsentPdfGeneratorImpl implements ConsentPdfGenerator {
     private String composeAddress(FlattenedSmallProviderDto providerDto) {
         StringBuilder addressString = new StringBuilder();
         if (providerDto.getFirstLinePracticeLocationAddress() != null) {
-            addressString.append(providerDto.getFirstLinePracticeLocationAddress() + ", ");
+            addressString.append(providerDto.getFirstLinePracticeLocationAddress()).append(", ");
         }
 
         if (providerDto.getSecondLinePracticeLocationAddress() != null) {
-            addressString.append(providerDto.getSecondLinePracticeLocationAddress() + ", ");
+            addressString.append(providerDto.getSecondLinePracticeLocationAddress()).append(", ");
         }
 
         if (providerDto.getPracticeLocationAddressCityName() != null) {
-            addressString.append(providerDto.getPracticeLocationAddressCityName() + ", ");
+            addressString.append(providerDto.getPracticeLocationAddressCityName()).append(", ");
         }
 
 
         if (providerDto.getPracticeLocationAddressStateName() != null && providerDto.getPracticeLocationAddressPostalCode() != null) {
-            addressString.append(providerDto.getPracticeLocationAddressStateName() + ", " + providerDto.getPracticeLocationAddressPostalCode());
+            addressString.append(providerDto.getPracticeLocationAddressStateName()).append(", ").append(providerDto.getPracticeLocationAddressPostalCode());
         }
 
         return addressString.toString();
@@ -308,7 +296,7 @@ public class ConsentPdfGeneratorImpl implements ConsentPdfGenerator {
         medicalInformation.addElement(sensitivityCategoryParagraph);
 
         List<String> sensitivityCategoryList = consent.getShareSensitivityCategories().stream()
-                .map(sensitivityCategory -> sensitivityCategory.getDisplay()).collect(toList());
+                .map(SensitivityCategory::getDisplay).collect(toList());
 
         medicalInformation.addElement(iTextPdfService.createUnorderList(sensitivityCategoryList));
         healthInformationToBeDisclose.addCell(medicalInformation);
@@ -323,11 +311,11 @@ public class ConsentPdfGeneratorImpl implements ConsentPdfGenerator {
     }
 
     private List<String> getMedicalInformation(Consent consent) {
-        return consent.getShareSensitivityCategories().stream().map(sensitivityCategory -> sensitivityCategory.getDisplay()).collect(toList());
+        return consent.getShareSensitivityCategories().stream().map(SensitivityCategory::getDisplay).collect(toList());
     }
 
     private List<String> getPurposeOfUse(Consent consent) {
-        return consent.getSharePurposes().stream().map(purpose -> purpose.getDisplay()).collect(toList());
+        return consent.getSharePurposes().stream().map(Purpose::getDisplay).collect(toList());
     }
 
     private PdfPTable createSigningDetailsTable(Consent consent, Boolean isSigned, Date attestedOn, PatientDto patientProfile) {
@@ -335,7 +323,7 @@ public class ConsentPdfGeneratorImpl implements ConsentPdfGenerator {
 
         if (isSigned && consent != null && attestedOn != null) {
             Font patientInfoFont = new Font(Font.FontFamily.TIMES_ROMAN, 13, Font.BOLD);
-            String email= patientProfile.getTelecoms().stream().filter(telecomDto -> telecomDto.getSystem().equalsIgnoreCase(EMAIL)).findFirst().get().getValue();
+            String email = patientProfile.getTelecoms().stream().filter(telecomDto -> telecomDto.getSystem().equalsIgnoreCase(EMAIL)).findFirst().get().getValue();
 
             PdfPCell attesterEmailCell = new PdfPCell(iTextPdfService.createCellContent("Email: ", patientInfoFont, email, null));
             attesterEmailCell.setBorder(Rectangle.NO_BORDER);
