@@ -38,7 +38,7 @@ public class ConsentExportMapperImpl implements ConsentExportMapper {
                                   pcmDetailedConsentDto, gov.samhsa.c2s.pcm
                                   .infrastructure.dto.PatientDto
                                   pcmPatientDto) {
-
+        log.debug("Invoking ConsentExportMapperImpl - map - Start");
         ConsentDto consentDto = new ConsentDto();
         PatientDto patientDto = new PatientDto();
 
@@ -78,7 +78,7 @@ public class ConsentExportMapperImpl implements ConsentExportMapper {
             log.error("Error while mapping PCM Consent details to Consent Gen Consent Dto ");
             throw new ConsentExportException(e.getMessage(), e);
         }
-
+        log.debug("Invoking ConsentExportMapperImpl - map - End" + consentDto);
         return consentDto;
 
     }
@@ -187,6 +187,7 @@ public class ConsentExportMapperImpl implements ConsentExportMapper {
 
         if (pcmPurposeDtos.size() > 0) {
             pcmPurposeDtos.forEach(pou -> {
+                log.debug("pcm pou dto" + pcmPurposeDtos);
                 TypeCodesDto pouCodeDto = new TypeCodesDto();
 
                 pouCodeDto.setCodeSystem(pou.getIdentifier().getSystem());
@@ -203,6 +204,7 @@ public class ConsentExportMapperImpl implements ConsentExportMapper {
         }
 
         consentDto.setShareForPurposeOfUseCodes(consentDtoShareForPurposeOfUseCodes);
+        log.debug("consentgen pou code" + consentDtoShareForPurposeOfUseCodes);
     }
 
     /**
