@@ -23,7 +23,7 @@ public class ConsentExportServiceImpl implements ConsentExportService {
 
     public ConsentExportServiceImpl(ConsentService consentService, UmsService umsService, ConsentBuilder
             consentBuilder, FhirProperties
-            fhirProperties) {
+                                            fhirProperties) {
         this.consentService = consentService;
         this.umsService = umsService;
         this.consentBuilder = consentBuilder;
@@ -33,17 +33,21 @@ public class ConsentExportServiceImpl implements ConsentExportService {
 
     @Override
     public ConsentXacmlDto exportConsent2XACML(XacmlRequestDto xacmlRequestDto) {
-
+        log.debug("Invoking consent export Service - exportConsent2XACML - Start");
         final DetailedConsentDto pcmConsentDto = (DetailedConsentDto)
                 consentService.searchConsent(xacmlRequestDto);
+        ConsentXacmlDto consentXacmlDto = new ConsentXacmlDto();
         try {
-            ConsentXacmlDto consentXacmlDto = new ConsentXacmlDto();
             consentXacmlDto.setConsentRefId(pcmConsentDto.getConsentReferenceId());
+            log.debug("Invoking common libraries consentgen - buildConsent2Xacml - Start");
             consentXacmlDto.setConsentXacml(consentBuilder.buildConsent2Xacml(xacmlRequestDto));
-            return consentXacmlDto;
+            log.debug("Invoking common libraries consentgen - buildConsent2Xacml - End");
         } catch (ConsentGenException e) {
             throw new ConsentExportException(e.getMessage(), e);
         }
+        log.debug("Invoking consent export service - exportConsent2XACML - End");
+        return consentXacmlDto;
+
     }
 
 }

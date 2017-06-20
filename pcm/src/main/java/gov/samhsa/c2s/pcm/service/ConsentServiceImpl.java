@@ -49,6 +49,7 @@ import gov.samhsa.c2s.pcm.service.exception.InvalidProviderTypeException;
 import gov.samhsa.c2s.pcm.service.exception.InvalidPurposeException;
 import gov.samhsa.c2s.pcm.service.exception.PatientOrSavedConsentNotFoundException;
 import gov.samhsa.c2s.pcm.service.fhir.FhirConsentService;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -72,6 +73,7 @@ import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
 
 @Service
+@Slf4j
 public class ConsentServiceImpl implements ConsentService {
 
     private final ConsentAttestationTermRepository consentAttestationTermRepository;
@@ -620,7 +622,7 @@ public class ConsentServiceImpl implements ConsentService {
     @Override
     @Transactional(readOnly = true)
     public DetailedConsentDto searchConsent(XacmlRequestDto xacmlRequestDto) {
-
+        log.debug("Invoking searchConsent Method" + xacmlRequestDto);
         final Consent searchConsent = consentRepository.findOneByPatientIdAndFromProvidersIdentifierValueAndToProvidersIdentifierValueAndSharePurposesIdentifierValueAndStartDateLessThanEqualAndEndDateGreaterThanEqualAndConsentAttestationNotNull(
                 xacmlRequestDto.getPatientId().getExtension(),
                 xacmlRequestDto.getIntermediaryNpi(),
@@ -628,6 +630,7 @@ public class ConsentServiceImpl implements ConsentService {
                 xacmlRequestDto.getPurposeOfUse().getPurposeFhir(),
                 LocalDate.now(),
                 LocalDate.now()).orElseThrow(ConsentNotFoundException::new);
+        log.debug("consent search found" + searchConsent);
         return mapToDetailedConsentDto(searchConsent);
     }
 

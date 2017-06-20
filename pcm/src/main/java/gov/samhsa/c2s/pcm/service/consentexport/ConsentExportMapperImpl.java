@@ -38,7 +38,7 @@ public class ConsentExportMapperImpl implements ConsentExportMapper {
                                   pcmDetailedConsentDto, gov.samhsa.c2s.pcm
                                   .infrastructure.dto.PatientDto
                                   pcmPatientDto) {
-
+        log.debug("Invoking ConsentExportMapperImpl - map - Start");
         ConsentDto consentDto = new ConsentDto();
         PatientDto patientDto = new PatientDto();
 
@@ -78,7 +78,7 @@ public class ConsentExportMapperImpl implements ConsentExportMapper {
             log.error("Error while mapping PCM Consent details to Consent Gen Consent Dto ");
             throw new ConsentExportException(e.getMessage(), e);
         }
-
+        log.debug("Invoking ConsentExportMapperImpl - map - End" + consentDto);
         return consentDto;
 
     }
