@@ -187,6 +187,7 @@ public class ConsentExportMapperImpl implements ConsentExportMapper {
 
         if (pcmPurposeDtos.size() > 0) {
             pcmPurposeDtos.forEach(pou -> {
+                log.debug("pcm pou dto" + pcmPurposeDtos);
                 TypeCodesDto pouCodeDto = new TypeCodesDto();
 
                 pouCodeDto.setCodeSystem(pou.getIdentifier().getSystem());
@@ -203,6 +204,7 @@ public class ConsentExportMapperImpl implements ConsentExportMapper {
         }
 
         consentDto.setShareForPurposeOfUseCodes(consentDtoShareForPurposeOfUseCodes);
+        log.debug("consentgen pou code" + consentDtoShareForPurposeOfUseCodes);
     }
 
     /**
