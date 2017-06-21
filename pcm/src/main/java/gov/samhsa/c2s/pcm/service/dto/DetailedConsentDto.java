@@ -13,6 +13,7 @@ import javax.validation.constraints.Future;
 import javax.validation.constraints.NotNull;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 @Data
@@ -57,4 +58,26 @@ public class DetailedConsentDto {
 
     @NotNull
     private String consentReferenceId;
+
+    private Date createdDate;
+
+    private String createdBy;
+
+    private Boolean createdByPatient;
+
+    private Date lastUpdatedDate;
+
+    private String lastUpdatedBy;
+
+    private Date attestedDate;
+
+    private String attestedBy;
+
+    private Boolean attestedByPatient;
+
+    private Date revokedDate;
+
+    private String revokedBy;
+
+    private Boolean revokedByPatient;
 }
