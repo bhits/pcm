@@ -235,6 +235,15 @@ public class ConsentServiceImpl implements ConsentService {
     }
 
     private DetailedConsentDto mapToDetailedConsentDto(Consent consent) {
+        //Consent Attestation Info
+        Date attestedDate = null;
+        String attestedBy = null;
+        Boolean attestedByPatient = null;
+
+        //Consent Revocation Info
+        Date revokedDate = null;
+        String revokedBy = null;
+        Boolean revokedByPatient = null;
 
         final List<SensitivityCategoryDto> shareSensitivityCategories = consent.getShareSensitivityCategories().stream()
                 .map(sensitivityCategory -> modelMapper.map(sensitivityCategory, SensitivityCategoryDto.class))
@@ -268,6 +277,22 @@ public class ConsentServiceImpl implements ConsentService {
                 .peek(abstractProviderDto -> abstractProviderDto.setDeletable(!ProviderServiceImpl.isProviderInUse(providerIdentifiersWithConsents, abstractProviderDto.getIdentifiers())))
                 .collect(toList());
 
+        //A revoked consent also contains attestation info
+        if(consent.getConsentStage().name().equalsIgnoreCase(ConsentStage.REVOKED.toString()) ||
+                consent.getConsentStage().name().equalsIgnoreCase(ConsentStage.SIGNED.toString())){
+            ConsentAttestation attestedConsent = consent.getConsentAttestation();
+            attestedDate = attestedConsent.getAttestedDate();
+            attestedBy = attestedConsent.getAttestedBy();
+            attestedByPatient = attestedConsent.getAttestedByPatient();
+        }
+
+        if(consent.getConsentStage().name().equalsIgnoreCase(ConsentStage.REVOKED.toString())){
+            ConsentRevocation revokedConsent = consent.getConsentRevocation();
+            revokedDate = revokedConsent.getRevokedDate();
+            revokedBy = revokedConsent.getRevokedBy();
+            revokedByPatient = revokedConsent.getRevokedByPatient();
+        }
+
         return DetailedConsentDto.builder()
                 .id(consent.getId())
                 .fromProviders(fromProviders)
@@ -278,6 +303,17 @@ public class ConsentServiceImpl implements ConsentService {
                 .endDate(consent.getEndDate())
                 .consentStage(consent.getConsentStage())
                 .consentReferenceId(consent.getConsentReferenceId())
+                .createdDate(consent.getCreatedDate())
+                .createdBy(consent.getCreatedBy())
+                .createdByPatient(consent.getCreatedByPatient())
+                .lastUpdatedBy(consent.getLastUpdatedBy())
+                .lastUpdatedDate(consent.getLastUpdatedDate())
+                .attestedDate(attestedDate)
+                .attestedBy(attestedBy)
+                .attestedByPatient(attestedByPatient)
+                .revokedDate(revokedDate)
+                .revokedBy(revokedBy)
+                .revokedByPatient(revokedByPatient)
                 .build();
     }
 
