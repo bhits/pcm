@@ -85,10 +85,10 @@ public class Consent {
     private ConsentRevocation consentRevocation;
 
     @ManyToMany
-    private List<SensitivityCategory> shareSensitivityCategories = new ArrayList<>();
+    private List<SensitivityCategory> sensitivityCategories = new ArrayList<>();
 
     @ManyToMany
-    private List<Purpose> sharePurposes = new ArrayList<>();
+    private List<Purpose> purposes = new ArrayList<>();
 
     @Enumerated(EnumType.STRING)
     @NotNull

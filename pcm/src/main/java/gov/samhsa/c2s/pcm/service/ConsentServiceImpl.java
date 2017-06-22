@@ -119,7 +119,7 @@ public class ConsentServiceImpl implements ConsentService {
 
         if (purposeOfUse.isPresent()) {
             consents = consents.stream().filter(oneConsent ->
-                    oneConsent.getSharePurposes().stream()
+                    oneConsent.getPurposes().stream()
                             .anyMatch(onePurpose ->
                                     onePurpose.getId().equals(purposeOfUse.get()))
             ).collect(toList());
@@ -157,17 +157,17 @@ public class ConsentServiceImpl implements ConsentService {
         final List<Provider> toProviders = consentDto.getToProviders().getIdentifiers().stream()
                 .map(toProvider(patient))
                 .collect(toList());
-        final List<SensitivityCategory> shareSensitivityCategories = consentDto.getShareSensitivityCategories().getIdentifiers().stream()
+        final List<SensitivityCategory> sensitivityCategories = consentDto.getShareSensitivityCategories().getIdentifiers().stream()
                 .map(toSensitivityCategory())
                 .collect(toList());
-        final List<Purpose> sharePurposes = consentDto.getSharePurposes().getIdentifiers().stream()
+        final List<Purpose> purposes = consentDto.getSharePurposes().getIdentifiers().stream()
                 .map(toPurpose())
                 .collect(toList());
 
         // Assert consent is not conflicting with an existing consent
         final Set<Identifier> fromProviderIdentifiers = fromProviders.stream().map(Provider::getIdentifier).collect(toSet());
         final Set<Identifier> toProviderIdentifiers = toProviders.stream().map(Provider::getIdentifier).collect(toSet());
-        final Set<Identifier> sharePurposeIdentifiers = sharePurposes.stream().map(Purpose::getIdentifier).collect(toSet());
+        final Set<Identifier> sharePurposeIdentifiers = purposes.stream().map(Purpose::getIdentifier).collect(toSet());
         final boolean duplicate = patient.getConsents().stream()
                 // find any consent that is not in 'REVOKED' stage
                 .filter(consent -> !ConsentStage.REVOKED.equals(consent.getConsentStage()))
@@ -183,7 +183,7 @@ public class ConsentServiceImpl implements ConsentService {
                                 // the date overlaps and
                                 (!(consent.getStartDate().isAfter(consentDto.getEndDate()) || consentDto.getStartDate().isAfter(consent.getEndDate()))) &&
                                 // contains any of the share purposes
-                                consent.getSharePurposes().stream().map(Purpose::getIdentifier)
+                                consent.getPurposes().stream().map(Purpose::getIdentifier)
                                         .anyMatch(sharePurposeIdentifiers::contains));
         if (duplicate) {
             throw new DuplicateConsentException();
@@ -195,8 +195,8 @@ public class ConsentServiceImpl implements ConsentService {
                 .patient(patient)
                 .fromProviders(fromProviders)
                 .toProviders(toProviders)
-                .shareSensitivityCategories(shareSensitivityCategories)
-                .sharePurposes(sharePurposes)
+                .sensitivityCategories(sensitivityCategories)
+                .purposes(purposes)
                 .startDate(startDate)
                 .endDate(endDate)
                 .consentStage(ConsentStage.SAVED)
@@ -245,10 +245,10 @@ public class ConsentServiceImpl implements ConsentService {
         String revokedBy = null;
         Boolean revokedByPatient = null;
 
-        final List<SensitivityCategoryDto> shareSensitivityCategories = consent.getShareSensitivityCategories().stream()
+        final List<SensitivityCategoryDto> shareSensitivityCategories = consent.getSensitivityCategories().stream()
                 .map(sensitivityCategory -> modelMapper.map(sensitivityCategory, SensitivityCategoryDto.class))
                 .collect(toList());
-        final List<PurposeDto> sharePurposes = consent.getSharePurposes().stream()
+        final List<PurposeDto> sharePurposes = consent.getPurposes().stream()
                 .map(purpose -> modelMapper.map(purpose, PurposeDto.class))
                 .collect(toList());
         final Set<Identifier> providerIdentifiersWithConsents = ProviderServiceImpl.getProviderIdentifiersWithConsents(consent.getPatient());
@@ -297,8 +297,8 @@ public class ConsentServiceImpl implements ConsentService {
                 .id(consent.getId())
                 .fromProviders(fromProviders)
                 .toProviders(toProviders)
-                .shareSensitivityCategories(shareSensitivityCategories)
-                .sharePurposes(sharePurposes)
+                .sensitivityCategories(shareSensitivityCategories)
+                .purposes(sharePurposes)
                 .startDate(consent.getStartDate())
                 .endDate(consent.getEndDate())
                 .consentStage(consent.getConsentStage())
@@ -505,8 +505,8 @@ public class ConsentServiceImpl implements ConsentService {
         consent.setEndDate(consentDto.getEndDate());
         consent.setFromProviders(fromProviders);
         consent.setToProviders(toProviders);
-        consent.setShareSensitivityCategories(shareSensitivityCategories);
-        consent.setSharePurposes(sharePurposes);
+        consent.setSensitivityCategories(shareSensitivityCategories);
+        consent.setPurposes(sharePurposes);
         consent.setLastUpdatedBy(lastUpdatedBy.orElse(null));
 
         //generate pdf
@@ -611,12 +611,12 @@ public class ConsentServiceImpl implements ConsentService {
     }
 
     private ConsentDto toConsentDto(Consent consent) {
-        IdentifiersDto shareSensitivityCategory = IdentifiersDto.of(consent.getShareSensitivityCategories().stream().distinct()
+        IdentifiersDto shareSensitivityCategory = IdentifiersDto.of(consent.getSensitivityCategories().stream().distinct()
                 .map(sensitivityCategory -> modelMapper.map(sensitivityCategory, SensitivityCategoryDto.class))
                 .map(sensitivityCategoryDto -> sensitivityCategoryDto.getIdentifier())
                 .collect(Collectors.toSet()));
 
-        IdentifiersDto sharePurposs = IdentifiersDto.of(consent.getSharePurposes().stream().distinct()
+        IdentifiersDto sharePurposs = IdentifiersDto.of(consent.getPurposes().stream().distinct()
                 .map(sensitivityCategory -> modelMapper.map(sensitivityCategory, SensitivityCategoryDto.class))
                 .map(sensitivityCategoryDto -> sensitivityCategoryDto.getIdentifier())
                 .collect(Collectors.toSet()));
@@ -650,7 +650,7 @@ public class ConsentServiceImpl implements ConsentService {
     public List<SensitivityCategoryDto> getSharedSensitivityCategories(String patientId, Long consentId) {
         final Consent consent = consentRepository.findOneByIdAndPatientId(consentId, patientId).orElseThrow(ConsentNotFoundException::new);
 
-        return consent.getShareSensitivityCategories().stream()
+        return consent.getSensitivityCategories().stream()
                 .map(sensitivityCategory -> modelMapper.map(sensitivityCategory, SensitivityCategoryDto.class))
                 .collect(toList());
     }
@@ -659,7 +659,7 @@ public class ConsentServiceImpl implements ConsentService {
     @Transactional(readOnly = true)
     public DetailedConsentDto searchConsent(XacmlRequestDto xacmlRequestDto) {
         log.debug("Invoking searchConsent Method" + xacmlRequestDto);
-        final Consent searchConsent = consentRepository.findOneByPatientIdAndFromProvidersIdentifierValueAndToProvidersIdentifierValueAndSharePurposesIdentifierValueAndStartDateLessThanEqualAndEndDateGreaterThanEqualAndConsentAttestationNotNull(
+        final Consent searchConsent = consentRepository.findOneByPatientIdAndFromProvidersIdentifierValueAndToProvidersIdentifierValueAndPurposesIdentifierValueAndStartDateLessThanEqualAndEndDateGreaterThanEqualAndConsentAttestationNotNull(
                 xacmlRequestDto.getPatientId().getExtension(),
                 xacmlRequestDto.getIntermediaryNpi(),
                 xacmlRequestDto.getRecipientNpi(),
