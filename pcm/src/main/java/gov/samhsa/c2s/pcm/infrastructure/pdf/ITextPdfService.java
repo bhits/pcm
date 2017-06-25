@@ -36,7 +36,9 @@ public interface ITextPdfService {
 
     PdfPTable createConsentReferenceNumberTable(Consent consent);
 
-    PdfPTable createSigningDetailsTable(String firstName, String lastName, String email, boolean isSigned, Date attestedOn);
+    PdfPTable createPatientSigningDetailsTable(String firstName, String lastName, String email, boolean isSigned, Date attestedOn);
+
+    PdfPTable createProviderSigningDetailsTable(String firstName, String lastName, String email, boolean isSigned, Date attestedOn);
 
     PdfPTable createPatientNameAndDOBTable(String firstName, String lastName, Date birthDate);
 
