@@ -210,7 +210,7 @@ public class ConsentServiceImpl implements ConsentService {
         //generate pdf
         PatientDto patientDto = umsService.getPatientProfile(patientId);
 
-        consent.setSavedPdf(consentPdfGenerator.generate42CfrPart2Pdf(consent, patientDto, false, null, consentAttestationTermRepository.findOne(Long.valueOf(1)).getText()));
+        consent.setSavedPdf(consentPdfGenerator.generate42CfrPart2Pdf(consent, patientDto, false, null, consentAttestationTermRepository.findOne(Long.valueOf(1)).getText(), Optional.empty()));
 
         consentRepository.save(consent);
         patient.getConsents().add(consent);
@@ -431,7 +431,7 @@ public class ConsentServiceImpl implements ConsentService {
             PatientDto patientDto = umsService.getPatientProfile(patientId);
 
             //generate consent pdf
-            consentAttestation.setConsentAttestationPdf(consentPdfGenerator.generate42CfrPart2Pdf(consent, patientDto, true, new Date(), consentAttestationTerm.getText()));
+            consentAttestation.setConsentAttestationPdf(consentPdfGenerator.generate42CfrPart2Pdf(consent, patientDto, true, new Date(), consentAttestationTerm.getText(), Optional.empty()));
 
             // generate FHIR Consent and publish consent to FHIR server if enabled
             if (pcmProperties.getConsent().getPublish().isEnabled()) {
@@ -511,7 +511,7 @@ public class ConsentServiceImpl implements ConsentService {
 
         //generate pdf
         PatientDto patientDto = umsService.getPatientProfile(patientId);
-        consent.setSavedPdf(consentPdfGenerator.generate42CfrPart2Pdf(consent, patientDto, false, new Date(), consentAttestationTermRepository.findOne(Long.valueOf(1)).getText()));
+        consent.setSavedPdf(consentPdfGenerator.generate42CfrPart2Pdf(consent, patientDto, false, new Date(), consentAttestationTermRepository.findOne(Long.valueOf(1)).getText(), Optional.empty()));
 
         consentRepository.save(consent);
 

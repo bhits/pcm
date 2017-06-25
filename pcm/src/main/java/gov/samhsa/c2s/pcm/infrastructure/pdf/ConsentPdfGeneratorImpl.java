@@ -17,6 +17,7 @@ import gov.samhsa.c2s.pcm.domain.valueobject.Address;
 import gov.samhsa.c2s.pcm.infrastructure.PlsService;
 import gov.samhsa.c2s.pcm.infrastructure.dto.FlattenedSmallProviderDto;
 import gov.samhsa.c2s.pcm.infrastructure.dto.PatientDto;
+import gov.samhsa.c2s.pcm.infrastructure.dto.UserDto;
 import org.apache.commons.lang3.text.StrSubstitutor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -25,6 +26,7 @@ import org.springframework.util.Assert;
 import java.io.ByteArrayOutputStream;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
 import static java.util.stream.Collectors.toList;
 
@@ -48,7 +50,7 @@ public class ConsentPdfGeneratorImpl implements ConsentPdfGenerator {
 
 
     @Override
-    public byte[] generate42CfrPart2Pdf(Consent consent, PatientDto patientProfile, boolean isSigned, Date attestedOn, String consentTerms) {
+    public byte[] generate42CfrPart2Pdf(Consent consent, PatientDto patientProfile, boolean isSigned, Date attestedOn, String consentTerms, Optional<UserDto> attesterUserDto) {
         Assert.notNull(consent, "Consent is required.");
 
         Document document = new Document();
