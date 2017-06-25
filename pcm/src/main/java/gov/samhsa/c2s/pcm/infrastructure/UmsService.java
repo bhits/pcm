@@ -2,6 +2,7 @@ package gov.samhsa.c2s.pcm.infrastructure;
 
 import gov.samhsa.c2s.pcm.infrastructure.dto.PatientDto;
 import gov.samhsa.c2s.pcm.infrastructure.dto.PatientIdentifierDto;
+import gov.samhsa.c2s.pcm.infrastructure.dto.UserDto;
 import org.springframework.cloud.netflix.feign.FeignClient;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -34,4 +35,9 @@ public interface UmsService {
         return Arrays.asList(mrnPatientId, ssnPatientId);
 
     }
+
+    @RequestMapping(value = "/authId/{userAuthId}", method = RequestMethod.GET)
+    UserDto getUserById(@PathVariable("userAuthId") String userAuthId);
+
+
 }
