@@ -7,6 +7,7 @@ import com.itextpdf.text.Paragraph;
 import com.itextpdf.text.pdf.PdfWriter;
 import gov.samhsa.c2s.pcm.domain.Consent;
 import gov.samhsa.c2s.pcm.infrastructure.dto.PatientDto;
+import gov.samhsa.c2s.pcm.infrastructure.dto.UserDto;
 import gov.samhsa.c2s.pcm.infrastructure.exception.ConsentPdfGenerationException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -14,6 +15,7 @@ import org.springframework.util.Assert;
 
 import java.io.ByteArrayOutputStream;
 import java.util.Date;
+import java.util.Optional;
 
 @Service
 public class ConsentRevocationPdfGeneratorImpl implements ConsentRevocationPdfGenerator {
@@ -30,7 +32,7 @@ public class ConsentRevocationPdfGeneratorImpl implements ConsentRevocationPdfGe
     }
 
     @Override
-    public byte[] generateConsentRevocationPdf(Consent consent, PatientDto patient, Date attestedOnDateTime, String consentRevocationTerm) {
+    public byte[] generateConsentRevocationPdf(Consent consent, PatientDto patient, Date attestedOnDateTime, String consentRevocationTerm, Optional<UserDto> revokedByUserDto) {
         Assert.notNull(consent, "Consent is required.");
 
         Document document = new Document();
