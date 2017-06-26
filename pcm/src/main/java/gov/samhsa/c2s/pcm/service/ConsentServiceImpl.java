@@ -1,23 +1,7 @@
 package gov.samhsa.c2s.pcm.service;
 
 import gov.samhsa.c2s.pcm.config.PcmProperties;
-import gov.samhsa.c2s.pcm.domain.Consent;
-import gov.samhsa.c2s.pcm.domain.ConsentAttestation;
-import gov.samhsa.c2s.pcm.domain.ConsentAttestationTerm;
-import gov.samhsa.c2s.pcm.domain.ConsentAttestationTermRepository;
-import gov.samhsa.c2s.pcm.domain.ConsentRepository;
-import gov.samhsa.c2s.pcm.domain.ConsentRevocation;
-import gov.samhsa.c2s.pcm.domain.ConsentRevocationTerm;
-import gov.samhsa.c2s.pcm.domain.ConsentRevocationTermRepository;
-import gov.samhsa.c2s.pcm.domain.Organization;
-import gov.samhsa.c2s.pcm.domain.Patient;
-import gov.samhsa.c2s.pcm.domain.PatientRepository;
-import gov.samhsa.c2s.pcm.domain.Practitioner;
-import gov.samhsa.c2s.pcm.domain.Provider;
-import gov.samhsa.c2s.pcm.domain.Purpose;
-import gov.samhsa.c2s.pcm.domain.PurposeRepository;
-import gov.samhsa.c2s.pcm.domain.SensitivityCategory;
-import gov.samhsa.c2s.pcm.domain.SensitivityCategoryRepository;
+import gov.samhsa.c2s.pcm.domain.*;
 import gov.samhsa.c2s.pcm.domain.valueobject.Address;
 import gov.samhsa.c2s.pcm.domain.valueobject.ConsentStage;
 import gov.samhsa.c2s.pcm.domain.valueobject.Identifier;
@@ -41,13 +25,7 @@ import gov.samhsa.c2s.pcm.service.dto.PractitionerDto;
 import gov.samhsa.c2s.pcm.service.dto.PurposeDto;
 import gov.samhsa.c2s.pcm.service.dto.SensitivityCategoryDto;
 import gov.samhsa.c2s.pcm.service.dto.XacmlRequestDto;
-import gov.samhsa.c2s.pcm.service.exception.BadRequestException;
-import gov.samhsa.c2s.pcm.service.exception.ConsentNotFoundException;
-import gov.samhsa.c2s.pcm.service.exception.DuplicateConsentException;
-import gov.samhsa.c2s.pcm.service.exception.InvalidProviderException;
-import gov.samhsa.c2s.pcm.service.exception.InvalidProviderTypeException;
-import gov.samhsa.c2s.pcm.service.exception.InvalidPurposeException;
-import gov.samhsa.c2s.pcm.service.exception.PatientOrSavedConsentNotFoundException;
+import gov.samhsa.c2s.pcm.service.exception.*;
 import gov.samhsa.c2s.pcm.service.fhir.FhirConsentService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.RandomStringUtils;
@@ -89,9 +67,10 @@ public class ConsentServiceImpl implements ConsentService {
     private final PurposeRepository purposeRepository;
     private final SensitivityCategoryRepository sensitivityCategoryRepository;
     private final FhirConsentService fhirConsentService;
+    private final ShareSensitivityCategoriesRepository shareSensitivityCategoriesRepository;
 
     @Autowired
-    public ConsentServiceImpl(ConsentAttestationTermRepository consentAttestationTermRepository, ConsentPdfGenerator consentPdfGenerator, ConsentRepository consentRepository, ConsentRevocationPdfGenerator consentRevocationPdfGenerator, ConsentRevocationTermRepository consentRevocationTermRepository, ModelMapper modelMapper, PatientRepository patientRepository, PcmProperties pcmProperties, UmsService umsService, PlsService plsService, PurposeRepository purposeRepository, SensitivityCategoryRepository sensitivityCategoryRepository, FhirConsentService fhirConsentService) {
+    public ConsentServiceImpl(ConsentAttestationTermRepository consentAttestationTermRepository, ConsentPdfGenerator consentPdfGenerator, ConsentRepository consentRepository, ConsentRevocationPdfGenerator consentRevocationPdfGenerator, ConsentRevocationTermRepository consentRevocationTermRepository, ModelMapper modelMapper, PatientRepository patientRepository, PcmProperties pcmProperties, UmsService umsService, PlsService plsService, PurposeRepository purposeRepository, SensitivityCategoryRepository sensitivityCategoryRepository, FhirConsentService fhirConsentService, ShareSensitivityCategoriesRepository shareSensitivityCategoriesRepository) {
         this.consentAttestationTermRepository = consentAttestationTermRepository;
         this.consentPdfGenerator = consentPdfGenerator;
         this.consentRepository = consentRepository;
@@ -105,6 +84,7 @@ public class ConsentServiceImpl implements ConsentService {
         this.purposeRepository = purposeRepository;
         this.sensitivityCategoryRepository = sensitivityCategoryRepository;
         this.fhirConsentService = fhirConsentService;
+        this.shareSensitivityCategoriesRepository = shareSensitivityCategoriesRepository;
     }
 
     @Override
@@ -150,6 +130,9 @@ public class ConsentServiceImpl implements ConsentService {
     @Override
     @Transactional
     public void saveConsent(String patientId, ConsentDto consentDto, Optional<String> createdBy, Optional<Boolean> createdByPatient) {
+
+
+
         final Patient patient = patientRepository.saveAndGet(patientId);
         final List<Provider> fromProviders = consentDto.getFromProviders().getIdentifiers().stream()
                 .map(toProvider(patient))
@@ -199,9 +182,10 @@ public class ConsentServiceImpl implements ConsentService {
                 .purposes(purposes)
                 .startDate(startDate)
                 .endDate(endDate)
+                .shareSensitivityCategories(getConsentShareSensitivityCategory())
                 .consentStage(ConsentStage.SAVED)
                 .consentReferenceId(RandomStringUtils
-                        .randomAlphanumeric(10))
+                .randomAlphanumeric(10))
                 .createdBy(createdBy.orElse(null))
                 .createdByPatient(createdByPatient.orElse(null))
                 .lastUpdatedBy(createdBy.orElse(null))
@@ -216,6 +200,20 @@ public class ConsentServiceImpl implements ConsentService {
         patient.getConsents().add(consent);
         patientRepository.save(patient);
     }
+
+    private ShareSensitivityCategories getConsentShareSensitivityCategory(){
+        Optional<ShareSensitivityCategories> optionalShareSensitivityCategories = null;
+
+        optionalShareSensitivityCategories = shareSensitivityCategoriesRepository.findOneById(Long.valueOf(1));
+        if(!optionalShareSensitivityCategories.isPresent()){
+            boolean shareSensitivityCategoriesEnabled = pcmProperties.getConsent().getShareSensitivityCategories().isEnabled();
+            ShareSensitivityCategories shareSensitivityCategories = new ShareSensitivityCategories();
+            shareSensitivityCategories.setShareSensitivityCategoriesEnabled(shareSensitivityCategoriesEnabled);
+            return shareSensitivityCategories;
+        }
+        return optionalShareSensitivityCategories.get();
+    }
+
 
     @Override
     @Transactional
@@ -637,6 +635,7 @@ public class ConsentServiceImpl implements ConsentService {
                 .startDate(consent.getStartDate())
                 .shareSensitivityCategories(shareSensitivityCategory)
                 .sharePurposes(sharePurposs)
+                .shareSensitivityCategoriesEnabled(consent.getShareSensitivityCategories().isShareSensitivityCategoriesEnabled())
                 .fromProviders(fromProviders)
                 .toProviders(toProviders)
                 .id(consent.getId())

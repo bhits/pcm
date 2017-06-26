@@ -103,6 +103,14 @@ public class Consent {
     @NotNull
     private String consentReferenceId;
 
+    /**
+     *  Determines whether this consent is of
+     *  type SHARE ALL or DO NOT SHARE ALL
+     */
+    @NotNull
+    @ManyToOne(cascade = CascadeType.ALL)
+    private ShareSensitivityCategories shareSensitivityCategories;
+
     public void setConsentAttestation(ConsentAttestation consentAttestation) {
         setConsentStage(ConsentStage.SIGNED);
         this.consentAttestation = consentAttestation;

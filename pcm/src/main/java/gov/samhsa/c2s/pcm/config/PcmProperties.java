@@ -42,6 +42,9 @@ public class PcmProperties {
         @Valid
         private Publish publish;
 
+        @Valid
+        private ShareSensitivityCategories shareSensitivityCategories;
+
         @Data
         public static class Publish {
             @NotNull
@@ -52,6 +55,13 @@ public class PcmProperties {
 
             @NotEmpty
             private String clientSocketTimeoutInMs;
+        }
+
+        @Data
+        public static class ShareSensitivityCategories {
+            @NotNull
+            private boolean enabled;
+
         }
 
         @Data
