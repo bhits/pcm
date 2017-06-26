@@ -32,8 +32,8 @@ public interface UmsService {
         defaultEmail.setSystem("EMAIL");
         defaultEmail.setValue("c2s-provider@mailinator.com");
         return UserDto.builder()
-                .firstName("Provider")
-                .lastName("Consent2Share")
+                .firstName("Bob")
+                .lastName("Provider")
                 .telecoms(Arrays.asList(defaultEmail))
                 .build();
     }
