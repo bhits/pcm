@@ -25,6 +25,7 @@ import gov.samhsa.c2s.pcm.infrastructure.PlsService;
 import gov.samhsa.c2s.pcm.infrastructure.UmsService;
 import gov.samhsa.c2s.pcm.infrastructure.dto.FlattenedSmallProviderDto;
 import gov.samhsa.c2s.pcm.infrastructure.dto.PatientDto;
+import gov.samhsa.c2s.pcm.infrastructure.dto.UserDto;
 import gov.samhsa.c2s.pcm.infrastructure.pdf.ConsentPdfGenerator;
 import gov.samhsa.c2s.pcm.infrastructure.pdf.ConsentRevocationPdfGenerator;
 import gov.samhsa.c2s.pcm.service.dto.AbstractProviderDto;
@@ -207,10 +208,17 @@ public class ConsentServiceImpl implements ConsentService {
                 .lastUpdatedBy(createdBy.orElse(null))
                 .build();
 
-        //generate pdf
+        //Generate SAVED PDF
         PatientDto patientDto = umsService.getPatientProfile(patientId);
 
-        consent.setSavedPdf(consentPdfGenerator.generate42CfrPart2Pdf(consent, patientDto, false, null, consentAttestationTermRepository.findOne(Long.valueOf(1)).getText()));
+        if((createdByPatient == null) || !createdByPatient.isPresent() || createdByPatient.get()){
+            //Do not send user info if saved by Patient
+            consent.setSavedPdf(consentPdfGenerator.generate42CfrPart2Pdf(consent, patientDto, false, null, consentAttestationTermRepository.findOne(Long.valueOf(1)).getText(), Optional.empty()));
+        } else {
+            UserDto consentCreatorUserDto = umsService.getUserById(createdBy.get());
+            consent.setSavedPdf(consentPdfGenerator.generate42CfrPart2Pdf(consent, patientDto, false, null, consentAttestationTermRepository.findOne(Long.valueOf(1)).getText(), Optional.ofNullable(consentCreatorUserDto)));
+        }
+
 
         consentRepository.save(consent);
         patient.getConsents().add(consent);
@@ -430,8 +438,14 @@ public class ConsentServiceImpl implements ConsentService {
 
             PatientDto patientDto = umsService.getPatientProfile(patientId);
 
-            //generate consent pdf
-            consentAttestation.setConsentAttestationPdf(consentPdfGenerator.generate42CfrPart2Pdf(consent, patientDto, true, new Date(), consentAttestationTerm.getText()));
+            //Generate SIGNED PDF
+            if((attestedByPatient == null) || !attestedByPatient.isPresent() || attestedByPatient.get()){
+                //Do not send user Info if signed by Patient
+                consentAttestation.setConsentAttestationPdf(consentPdfGenerator.generate42CfrPart2Pdf(consent, patientDto, true, new Date(), consentAttestationTerm.getText(), Optional.empty()));
+            } else {
+                UserDto attesterUserDto = umsService.getUserById(attestedBy.get());
+                consentAttestation.setConsentAttestationPdf(consentPdfGenerator.generate42CfrPart2Pdf(consent, patientDto, true, new Date(), consentAttestationTerm.getText(), Optional.ofNullable(attesterUserDto)));
+            }
 
             // generate FHIR Consent and publish consent to FHIR server if enabled
             if (pcmProperties.getConsent().getPublish().isEnabled()) {
@@ -511,7 +525,8 @@ public class ConsentServiceImpl implements ConsentService {
 
         //generate pdf
         PatientDto patientDto = umsService.getPatientProfile(patientId);
-        consent.setSavedPdf(consentPdfGenerator.generate42CfrPart2Pdf(consent, patientDto, false, new Date(), consentAttestationTermRepository.findOne(Long.valueOf(1)).getText()));
+
+        consent.setSavedPdf(consentPdfGenerator.generate42CfrPart2Pdf(consent, patientDto, false, new Date(), consentAttestationTermRepository.findOne(Long.valueOf(1)).getText(), Optional.empty()));
 
         consentRepository.save(consent);
 
@@ -541,7 +556,16 @@ public class ConsentServiceImpl implements ConsentService {
 
 
             PatientDto patientDto = umsService.getPatientProfile(patientId);
-            consentRevocation.setConsentRevocationPdf(consentRevocationPdfGenerator.generateConsentRevocationPdf(consent, patientDto, new Date(), consentRevocationTerm.getText()));
+
+            //Generate REVOKED PDF
+            if((revokedByPatient == null) || !revokedByPatient.isPresent() || revokedByPatient.get()){
+                //Do not send user Info if revoked by Patient
+                consentRevocation.setConsentRevocationPdf(consentRevocationPdfGenerator.generateConsentRevocationPdf(consent, patientDto, new Date(), consentRevocationTerm.getText(), Optional.empty()));
+            } else {
+                UserDto consentRevokerUserDto = umsService.getUserById(revokedBy.get());
+                consentRevocation.setConsentRevocationPdf(consentRevocationPdfGenerator.generateConsentRevocationPdf(consent, patientDto, new Date(), consentRevocationTerm.getText(), Optional.ofNullable(consentRevokerUserDto)));
+            }
+
 
             consent.setConsentRevocation(consentRevocation);
 

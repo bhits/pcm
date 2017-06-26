@@ -25,7 +25,7 @@ public class ITextPdfServiceImpl implements ITextPdfService {
     //Create document title
     @Override
     public Paragraph createParagraphWithContent(String title, Font font) {
-        Paragraph titleParagraph = null;
+        Paragraph titleParagraph;
 
         if (font != null) {
             titleParagraph = new Paragraph(title, font);
@@ -47,7 +47,7 @@ public class ITextPdfServiceImpl implements ITextPdfService {
 
     @Override
     public PdfPCell createBorderlessCell(String content, Font font) {
-        PdfPCell cell = null;
+        PdfPCell cell;
 
         if (font != null) {
             cell = new PdfPCell(new Paragraph(content, font));
@@ -144,7 +144,7 @@ public class ITextPdfServiceImpl implements ITextPdfService {
 
         if (consent != null && consent.getConsentReferenceId() != null) {
             consentReferenceNumberTable.addCell(createBorderlessCell("Consent Reference Number:", null));
-            Font consentRefNumberFont = new Font(Font.FontFamily.TIMES_ROMAN, 11);
+            Font consentRefNumberFont = new Font(Font.FontFamily.TIMES_ROMAN, 13, Font.BOLD);
             consentReferenceNumberTable.addCell(createBorderlessCell(consent.getConsentReferenceId(), consentRefNumberFont));
         }
 
@@ -152,7 +152,7 @@ public class ITextPdfServiceImpl implements ITextPdfService {
     }
 
     @Override
-    public PdfPTable createSigningDetailsTable(String firstName, String lastName, String email, boolean isSigned, Date attestedOn) {
+    public PdfPTable createPatientSigningDetailsTable(String firstName, String lastName, String email, boolean isSigned, Date attestedOn) {
         PdfPTable signingDetailsTable = createBorderlessTable(1);
 
         if (isSigned && StringUtils.hasText(firstName) && StringUtils.hasText(lastName) && StringUtils.hasText(email) && Objects.nonNull(attestedOn)) {
@@ -167,6 +167,28 @@ public class ITextPdfServiceImpl implements ITextPdfService {
             signingDetailsTable.addCell(attesterEmailCell);
 
             PdfPCell attesterSignDateCell = new PdfPCell(createCellContent("Signed on: ", patientInfoFont, formatDate(attestedOn), null));
+            attesterSignDateCell.setBorder(Rectangle.NO_BORDER);
+            signingDetailsTable.addCell(attesterSignDateCell);
+        }
+        return signingDetailsTable;
+    }
+
+    @Override
+    public PdfPTable createProviderSigningDetailsTable(String firstName, String lastName, String email, boolean isSigned, Date attestedOn) {
+        PdfPTable signingDetailsTable = createBorderlessTable(1);
+
+        if (isSigned && StringUtils.hasText(firstName) && StringUtils.hasText(lastName) && StringUtils.hasText(email) && Objects.nonNull(attestedOn)) {
+            Font providerInfoFont = new Font(Font.FontFamily.TIMES_ROMAN, 13, Font.BOLD);
+
+            PdfPCell attesterName = new PdfPCell(createCellContent("Signed by Provider: ", providerInfoFont, getFullName(firstName, lastName), null));
+            attesterName.setBorder(Rectangle.NO_BORDER);
+            signingDetailsTable.addCell(attesterName);
+
+            PdfPCell attesterEmailCell = new PdfPCell(createCellContent("Email: ", providerInfoFont, email, null));
+            attesterEmailCell.setBorder(Rectangle.NO_BORDER);
+            signingDetailsTable.addCell(attesterEmailCell);
+
+            PdfPCell attesterSignDateCell = new PdfPCell(createCellContent("Signed on: ", providerInfoFont, formatDate(attestedOn), null));
             attesterSignDateCell.setBorder(Rectangle.NO_BORDER);
             signingDetailsTable.addCell(attesterSignDateCell);
         }
