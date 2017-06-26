@@ -1,12 +1,7 @@
 package gov.samhsa.c2s.pcm.service;
 
-import gov.samhsa.c2s.pcm.service.dto.ConsentAttestationDto;
-import gov.samhsa.c2s.pcm.service.dto.ConsentDto;
-import gov.samhsa.c2s.pcm.service.dto.ConsentRevocationDto;
-import gov.samhsa.c2s.pcm.service.dto.ConsentTermDto;
-import gov.samhsa.c2s.pcm.service.dto.DetailedConsentDto;
-import gov.samhsa.c2s.pcm.service.dto.SensitivityCategoryDto;
-import gov.samhsa.c2s.pcm.service.dto.XacmlRequestDto;
+import gov.samhsa.c2s.pcm.domain.ShareSensitivityCategories;
+import gov.samhsa.c2s.pcm.service.dto.*;
 import org.springframework.data.domain.Page;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -34,6 +29,9 @@ public interface ConsentService {
 
     @Transactional(readOnly = true)
     Object getConsent(String patientId, Long consentId, String format);
+
+    @Transactional(readOnly = true)
+    ShareSensitivityCategoriesDto getShareSensitivityCategoriesConfig();
 
     @Transactional(readOnly = true)
     Object getAttestedConsent(String patientId, Long consentId, String format);

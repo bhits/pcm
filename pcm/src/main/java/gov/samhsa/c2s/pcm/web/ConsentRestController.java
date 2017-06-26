@@ -1,12 +1,8 @@
 package gov.samhsa.c2s.pcm.web;
 
+import gov.samhsa.c2s.pcm.domain.ShareSensitivityCategories;
 import gov.samhsa.c2s.pcm.service.ConsentService;
-import gov.samhsa.c2s.pcm.service.dto.ConsentAttestationDto;
-import gov.samhsa.c2s.pcm.service.dto.ConsentDto;
-import gov.samhsa.c2s.pcm.service.dto.ConsentRevocationDto;
-import gov.samhsa.c2s.pcm.service.dto.DetailedConsentDto;
-import gov.samhsa.c2s.pcm.service.dto.SensitivityCategoryDto;
-import gov.samhsa.c2s.pcm.service.dto.XacmlRequestDto;
+import gov.samhsa.c2s.pcm.service.dto.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
@@ -94,6 +90,11 @@ public class ConsentRestController {
     public Object getConsent(@PathVariable String patientId, @PathVariable Long consentId,
                                         @RequestParam(required = false)  String format) {
         return consentService.getConsent(patientId, consentId, format);
+    }
+
+    @GetMapping("/consents/shareSensitivityCategoriesConfig")
+    public ShareSensitivityCategoriesDto getShareSensitivityCategoriesConfig(@PathVariable String patientId) {
+        return consentService.getShareSensitivityCategoriesConfig();
     }
 
     @GetMapping("/consents/{consentId}/attestation")

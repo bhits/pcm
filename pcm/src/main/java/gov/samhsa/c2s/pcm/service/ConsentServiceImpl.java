@@ -11,20 +11,7 @@ import gov.samhsa.c2s.pcm.infrastructure.dto.FlattenedSmallProviderDto;
 import gov.samhsa.c2s.pcm.infrastructure.dto.PatientDto;
 import gov.samhsa.c2s.pcm.infrastructure.pdf.ConsentPdfGenerator;
 import gov.samhsa.c2s.pcm.infrastructure.pdf.ConsentRevocationPdfGenerator;
-import gov.samhsa.c2s.pcm.service.dto.AbstractProviderDto;
-import gov.samhsa.c2s.pcm.service.dto.ConsentAttestationDto;
-import gov.samhsa.c2s.pcm.service.dto.ConsentDto;
-import gov.samhsa.c2s.pcm.service.dto.ConsentRevocationDto;
-import gov.samhsa.c2s.pcm.service.dto.ConsentTermDto;
-import gov.samhsa.c2s.pcm.service.dto.ContentDto;
-import gov.samhsa.c2s.pcm.service.dto.DetailedConsentDto;
-import gov.samhsa.c2s.pcm.service.dto.IdentifierDto;
-import gov.samhsa.c2s.pcm.service.dto.IdentifiersDto;
-import gov.samhsa.c2s.pcm.service.dto.OrganizationDto;
-import gov.samhsa.c2s.pcm.service.dto.PractitionerDto;
-import gov.samhsa.c2s.pcm.service.dto.PurposeDto;
-import gov.samhsa.c2s.pcm.service.dto.SensitivityCategoryDto;
-import gov.samhsa.c2s.pcm.service.dto.XacmlRequestDto;
+import gov.samhsa.c2s.pcm.service.dto.*;
 import gov.samhsa.c2s.pcm.service.exception.*;
 import gov.samhsa.c2s.pcm.service.fhir.FhirConsentService;
 import lombok.extern.slf4j.Slf4j;
@@ -42,10 +29,7 @@ import org.springframework.util.Assert;
 
 import javax.annotation.PostConstruct;
 import java.time.LocalDate;
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -142,7 +126,7 @@ public class ConsentServiceImpl implements ConsentService {
     @Transactional
     public void saveConsent(String patientId, ConsentDto consentDto, Optional<String> createdBy, Optional<Boolean> createdByPatient) {
 
-
+        ShareSensitivityCategories shareSensitivityCategories =  getConsentShareSensitivityCategory();
 
         final Patient patient = patientRepository.saveAndGet(patientId);
         final List<Provider> fromProviders = consentDto.getFromProviders().getIdentifiers().stream()
@@ -161,7 +145,7 @@ public class ConsentServiceImpl implements ConsentService {
         // Assert consent is not conflicting with an existing consent
         final Set<Identifier> fromProviderIdentifiers = fromProviders.stream().map(Provider::getIdentifier).collect(toSet());
         final Set<Identifier> toProviderIdentifiers = toProviders.stream().map(Provider::getIdentifier).collect(toSet());
-        final Set<Identifier> sharePurposeIdentifiers = purposes.stream().map(Purpose::getIdentifier).collect(toSet());
+        final Set<Identifier> purposeIdentifiers = purposes.stream().map(Purpose::getIdentifier).collect(toSet());
         final boolean duplicate = patient.getConsents().stream()
                 // find any consent that is not in 'REVOKED' stage
                 .filter(consent -> !ConsentStage.REVOKED.equals(consent.getConsentStage()))
@@ -178,7 +162,7 @@ public class ConsentServiceImpl implements ConsentService {
                                 (!(consent.getStartDate().isAfter(consentDto.getEndDate()) || consentDto.getStartDate().isAfter(consent.getEndDate()))) &&
                                 // contains any of the share purposes
                                 consent.getPurposes().stream().map(Purpose::getIdentifier)
-                                        .anyMatch(sharePurposeIdentifiers::contains));
+                                        .anyMatch(purposeIdentifiers::contains));
         if (duplicate) {
             throw new DuplicateConsentException();
         }
@@ -193,7 +177,7 @@ public class ConsentServiceImpl implements ConsentService {
                 .purposes(purposes)
                 .startDate(startDate)
                 .endDate(endDate)
-                .shareSensitivityCategories(getConsentShareSensitivityCategory())
+                .shareSensitivityCategories(shareSensitivityCategories)
                 .consentStage(ConsentStage.SAVED)
                 .consentReferenceId(RandomStringUtils
                 .randomAlphanumeric(10))
@@ -211,7 +195,26 @@ public class ConsentServiceImpl implements ConsentService {
         patient.getConsents().add(consent);
         patientRepository.save(patient);
     }
+    List<SensitivityCategory>  getSensitivityCategoriesBasedOnShareLogic(ShareSensitivityCategories shareSensitivityCategories, ConsentDto consentDto){
 
+//        List<SensitivityCategory> sensistivityCategories = sensitivityCategoryRepository.findAll();
+//        // DO NOT SHARE
+//        if(!shareSensitivityCategories.isShareSensitivityCategoriesEnabled()){
+//            List<SensitivityCategory> sensistivityCategoriesToBeRemoved = new ArrayList<>();
+//            sensistivityCategories.forEach(
+//                    sensitivityCategory -> {
+//                        consentDto.getSensitivityCategories().getIdentifiers().stream().forEach(identifierDto ->
+//                                if()
+//                        );
+//                    }
+//            );
+//            sensistivityCategories.removeAll(consentDto.getSensitivityCategories())
+//        }
+
+        return consentDto.getSensitivityCategories().getIdentifiers().stream()
+                .map(toSensitivityCategory())
+                .collect(toList());
+    }
     @PostConstruct
     public void setDefaultConsentShareSensitivityCategories(){
         boolean shareSensitivityCategoriesEnabled = pcmProperties.getConsent().getShareSensitivityCategories().isEnabled();
@@ -223,9 +226,9 @@ public class ConsentServiceImpl implements ConsentService {
             shareSensitivityCategoriesRepository.save(shareSensitivityCategories);
         }else if(optionalShareSensitivityCategories.isPresent() &&
                 shareSensitivityCategoriesEnabled != optionalShareSensitivityCategories.get().isShareSensitivityCategoriesEnabled() ){
-            // Throw Fatal error
-            SpringApplication.exit(applicationContext, () -> 2);
-
+            // Shut down application
+            log.error("Shutting down application. Cannot override SHARE/NOT SHARE DB configuration");
+            SpringApplication.exit(applicationContext);
         }
     }
 
@@ -594,6 +597,14 @@ public class ConsentServiceImpl implements ConsentService {
         }
 
         return toConsentDto(consent);
+    }
+
+    @Override
+    public ShareSensitivityCategoriesDto getShareSensitivityCategoriesConfig() {
+        ShareSensitivityCategoriesDto  sensitivityCategoriesDto = new ShareSensitivityCategoriesDto();
+        ShareSensitivityCategories shareSensitivityCategories =    shareSensitivityCategoriesRepository.findOneById(Long.valueOf(1)).get();
+        sensitivityCategoriesDto.setShareSensitivityCategoriesEnabled(shareSensitivityCategories.isShareSensitivityCategoriesEnabled());
+        return sensitivityCategoriesDto;
     }
 
     @Override
