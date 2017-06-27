@@ -1,6 +1,5 @@
 package gov.samhsa.c2s.pcm.web;
 
-import gov.samhsa.c2s.pcm.domain.ShareSensitivityCategories;
 import gov.samhsa.c2s.pcm.service.ConsentService;
 import gov.samhsa.c2s.pcm.service.dto.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -88,24 +87,19 @@ public class ConsentRestController {
 
     @GetMapping("/consents/{consentId}")
     public Object getConsent(@PathVariable String patientId, @PathVariable Long consentId,
-                                        @RequestParam(required = false)  String format) {
+                             @RequestParam(required = false) String format) {
         return consentService.getConsent(patientId, consentId, format);
-    }
-
-    @GetMapping("/consents/shareSensitivityCategoriesConfig")
-    public ShareSensitivityCategoriesDto getShareSensitivityCategoriesConfig(@PathVariable String patientId) {
-        return consentService.getShareSensitivityCategoriesConfig();
     }
 
     @GetMapping("/consents/{consentId}/attestation")
     public Object getAttestedConsent(@PathVariable String patientId, @PathVariable Long consentId,
-                             @RequestParam(required = false)  String format) {
+                                     @RequestParam(required = false) String format) {
         return consentService.getAttestedConsent(patientId, consentId, format);
     }
 
     @GetMapping("/consents/{consentId}/revocation")
     public Object getRevokedConsent(@PathVariable String patientId, @PathVariable Long consentId,
-                                     @RequestParam(required = false)  String format) {
+                                    @RequestParam(required = false) String format) {
         return consentService.getRevokedConsent(patientId, consentId, format);
     }
 
@@ -115,7 +109,7 @@ public class ConsentRestController {
     }
 
     @PostMapping("/consents/search")
-    public DetailedConsentDto searchConsent(@Valid @RequestBody  XacmlRequestDto xacmlRequestDto){
+    public DetailedConsentDto searchConsent(@Valid @RequestBody XacmlRequestDto xacmlRequestDto) {
         return consentService.searchConsent(xacmlRequestDto);
     }
 }
