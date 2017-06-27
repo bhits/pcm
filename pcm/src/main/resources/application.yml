@@ -22,8 +22,8 @@ c2s:
         # configure fhir server base url
         serverUrl: http://bhitsdevhie01/hapi-fhir-jpaserver/baseStu3
         clientSocketTimeoutInMs: 768000
-      shareSensitivityCategories:
-        enabled: true
+      shareConsentTypeConfigured:
+        enabled: false
     fhir:
       ssn:
         system: http://hl7.org/fhir/sid/us-ssn

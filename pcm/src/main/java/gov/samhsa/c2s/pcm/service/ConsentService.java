@@ -1,6 +1,6 @@
 package gov.samhsa.c2s.pcm.service;
 
-import gov.samhsa.c2s.pcm.domain.ShareSensitivityCategories;
+import gov.samhsa.c2s.pcm.domain.ConsentTypeConfiguration;
 import gov.samhsa.c2s.pcm.service.dto.*;
 import org.springframework.data.domain.Page;
 import org.springframework.transaction.annotation.Transactional;

@@ -17,12 +17,15 @@ import javax.validation.constraints.NotNull;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class ShareSensitivityCategories {
+public class ConsentTypeConfiguration {
 
     @Id
     @GeneratedValue
     private Long id;
-
+    /**
+     *  Determines if SHARE/NOT SHARE is enabled.
+     *  If true then SHARE is enabled and NOT SHARE otherwise
+     */
     @NotNull
-    private boolean shareSensitivityCategoriesEnabled;
+    private boolean shareConsentTypeConfigured;
 }

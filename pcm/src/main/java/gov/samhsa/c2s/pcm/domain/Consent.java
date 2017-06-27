@@ -109,7 +109,7 @@ public class Consent {
      */
     @NotNull
     @ManyToOne(cascade = CascadeType.ALL)
-    private ShareSensitivityCategories shareSensitivityCategories;
+    private ConsentTypeConfiguration consentTypeConfiguration;
 
     public void setConsentAttestation(ConsentAttestation consentAttestation) {
         setConsentStage(ConsentStage.SIGNED);

@@ -43,7 +43,7 @@ public class PcmProperties {
         private Publish publish;
 
         @Valid
-        private ShareSensitivityCategories shareSensitivityCategories;
+        private ShareConsentTypeConfigured shareConsentTypeConfigured;
 
         @Data
         public static class Publish {
@@ -58,7 +58,7 @@ public class PcmProperties {
         }
 
         @Data
-        public static class ShareSensitivityCategories {
+        public static class ShareConsentTypeConfigured {
             @NotNull
             private boolean enabled;
 
