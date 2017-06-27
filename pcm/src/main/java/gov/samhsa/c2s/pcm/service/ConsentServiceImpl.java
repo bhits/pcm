@@ -220,15 +220,15 @@ public class ConsentServiceImpl implements ConsentService {
 
     @PostConstruct
     public void setDefaultConsentShareSensitivityCategories(){
-        boolean shareSensitivityCategoriesEnabled = pcmProperties.getConsent().getShareConsentTypeConfigured().isEnabled();
+        boolean shareConsentTypeConfigured = pcmProperties.getConsent().getShareConsentTypeConfigured().isEnabled();
         Optional<ConsentTypeConfiguration> optionalShareSensitivityCategories = consentTypeConfigurationRepository.findOneById(Long.valueOf(1));
         if(!optionalShareSensitivityCategories.isPresent()){
             // Add to DB
             ConsentTypeConfiguration consentTypeConfiguration = new ConsentTypeConfiguration();
-            consentTypeConfiguration.setShareConsentTypeConfigured(shareSensitivityCategoriesEnabled);
+            consentTypeConfiguration.setShareConsentTypeConfigured(shareConsentTypeConfigured);
             consentTypeConfigurationRepository.save(consentTypeConfiguration);
         }else if(optionalShareSensitivityCategories.isPresent() &&
-                shareSensitivityCategoriesEnabled != optionalShareSensitivityCategories.get().isShareConsentTypeConfigured() ){
+                shareConsentTypeConfigured != optionalShareSensitivityCategories.get().isShareConsentTypeConfigured() ){
 
             // Allow change if there is no consent in DB of
 
@@ -243,9 +243,9 @@ public class ConsentServiceImpl implements ConsentService {
 
         optionalShareSensitivityCategories = consentTypeConfigurationRepository.findOneById(Long.valueOf(1));
         if(!optionalShareSensitivityCategories.isPresent()){
-            boolean shareSensitivityCategoriesEnabled = pcmProperties.getConsent().getShareConsentTypeConfigured().isEnabled();
+            boolean shareConsentTypeConfigured = pcmProperties.getConsent().getShareConsentTypeConfigured().isEnabled();
             ConsentTypeConfiguration consentTypeConfiguration = new ConsentTypeConfiguration();
-            consentTypeConfiguration.setShareConsentTypeConfigured(shareSensitivityCategoriesEnabled);
+            consentTypeConfiguration.setShareConsentTypeConfigured(shareConsentTypeConfigured);
             return consentTypeConfiguration;
         }
         return optionalShareSensitivityCategories.get();
