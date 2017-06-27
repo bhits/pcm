@@ -221,23 +221,35 @@ public class ConsentServiceImpl implements ConsentService {
     @PostConstruct
     public void setDefaultConsentShareSensitivityCategories(){
         boolean shareConsentTypeConfigured = pcmProperties.getConsent().getShareConsentTypeConfigured().isEnabled();
-        Optional<ConsentTypeConfiguration> optionalShareSensitivityCategories = consentTypeConfigurationRepository.findOneById(Long.valueOf(1));
-        if(!optionalShareSensitivityCategories.isPresent()){
+        Optional<ConsentTypeConfiguration> optionalConsentTypeConfiguration = consentTypeConfigurationRepository.findOneById(Long.valueOf(1));
+        if(!optionalConsentTypeConfiguration.isPresent()){
             // Add to DB
-            ConsentTypeConfiguration consentTypeConfiguration = new ConsentTypeConfiguration();
-            consentTypeConfiguration.setShareConsentTypeConfigured(shareConsentTypeConfigured);
-            consentTypeConfigurationRepository.save(consentTypeConfiguration);
-        }else if(optionalShareSensitivityCategories.isPresent() &&
-                shareConsentTypeConfigured != optionalShareSensitivityCategories.get().isShareConsentTypeConfigured() ){
-
-            // Allow change if there is no consent in DB of
-
-            // Shut down application
-            log.error("Shutting down application. Cannot override SHARE/NOT SHARE DB configuration");
-            shutdownApplication();
+            createAndSaveConsentTypeConfiguration(shareConsentTypeConfigured);
+        }else if(optionalConsentTypeConfiguration.isPresent() &&
+                shareConsentTypeConfigured != optionalConsentTypeConfiguration.get().isShareConsentTypeConfigured() ){
+            // Allow change to Consent type configuration if there is no consent in DB of
+            if(canUpdateConsentTypeConfiguration()){
+                createAndSaveConsentTypeConfiguration(shareConsentTypeConfigured);
+            }else{
+                // Shut down application
+                log.error("Shutting down application. Cannot override SHARE/NOT SHARE DB configuration");
+                shutdownApplication();
+            }
         }
     }
 
+    private void createAndSaveConsentTypeConfiguration(boolean shareConsentTypeConfigured){
+        ConsentTypeConfiguration consentTypeConfiguration = new ConsentTypeConfiguration();
+        consentTypeConfiguration.setShareConsentTypeConfigured(shareConsentTypeConfigured);
+        consentTypeConfigurationRepository.save(consentTypeConfiguration);
+    }
+
+    private boolean canUpdateConsentTypeConfiguration(){
+        if(consentRepository.findAll().size() == 0){ // No consent in DB
+            return true;
+        }
+        return false;
+    }
     private ConsentTypeConfiguration getConsentShareSensitivityCategory(){
         Optional<ConsentTypeConfiguration> optionalShareSensitivityCategories = null;
 
