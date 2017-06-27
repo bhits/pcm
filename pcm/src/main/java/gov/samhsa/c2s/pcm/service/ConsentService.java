@@ -1,6 +1,5 @@
 package gov.samhsa.c2s.pcm.service;
 
-import gov.samhsa.c2s.pcm.domain.ConsentTypeConfiguration;
 import gov.samhsa.c2s.pcm.service.dto.*;
 import org.springframework.data.domain.Page;
 import org.springframework.transaction.annotation.Transactional;
@@ -31,7 +30,7 @@ public interface ConsentService {
     Object getConsent(String patientId, Long consentId, String format);
 
     @Transactional(readOnly = true)
-    ShareSensitivityCategoriesDto getShareSensitivityCategoriesConfig();
+    ConsentTypeConfigurationDto getConsentTypeConfiguration();
 
     @Transactional(readOnly = true)
     Object getAttestedConsent(String patientId, Long consentId, String format);

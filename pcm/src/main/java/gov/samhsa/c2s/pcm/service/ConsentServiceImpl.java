@@ -607,10 +607,10 @@ public class ConsentServiceImpl implements ConsentService {
     }
 
     @Override
-    public ShareSensitivityCategoriesDto getShareSensitivityCategoriesConfig() {
-        ShareSensitivityCategoriesDto  sensitivityCategoriesDto = new ShareSensitivityCategoriesDto();
+    public ConsentTypeConfigurationDto getConsentTypeConfiguration() {
+        ConsentTypeConfigurationDto sensitivityCategoriesDto = new ConsentTypeConfigurationDto();
         ConsentTypeConfiguration consentTypeConfiguration =    consentTypeConfigurationRepository.findOneById(Long.valueOf(1)).get();
-        sensitivityCategoriesDto.setShareSensitivityCategoriesEnabled(consentTypeConfiguration.isShareConsentTypeConfigured());
+        sensitivityCategoriesDto.setShareConsentTypeConfigured(consentTypeConfiguration.isShareConsentTypeConfigured());
         return sensitivityCategoriesDto;
     }
 
@@ -681,7 +681,7 @@ public class ConsentServiceImpl implements ConsentService {
                 .startDate(consent.getStartDate())
                 .sensitivityCategories(shareSensitivityCategory)
                 .purposes(sharePurposs)
-                .shareSensitivityCategoriesEnabled(consent.getConsentTypeConfiguration().isShareConsentTypeConfigured())
+                .shareConsentTypeConfigured(consent.getConsentTypeConfiguration().isShareConsentTypeConfigured())
                 .fromProviders(fromProviders)
                 .toProviders(toProviders)
                 .id(consent.getId())

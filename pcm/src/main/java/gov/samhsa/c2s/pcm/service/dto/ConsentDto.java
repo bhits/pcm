@@ -52,5 +52,5 @@ public class ConsentDto {
     private String consentReferenceId;
 
     @NotNull
-    private boolean shareSensitivityCategoriesEnabled;
+    private boolean shareConsentTypeConfigured;
 }

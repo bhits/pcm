@@ -11,7 +11,7 @@ import javax.validation.constraints.NotNull;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class ShareSensitivityCategoriesDto {
+public class ConsentTypeConfigurationDto {
     @NotNull
-    private boolean shareSensitivityCategoriesEnabled;
+    private boolean shareConsentTypeConfigured;
 }
