@@ -135,9 +135,8 @@ public class ConsentServiceImpl implements ConsentService {
         final List<Provider> toProviders = consentDto.getToProviders().getIdentifiers().stream()
                 .map(toProvider(patient))
                 .collect(toList());
-        final List<SensitivityCategory> sensitivityCategories = consentDto.getSensitivityCategories().getIdentifiers().stream()
-                .map(toSensitivityCategory())
-                .collect(toList());
+        final List<SensitivityCategory> sensitivityCategories = getSensitivityCategoriesByConsentType(shareSensitivityCategories, consentDto);
+
         final List<Purpose> purposes = consentDto.getPurposes().getIdentifiers().stream()
                 .map(toPurpose())
                 .collect(toList());
@@ -195,26 +194,25 @@ public class ConsentServiceImpl implements ConsentService {
         patient.getConsents().add(consent);
         patientRepository.save(patient);
     }
-    List<SensitivityCategory>  getSensitivityCategoriesBasedOnShareLogic(ShareSensitivityCategories shareSensitivityCategories, ConsentDto consentDto){
+    List<SensitivityCategory>  getSensitivityCategoriesByConsentType(ShareSensitivityCategories shareSensitivityCategories, ConsentDto consentDto){
 
-//        List<SensitivityCategory> sensistivityCategories = sensitivityCategoryRepository.findAll();
-//        // DO NOT SHARE
-//        if(!shareSensitivityCategories.isShareSensitivityCategoriesEnabled()){
-//            List<SensitivityCategory> sensistivityCategoriesToBeRemoved = new ArrayList<>();
-//            sensistivityCategories.forEach(
-//                    sensitivityCategory -> {
-//                        consentDto.getSensitivityCategories().getIdentifiers().stream().forEach(identifierDto ->
-//                                if()
-//                        );
-//                    }
-//            );
-//            sensistivityCategories.removeAll(consentDto.getSensitivityCategories())
-//        }
+        List<SensitivityCategory> sensistivityCategories = null;
 
-        return consentDto.getSensitivityCategories().getIdentifiers().stream()
-                .map(toSensitivityCategory())
-                .collect(toList());
+       if(shareSensitivityCategories.isShareSensitivityCategoriesEnabled()){ // SHARE
+           sensistivityCategories = consentDto.getSensitivityCategories().getIdentifiers().stream()
+                   .map(toSensitivityCategory())
+                   .collect(toList());
+        }else  if(!shareSensitivityCategories.isShareSensitivityCategoriesEnabled()){ // DO NOT SHARE
+           sensistivityCategories = sensitivityCategoryRepository.findAll();
+           List<SensitivityCategory> selectedSensistivityCategories = consentDto.getSensitivityCategories().getIdentifiers().stream()
+                   .map(toSensitivityCategory())
+                   .collect(toList());
+           sensistivityCategories.removeAll(selectedSensistivityCategories);
+
+       }
+        return sensistivityCategories;
     }
+
     @PostConstruct
     public void setDefaultConsentShareSensitivityCategories(){
         boolean shareSensitivityCategoriesEnabled = pcmProperties.getConsent().getShareSensitivityCategories().isEnabled();
@@ -515,6 +513,7 @@ public class ConsentServiceImpl implements ConsentService {
     @Transactional
     public void updateConsent(String patientId, Long consentId, ConsentDto consentDto, Optional<String> lastUpdatedBy) {
         final Patient patient = patientRepository.saveAndGet(patientId);
+        ShareSensitivityCategories shareSensitivityCategories =  getConsentShareSensitivityCategory();
         Consent consent = consentRepository.findOneByIdAndPatientIdAndConsentAttestationIsNullAndConsentRevocationIsNull(consentId, patientId).orElseThrow(ConsentNotFoundException::new);
 
         final List<Provider> fromProviders = consentDto.getFromProviders().getIdentifiers().stream()
@@ -523,9 +522,8 @@ public class ConsentServiceImpl implements ConsentService {
         final List<Provider> toProviders = consentDto.getToProviders().getIdentifiers().stream()
                 .map(toProvider(patient))
                 .collect(toList());
-        final List<SensitivityCategory> shareSensitivityCategories = consentDto.getSensitivityCategories().getIdentifiers().stream()
-                .map(toSensitivityCategory())
-                .collect(toList());
+        final List<SensitivityCategory> sensitivityCategories = getSensitivityCategoriesByConsentType( getConsentShareSensitivityCategory(), consentDto);
+
         final List<Purpose> sharePurposes = consentDto.getPurposes().getIdentifiers().stream()
                 .map(toPurpose())
                 .collect(toList());
@@ -534,8 +532,9 @@ public class ConsentServiceImpl implements ConsentService {
         consent.setEndDate(consentDto.getEndDate());
         consent.setFromProviders(fromProviders);
         consent.setToProviders(toProviders);
-        consent.setSensitivityCategories(shareSensitivityCategories);
+        consent.setSensitivityCategories(sensitivityCategories);
         consent.setPurposes(sharePurposes);
+        consent.setShareSensitivityCategories(shareSensitivityCategories);
         consent.setLastUpdatedBy(lastUpdatedBy.orElse(null));
 
         //generate pdf
