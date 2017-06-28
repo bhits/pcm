@@ -143,10 +143,10 @@ public class ConsentPdfGeneratorImpl implements ConsentPdfGenerator {
 
         if (consent != null) {
             Font patientDateFont = new Font(Font.FontFamily.TIMES_ROMAN, 13, Font.BOLD);
-            PdfPCell EffectiveDateCell = new PdfPCell(iTextPdfService.createCellContent("Effective Date: ", patientDateFont, iTextPdfService.formatLocalDate(consent.getStartDate()), patientDateFont));
+            PdfPCell EffectiveDateCell = new PdfPCell(iTextPdfService.createCellContent("Effective Date: ", patientDateFont, iTextPdfService.formatLocalDate(consent.getStartDate().toLocalDate()), patientDateFont));
             EffectiveDateCell.setBorder(Rectangle.NO_BORDER);
 
-            PdfPCell expirationDateCell = new PdfPCell(iTextPdfService.createCellContent("Expiration Date: ", patientDateFont, iTextPdfService.formatLocalDate(consent.getEndDate()), patientDateFont));
+            PdfPCell expirationDateCell = new PdfPCell(iTextPdfService.createCellContent("Expiration Date: ", patientDateFont, iTextPdfService.formatLocalDate(consent.getEndDate().toLocalDate()), patientDateFont));
             expirationDateCell.setBorder(Rectangle.NO_BORDER);
 
             PdfPCell emptyCell = new PdfPCell();

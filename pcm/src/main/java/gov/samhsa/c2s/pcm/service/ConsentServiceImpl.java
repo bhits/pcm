@@ -62,6 +62,8 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -182,7 +184,7 @@ public class ConsentServiceImpl implements ConsentService {
                                         .map(Provider::getIdentifier)
                                         .anyMatch(toProviderIdentifiers::contains) &&
                                 // the date overlaps and
-                                (!(consent.getStartDate().isAfter(consentDto.getEndDate()) || consentDto.getStartDate().isAfter(consent.getEndDate()))) &&
+                                (!(consent.getStartDate().toLocalDate().isAfter(consentDto.getEndDate()) || consentDto.getStartDate().isAfter(consent.getEndDate().toLocalDate()))) &&
                                 // contains any of the share purposes
                                 consent.getSharePurposes().stream().map(Purpose::getIdentifier)
                                         .anyMatch(sharePurposeIdentifiers::contains));
@@ -190,16 +192,18 @@ public class ConsentServiceImpl implements ConsentService {
             throw new DuplicateConsentException();
         }
 
-        final LocalDate startDate = consentDto.getStartDate();
-        final LocalDate endDate = consentDto.getEndDate();
+        LocalDate startDate = consentDto.getStartDate();
+        final LocalDateTime startDateTime= LocalDateTime.of(startDate, LocalTime.MIN);
+       LocalDate endDate = consentDto.getEndDate();
+       final LocalDateTime endDateTime=LocalDateTime.of(endDate,LocalTime.MAX.withNano(0));
         final Consent consent = Consent.builder()
                 .patient(patient)
                 .fromProviders(fromProviders)
                 .toProviders(toProviders)
                 .shareSensitivityCategories(shareSensitivityCategories)
                 .sharePurposes(sharePurposes)
-                .startDate(startDate)
-                .endDate(endDate)
+                .startDate(startDateTime)
+                .endDate(endDateTime)
                 .consentStage(ConsentStage.SAVED)
                 .consentReferenceId(RandomStringUtils
                         .randomAlphanumeric(10))
@@ -307,8 +311,8 @@ public class ConsentServiceImpl implements ConsentService {
                 .toProviders(toProviders)
                 .shareSensitivityCategories(shareSensitivityCategories)
                 .sharePurposes(sharePurposes)
-                .startDate(consent.getStartDate())
-                .endDate(consent.getEndDate())
+                .startDate(consent.getStartDate().toLocalDate())
+                .endDate(consent.getEndDate().toLocalDate())
                 .consentStage(consent.getConsentStage())
                 .consentReferenceId(consent.getConsentReferenceId())
                 .createdDate(consent.getCreatedDate())
@@ -515,8 +519,8 @@ public class ConsentServiceImpl implements ConsentService {
                 .map(toPurpose())
                 .collect(toList());
 
-        consent.setStartDate(consentDto.getStartDate());
-        consent.setEndDate(consentDto.getEndDate());
+        consent.setStartDate(LocalDateTime.of(consentDto.getStartDate(),LocalTime.MIN));
+        consent.setEndDate(LocalDateTime.of(consentDto.getEndDate(),LocalTime.MAX.withNano(0)));
         consent.setFromProviders(fromProviders);
         consent.setToProviders(toProviders);
         consent.setShareSensitivityCategories(shareSensitivityCategories);
@@ -657,8 +661,8 @@ public class ConsentServiceImpl implements ConsentService {
 
 
         return ConsentDto.builder()
-                .endDate(consent.getEndDate())
-                .startDate(consent.getStartDate())
+                .endDate(consent.getEndDate().toLocalDate())
+                .startDate(consent.getStartDate().toLocalDate())
                 .shareSensitivityCategories(shareSensitivityCategory)
                 .sharePurposes(sharePurposs)
                 .fromProviders(fromProviders)

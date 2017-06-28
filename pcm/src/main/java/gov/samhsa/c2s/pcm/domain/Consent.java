@@ -30,6 +30,7 @@ import javax.persistence.OneToOne;
 import javax.validation.constraints.Future;
 import javax.validation.constraints.NotNull;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -95,10 +96,10 @@ public class Consent {
     private ConsentStage consentStage = ConsentStage.SAVED;
 
     @PresentOrFuture
-    private LocalDate startDate;
+    private LocalDateTime startDate;
 
     @Future
-    private LocalDate endDate;
+    private LocalDateTime endDate;
 
     @NotNull
     private String consentReferenceId;

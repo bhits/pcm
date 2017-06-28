@@ -210,10 +210,10 @@ public class FhirConsentServiceImpl implements FhirConsentService {
 
         // set terms of consent and intended recipient(s)
         fhirConsent.getPeriod().setStart(
-                Date.from(c2sConsent.getStartDate().atStartOfDay(ZoneId.systemDefault()).toInstant())
+                Date.from(c2sConsent.getStartDate().atZone(ZoneId.systemDefault()).toInstant())
         );
         fhirConsent.getPeriod().setEnd(
-                Date.from(c2sConsent.getEndDate().atStartOfDay(ZoneId.systemDefault()).toInstant())
+                Date.from(c2sConsent.getEndDate().atZone(ZoneId.systemDefault()).toInstant())
         );
 
         // consent sign time
