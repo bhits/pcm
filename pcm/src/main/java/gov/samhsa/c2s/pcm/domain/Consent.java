@@ -108,7 +108,7 @@ public class Consent {
      *  type SHARE ALL or DO NOT SHARE ALL
      */
     @NotNull
-    @ManyToOne(cascade = CascadeType.ALL)
+    @ManyToOne
     private ConsentTypeConfiguration consentTypeConfiguration;
 
     public void setConsentAttestation(ConsentAttestation consentAttestation) {
