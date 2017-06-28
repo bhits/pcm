@@ -1,7 +1,12 @@
 package gov.samhsa.c2s.pcm.web;
 
 import gov.samhsa.c2s.pcm.service.ConsentService;
-import gov.samhsa.c2s.pcm.service.dto.*;
+import gov.samhsa.c2s.pcm.service.dto.XacmlRequestDto;
+import gov.samhsa.c2s.pcm.service.dto.DetailedConsentDto;
+import gov.samhsa.c2s.pcm.service.dto.ConsentDto;
+import gov.samhsa.c2s.pcm.service.dto.ConsentAttestationDto;
+import gov.samhsa.c2s.pcm.service.dto.ConsentRevocationDto;
+import gov.samhsa.c2s.pcm.service.dto.SensitivityCategoryDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
