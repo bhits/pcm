@@ -1,10 +1,11 @@
 package gov.samhsa.c2s.pcm.service;
 
-import gov.samhsa.c2s.pcm.service.dto.ConsentAttestationDto;
 import gov.samhsa.c2s.pcm.service.dto.ConsentDto;
-import gov.samhsa.c2s.pcm.service.dto.ConsentRevocationDto;
-import gov.samhsa.c2s.pcm.service.dto.ConsentTermDto;
 import gov.samhsa.c2s.pcm.service.dto.DetailedConsentDto;
+import gov.samhsa.c2s.pcm.service.dto.ConsentAttestationDto;
+import gov.samhsa.c2s.pcm.service.dto.ConsentRevocationDto;
+import gov.samhsa.c2s.pcm.service.dto.ConsentTypeConfigurationDto;
+import gov.samhsa.c2s.pcm.service.dto.ConsentTermDto;
 import gov.samhsa.c2s.pcm.service.dto.SensitivityCategoryDto;
 import gov.samhsa.c2s.pcm.service.dto.XacmlRequestDto;
 import org.springframework.data.domain.Page;
@@ -34,6 +35,9 @@ public interface ConsentService {
 
     @Transactional(readOnly = true)
     Object getConsent(String patientId, Long consentId, String format);
+
+    @Transactional(readOnly = true)
+    ConsentTypeConfigurationDto getConsentTypeConfiguration();
 
     @Transactional(readOnly = true)
     Object getAttestedConsent(String patientId, Long consentId, String format);

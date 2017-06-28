@@ -21,5 +21,5 @@ public interface ConsentRepository extends JpaRepository<Consent, Long> {
     Page<Consent> findAllByPatientId(String patientId, Pageable pageable);
 
     Optional<Consent>
-            findOneByPatientIdAndFromProvidersIdentifierValueAndToProvidersIdentifierValueAndSharePurposesIdentifierValueAndStartDateLessThanEqualAndEndDateGreaterThanEqualAndConsentAttestationNotNull(String patientId, String fromoProviderNpi, String toProviderNpi, String pouValue, LocalDate startDateBefore, LocalDate endDateAfter);
+            findOneByPatientIdAndFromProvidersIdentifierValueAndToProvidersIdentifierValueAndPurposesIdentifierValueAndStartDateLessThanEqualAndEndDateGreaterThanEqualAndConsentAttestationNotNull(String patientId, String fromoProviderNpi, String toProviderNpi, String pouValue, LocalDate startDateBefore, LocalDate endDateAfter);
 }
