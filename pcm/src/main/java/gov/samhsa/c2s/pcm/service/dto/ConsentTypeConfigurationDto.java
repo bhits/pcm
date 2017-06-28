@@ -8,9 +8,6 @@ import lombok.NoArgsConstructor;
 import javax.validation.constraints.NotNull;
 
 @Data
-@AllArgsConstructor
-@NoArgsConstructor
-@Builder
 public class ConsentTypeConfigurationDto {
     @NotNull
     private boolean shareConsentTypeConfigured;
