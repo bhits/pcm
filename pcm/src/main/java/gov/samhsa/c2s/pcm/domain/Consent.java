@@ -85,10 +85,10 @@ public class Consent {
     private ConsentRevocation consentRevocation;
 
     @ManyToMany
-    private List<SensitivityCategory> shareSensitivityCategories = new ArrayList<>();
+    private List<SensitivityCategory> sensitivityCategories = new ArrayList<>();
 
     @ManyToMany
-    private List<Purpose> sharePurposes = new ArrayList<>();
+    private List<Purpose> purposes = new ArrayList<>();
 
     @Enumerated(EnumType.STRING)
     @NotNull
@@ -102,6 +102,14 @@ public class Consent {
 
     @NotNull
     private String consentReferenceId;
+
+    /**
+     *  Determines whether this consent is of
+     *  type SHARE ALL or DO NOT SHARE ALL
+     */
+    @NotNull
+    @ManyToOne
+    private ConsentTypeConfiguration consentTypeConfiguration;
 
     public void setConsentAttestation(ConsentAttestation consentAttestation) {
         setConsentStage(ConsentStage.SIGNED);

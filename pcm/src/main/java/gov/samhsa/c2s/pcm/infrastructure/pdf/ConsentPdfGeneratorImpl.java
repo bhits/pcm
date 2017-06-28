@@ -305,7 +305,7 @@ public class ConsentPdfGeneratorImpl implements ConsentPdfGenerator {
 
         medicalInformation.addElement(sensitivityCategoryParagraph);
 
-        List<String> sensitivityCategoryList = consent.getShareSensitivityCategories().stream()
+        List<String> sensitivityCategoryList = consent.getSensitivityCategories().stream()
                 .map(SensitivityCategory::getDisplay).collect(toList());
 
         medicalInformation.addElement(iTextPdfService.createUnorderList(sensitivityCategoryList));
@@ -321,11 +321,11 @@ public class ConsentPdfGeneratorImpl implements ConsentPdfGenerator {
     }
 
     private List<String> getMedicalInformation(Consent consent) {
-        return consent.getShareSensitivityCategories().stream().map(SensitivityCategory::getDisplay).collect(toList());
+        return consent.getSensitivityCategories().stream().map(SensitivityCategory::getDisplay).collect(toList());
     }
 
     private List<String> getPurposeOfUse(Consent consent) {
-        return consent.getSharePurposes().stream().map(Purpose::getDisplay).collect(toList());
+        return consent.getPurposes().stream().map(Purpose::getDisplay).collect(toList());
     }
 
     private PdfPTable createSigningDetailsTable(Consent consent, Boolean isSigned, Date attestedOn, PatientDto patientProfile) {
