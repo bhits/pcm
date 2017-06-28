@@ -30,6 +30,8 @@ import org.springframework.util.Assert;
 
 import javax.annotation.PostConstruct;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -159,7 +161,7 @@ public class ConsentServiceImpl implements ConsentService {
                                         .map(Provider::getIdentifier)
                                         .anyMatch(toProviderIdentifiers::contains) &&
                                 // the date overlaps and
-                                (!(consent.getStartDate().isAfter(consentDto.getEndDate()) || consentDto.getStartDate().isAfter(consent.getEndDate()))) &&
+                                (!(consent.getStartDate().toLocalDate().isAfter(consentDto.getEndDate()) || consentDto.getStartDate().isAfter(consent.getEndDate().toLocalDate()))) &&
                                 // contains any of the share purposes
                                 consent.getPurposes().stream().map(Purpose::getIdentifier)
                                         .anyMatch(purposeIdentifiers::contains));
@@ -167,16 +169,18 @@ public class ConsentServiceImpl implements ConsentService {
             throw new DuplicateConsentException();
         }
 
-        final LocalDate startDate = consentDto.getStartDate();
-        final LocalDate endDate = consentDto.getEndDate();
+        LocalDate startDate = consentDto.getStartDate();
+        final LocalDateTime startDateTime=LocalDateTime.of(startDate, LocalTime.MIN);
+        LocalDate endDate = consentDto.getEndDate();
+        final LocalDateTime endDateTime=LocalDateTime.of(endDate,LocalTime.MAX.withNano(0));
         final Consent consent = Consent.builder()
                 .patient(patient)
                 .fromProviders(fromProviders)
                 .toProviders(toProviders)
                 .sensitivityCategories(sensitivityCategories)
                 .purposes(purposes)
-                .startDate(startDate)
-                .endDate(endDate)
+                .startDate(startDateTime)
+                .endDate(endDateTime)
                 .consentTypeConfiguration(consentTypeConfiguration)
                 .consentStage(ConsentStage.SAVED)
                 .consentReferenceId(RandomStringUtils
@@ -354,8 +358,8 @@ public class ConsentServiceImpl implements ConsentService {
                 .toProviders(toProviders)
                 .sensitivityCategories(shareSensitivityCategories)
                 .purposes(sharePurposes)
-                .startDate(consent.getStartDate())
-                .endDate(consent.getEndDate())
+                .startDate(consent.getStartDate().toLocalDate())
+                .endDate(consent.getEndDate().toLocalDate())
                 .consentStage(consent.getConsentStage())
                 .consentReferenceId(consent.getConsentReferenceId())
                 .createdDate(consent.getCreatedDate())
@@ -562,8 +566,8 @@ public class ConsentServiceImpl implements ConsentService {
                 .map(toPurpose())
                 .collect(toList());
 
-        consent.setStartDate(consentDto.getStartDate());
-        consent.setEndDate(consentDto.getEndDate());
+        consent.setStartDate(consentDto.getStartDate().atStartOfDay());
+        consent.setEndDate(LocalDateTime.of(consentDto.getEndDate(),LocalTime.MAX.withNano(0)));
         consent.setFromProviders(fromProviders);
         consent.setToProviders(toProviders);
         consent.setSensitivityCategories(sensitivityCategories);
@@ -713,8 +717,8 @@ public class ConsentServiceImpl implements ConsentService {
 
 
         return ConsentDto.builder()
-                .endDate(consent.getEndDate())
-                .startDate(consent.getStartDate())
+                .endDate(consent.getEndDate().toLocalDate())
+                .startDate(consent.getStartDate().toLocalDate())
                 .sensitivityCategories(shareSensitivityCategory)
                 .purposes(sharePurposs)
                 .shareConsentTypeConfigured(consent.getConsentTypeConfiguration().isShareConsentTypeConfigured())
