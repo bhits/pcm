@@ -17,7 +17,7 @@ import java.time.LocalDate;
         lang = "javascript",
         alias = "_",
         script = "_.startDate != null && _.endDate != null &&  (_.startDate.isBefore(_.endDate) || _.startDate.isEqual(_.endDate))",
-        message = "consent end date must be after consent start date")
+        message = "consent end date must be equal or after consent start date")
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
