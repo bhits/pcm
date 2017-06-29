@@ -169,9 +169,9 @@ public class ConsentServiceImpl implements ConsentService {
             throw new DuplicateConsentException();
         }
 
-        LocalDate startDate = consentDto.getStartDate();
+        final LocalDate startDate = consentDto.getStartDate();
         final LocalDateTime startDateTime=LocalDateTime.of(startDate, LocalTime.MIN);
-        LocalDate endDate = consentDto.getEndDate();
+        final LocalDate endDate = consentDto.getEndDate();
         final LocalDateTime endDateTime=LocalDateTime.of(endDate,LocalTime.MAX.withNano(0));
         final Consent consent = Consent.builder()
                 .patient(patient)
