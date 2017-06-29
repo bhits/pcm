@@ -35,11 +35,11 @@ public class ConsentDto {
 
     @Valid
     @NotNull
-    private IdentifiersDto sensitivityCategories;
+    private IdentifiersDto shareSensitivityCategories;
 
     @Valid
     @NotNull
-    private IdentifiersDto purposes;
+    private IdentifiersDto sharePurposes;
 
     @NotNull
     @PresentOrFuture
@@ -51,6 +51,5 @@ public class ConsentDto {
 
     private String consentReferenceId;
 
-    @NotNull
-    private boolean shareConsentTypeConfigured;
+
 }

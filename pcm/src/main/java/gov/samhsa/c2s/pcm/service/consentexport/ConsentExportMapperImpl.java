@@ -181,7 +181,7 @@ public class ConsentExportMapperImpl implements ConsentExportMapper {
     private void mapShareForPurposeOfUseCodes(ConsentDto consentDto, DetailedConsentDto pcmConsentDto) throws
             ConsentGenException {
 
-        List<PurposeDto> pcmPurposeDtos = pcmConsentDto.getPurposes();
+        List<PurposeDto> pcmPurposeDtos = pcmConsentDto.getSharePurposes();
 
         Set<TypeCodesDto> consentDtoShareForPurposeOfUseCodes = new HashSet<>();
 
@@ -222,7 +222,7 @@ public class ConsentExportMapperImpl implements ConsentExportMapper {
     private void mapShareSensitivityPolicyCodes(ConsentDto consentDto, DetailedConsentDto pcmDetailedConsentDto)
             throws ConsentGenException {
 
-        List<SensitivityCategoryDto> sensitivityCategoryDtos = pcmDetailedConsentDto.getSensitivityCategories();
+        List<SensitivityCategoryDto> sensitivityCategoryDtos = pcmDetailedConsentDto.getShareSensitivityCategories();
 
         Set<TypeCodesDto> consentDtoShareSensitivityPolicyCodes = new HashSet<>();
 

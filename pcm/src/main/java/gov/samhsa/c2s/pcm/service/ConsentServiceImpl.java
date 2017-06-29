@@ -1,7 +1,23 @@
 package gov.samhsa.c2s.pcm.service;
 
 import gov.samhsa.c2s.pcm.config.PcmProperties;
-import gov.samhsa.c2s.pcm.domain.*;
+import gov.samhsa.c2s.pcm.domain.Consent;
+import gov.samhsa.c2s.pcm.domain.ConsentAttestation;
+import gov.samhsa.c2s.pcm.domain.ConsentAttestationTerm;
+import gov.samhsa.c2s.pcm.domain.ConsentAttestationTermRepository;
+import gov.samhsa.c2s.pcm.domain.ConsentRepository;
+import gov.samhsa.c2s.pcm.domain.ConsentRevocation;
+import gov.samhsa.c2s.pcm.domain.ConsentRevocationTerm;
+import gov.samhsa.c2s.pcm.domain.ConsentRevocationTermRepository;
+import gov.samhsa.c2s.pcm.domain.Organization;
+import gov.samhsa.c2s.pcm.domain.Patient;
+import gov.samhsa.c2s.pcm.domain.PatientRepository;
+import gov.samhsa.c2s.pcm.domain.Practitioner;
+import gov.samhsa.c2s.pcm.domain.Provider;
+import gov.samhsa.c2s.pcm.domain.Purpose;
+import gov.samhsa.c2s.pcm.domain.PurposeRepository;
+import gov.samhsa.c2s.pcm.domain.SensitivityCategory;
+import gov.samhsa.c2s.pcm.domain.SensitivityCategoryRepository;
 import gov.samhsa.c2s.pcm.domain.valueobject.Address;
 import gov.samhsa.c2s.pcm.domain.valueobject.ConsentStage;
 import gov.samhsa.c2s.pcm.domain.valueobject.Identifier;
@@ -12,15 +28,32 @@ import gov.samhsa.c2s.pcm.infrastructure.dto.PatientDto;
 import gov.samhsa.c2s.pcm.infrastructure.dto.UserDto;
 import gov.samhsa.c2s.pcm.infrastructure.pdf.ConsentPdfGenerator;
 import gov.samhsa.c2s.pcm.infrastructure.pdf.ConsentRevocationPdfGenerator;
-import gov.samhsa.c2s.pcm.service.dto.*;
-import gov.samhsa.c2s.pcm.service.exception.*;
+import gov.samhsa.c2s.pcm.service.dto.AbstractProviderDto;
+import gov.samhsa.c2s.pcm.service.dto.ConsentAttestationDto;
+import gov.samhsa.c2s.pcm.service.dto.ConsentDto;
+import gov.samhsa.c2s.pcm.service.dto.ConsentRevocationDto;
+import gov.samhsa.c2s.pcm.service.dto.ConsentTermDto;
+import gov.samhsa.c2s.pcm.service.dto.ContentDto;
+import gov.samhsa.c2s.pcm.service.dto.DetailedConsentDto;
+import gov.samhsa.c2s.pcm.service.dto.IdentifierDto;
+import gov.samhsa.c2s.pcm.service.dto.IdentifiersDto;
+import gov.samhsa.c2s.pcm.service.dto.OrganizationDto;
+import gov.samhsa.c2s.pcm.service.dto.PractitionerDto;
+import gov.samhsa.c2s.pcm.service.dto.PurposeDto;
+import gov.samhsa.c2s.pcm.service.dto.SensitivityCategoryDto;
+import gov.samhsa.c2s.pcm.service.dto.XacmlRequestDto;
+import gov.samhsa.c2s.pcm.service.exception.BadRequestException;
+import gov.samhsa.c2s.pcm.service.exception.ConsentNotFoundException;
+import gov.samhsa.c2s.pcm.service.exception.DuplicateConsentException;
+import gov.samhsa.c2s.pcm.service.exception.InvalidProviderException;
+import gov.samhsa.c2s.pcm.service.exception.InvalidProviderTypeException;
+import gov.samhsa.c2s.pcm.service.exception.InvalidPurposeException;
+import gov.samhsa.c2s.pcm.service.exception.PatientOrSavedConsentNotFoundException;
 import gov.samhsa.c2s.pcm.service.fhir.FhirConsentService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.SpringApplication;
-import org.springframework.context.ApplicationContext;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -28,9 +61,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 
-import javax.annotation.PostConstruct;
 import java.time.LocalDate;
-import java.util.*;
+import java.util.Date;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -55,17 +90,9 @@ public class ConsentServiceImpl implements ConsentService {
     private final PurposeRepository purposeRepository;
     private final SensitivityCategoryRepository sensitivityCategoryRepository;
     private final FhirConsentService fhirConsentService;
-    private final ConsentTypeConfigurationRepository consentTypeConfigurationRepository;
-    private final ApplicationContext applicationContext;
 
     @Autowired
-    public ConsentServiceImpl(ConsentAttestationTermRepository consentAttestationTermRepository, ConsentPdfGenerator consentPdfGenerator,
-                              ConsentRepository consentRepository, ConsentRevocationPdfGenerator consentRevocationPdfGenerator,
-                              ConsentRevocationTermRepository consentRevocationTermRepository, ModelMapper modelMapper,
-                              PatientRepository patientRepository, PcmProperties pcmProperties, UmsService umsService, PlsService plsService,
-                              PurposeRepository purposeRepository, SensitivityCategoryRepository sensitivityCategoryRepository,
-                              FhirConsentService fhirConsentService, ConsentTypeConfigurationRepository consentTypeConfigurationRepository,
-                              ApplicationContext applicationContext) {
+    public ConsentServiceImpl(ConsentAttestationTermRepository consentAttestationTermRepository, ConsentPdfGenerator consentPdfGenerator, ConsentRepository consentRepository, ConsentRevocationPdfGenerator consentRevocationPdfGenerator, ConsentRevocationTermRepository consentRevocationTermRepository, ModelMapper modelMapper, PatientRepository patientRepository, PcmProperties pcmProperties, UmsService umsService, PlsService plsService, PurposeRepository purposeRepository, SensitivityCategoryRepository sensitivityCategoryRepository, FhirConsentService fhirConsentService) {
         this.consentAttestationTermRepository = consentAttestationTermRepository;
         this.consentPdfGenerator = consentPdfGenerator;
         this.consentRepository = consentRepository;
@@ -79,8 +106,6 @@ public class ConsentServiceImpl implements ConsentService {
         this.purposeRepository = purposeRepository;
         this.sensitivityCategoryRepository = sensitivityCategoryRepository;
         this.fhirConsentService = fhirConsentService;
-        this.consentTypeConfigurationRepository = consentTypeConfigurationRepository;
-        this.applicationContext = applicationContext;
     }
 
     @Override
@@ -95,7 +120,7 @@ public class ConsentServiceImpl implements ConsentService {
 
         if (purposeOfUse.isPresent()) {
             consents = consents.stream().filter(oneConsent ->
-                    oneConsent.getPurposes().stream()
+                    oneConsent.getSharePurposes().stream()
                             .anyMatch(onePurpose ->
                                     onePurpose.getId().equals(purposeOfUse.get()))
             ).collect(toList());
@@ -126,9 +151,6 @@ public class ConsentServiceImpl implements ConsentService {
     @Override
     @Transactional
     public void saveConsent(String patientId, ConsentDto consentDto, Optional<String> createdBy, Optional<Boolean> createdByPatient) {
-
-        ConsentTypeConfiguration consentTypeConfiguration =  getConsentShareSensitivityCategory();
-
         final Patient patient = patientRepository.saveAndGet(patientId);
         final List<Provider> fromProviders = consentDto.getFromProviders().getIdentifiers().stream()
                 .map(toProvider(patient))
@@ -136,16 +158,17 @@ public class ConsentServiceImpl implements ConsentService {
         final List<Provider> toProviders = consentDto.getToProviders().getIdentifiers().stream()
                 .map(toProvider(patient))
                 .collect(toList());
-        final List<SensitivityCategory> sensitivityCategories = getSensitivityCategoriesByConsentType(consentTypeConfiguration, consentDto);
-
-        final List<Purpose> purposes = consentDto.getPurposes().getIdentifiers().stream()
+        final List<SensitivityCategory> shareSensitivityCategories = consentDto.getShareSensitivityCategories().getIdentifiers().stream()
+                .map(toSensitivityCategory())
+                .collect(toList());
+        final List<Purpose> sharePurposes = consentDto.getSharePurposes().getIdentifiers().stream()
                 .map(toPurpose())
                 .collect(toList());
 
         // Assert consent is not conflicting with an existing consent
         final Set<Identifier> fromProviderIdentifiers = fromProviders.stream().map(Provider::getIdentifier).collect(toSet());
         final Set<Identifier> toProviderIdentifiers = toProviders.stream().map(Provider::getIdentifier).collect(toSet());
-        final Set<Identifier> purposeIdentifiers = purposes.stream().map(Purpose::getIdentifier).collect(toSet());
+        final Set<Identifier> sharePurposeIdentifiers = sharePurposes.stream().map(Purpose::getIdentifier).collect(toSet());
         final boolean duplicate = patient.getConsents().stream()
                 // find any consent that is not in 'REVOKED' stage
                 .filter(consent -> !ConsentStage.REVOKED.equals(consent.getConsentStage()))
@@ -161,8 +184,8 @@ public class ConsentServiceImpl implements ConsentService {
                                 // the date overlaps and
                                 (!(consent.getStartDate().isAfter(consentDto.getEndDate()) || consentDto.getStartDate().isAfter(consent.getEndDate()))) &&
                                 // contains any of the share purposes
-                                consent.getPurposes().stream().map(Purpose::getIdentifier)
-                                        .anyMatch(purposeIdentifiers::contains));
+                                consent.getSharePurposes().stream().map(Purpose::getIdentifier)
+                                        .anyMatch(sharePurposeIdentifiers::contains));
         if (duplicate) {
             throw new DuplicateConsentException();
         }
@@ -173,14 +196,13 @@ public class ConsentServiceImpl implements ConsentService {
                 .patient(patient)
                 .fromProviders(fromProviders)
                 .toProviders(toProviders)
-                .sensitivityCategories(sensitivityCategories)
-                .purposes(purposes)
+                .shareSensitivityCategories(shareSensitivityCategories)
+                .sharePurposes(sharePurposes)
                 .startDate(startDate)
                 .endDate(endDate)
-                .consentTypeConfiguration(consentTypeConfiguration)
                 .consentStage(ConsentStage.SAVED)
                 .consentReferenceId(RandomStringUtils
-                .randomAlphanumeric(10))
+                        .randomAlphanumeric(10))
                 .createdBy(createdBy.orElse(null))
                 .createdByPatient(createdByPatient.orElse(null))
                 .lastUpdatedBy(createdBy.orElse(null))
@@ -202,75 +224,6 @@ public class ConsentServiceImpl implements ConsentService {
         patient.getConsents().add(consent);
         patientRepository.save(patient);
     }
-    List<SensitivityCategory>  getSensitivityCategoriesByConsentType(ConsentTypeConfiguration consentTypeConfiguration, ConsentDto consentDto){
-
-        List<SensitivityCategory> sensistivityCategories = null;
-
-       if(consentTypeConfiguration.isShareConsentTypeConfigured()){ // SHARE
-           sensistivityCategories = consentDto.getSensitivityCategories().getIdentifiers().stream()
-                   .map(toSensitivityCategory())
-                   .collect(toList());
-        }else  if(!consentTypeConfiguration.isShareConsentTypeConfigured()){ // DO NOT SHARE
-           sensistivityCategories = sensitivityCategoryRepository.findAll();
-           List<SensitivityCategory> selectedSensistivityCategories = consentDto.getSensitivityCategories().getIdentifiers().stream()
-                   .map(toSensitivityCategory())
-                   .collect(toList());
-           sensistivityCategories.removeAll(selectedSensistivityCategories);
-
-       }
-        return sensistivityCategories;
-    }
-
-
-    private void shutdownApplication(){
-        SpringApplication.exit(applicationContext);
-    }
-
-    @PostConstruct
-    public void setDefaultConsentShareSensitivityCategories(){
-        boolean shareConsentTypeConfigured = pcmProperties.getConsent().getShareConsentTypeConfigured().isEnabled();
-        Optional<ConsentTypeConfiguration> optionalConsentTypeConfiguration = consentTypeConfigurationRepository.findOneById(Long.valueOf(1));
-        if(!optionalConsentTypeConfiguration.isPresent()){
-            // Add to DB
-            createAndSaveConsentTypeConfiguration(shareConsentTypeConfigured);
-        }else if(optionalConsentTypeConfiguration.isPresent() &&
-                shareConsentTypeConfigured != optionalConsentTypeConfiguration.get().isShareConsentTypeConfigured() ){
-            // Allow change to Consent type configuration if there is no consent in DB of
-            if(canUpdateConsentTypeConfiguration()){
-                createAndSaveConsentTypeConfiguration(shareConsentTypeConfigured);
-            }else{
-                // Shut down application
-                log.error("Shutting down application. Cannot override SHARE/NOT SHARE DB configuration");
-                shutdownApplication();
-            }
-        }
-    }
-
-    private void createAndSaveConsentTypeConfiguration(boolean shareConsentTypeConfigured){
-        ConsentTypeConfiguration consentTypeConfiguration = new ConsentTypeConfiguration();
-        consentTypeConfiguration.setShareConsentTypeConfigured(shareConsentTypeConfigured);
-        consentTypeConfigurationRepository.save(consentTypeConfiguration);
-    }
-
-    private boolean canUpdateConsentTypeConfiguration(){
-        if(consentRepository.findAll().size() == 0){ // No consent in DB
-            return true;
-        }
-        return false;
-    }
-    private ConsentTypeConfiguration getConsentShareSensitivityCategory(){
-        Optional<ConsentTypeConfiguration> optionalShareSensitivityCategories = null;
-
-        optionalShareSensitivityCategories = consentTypeConfigurationRepository.findOneById(Long.valueOf(1));
-        if(!optionalShareSensitivityCategories.isPresent()){
-            boolean shareConsentTypeConfigured = pcmProperties.getConsent().getShareConsentTypeConfigured().isEnabled();
-            ConsentTypeConfiguration consentTypeConfiguration = new ConsentTypeConfiguration();
-            consentTypeConfiguration.setShareConsentTypeConfigured(shareConsentTypeConfigured);
-            return consentTypeConfiguration;
-        }
-        return optionalShareSensitivityCategories.get();
-    }
-
 
     @Override
     @Transactional
@@ -300,10 +253,10 @@ public class ConsentServiceImpl implements ConsentService {
         String revokedBy = null;
         Boolean revokedByPatient = null;
 
-        final List<SensitivityCategoryDto> shareSensitivityCategories = consent.getSensitivityCategories().stream()
+        final List<SensitivityCategoryDto> shareSensitivityCategories = consent.getShareSensitivityCategories().stream()
                 .map(sensitivityCategory -> modelMapper.map(sensitivityCategory, SensitivityCategoryDto.class))
                 .collect(toList());
-        final List<PurposeDto> sharePurposes = consent.getPurposes().stream()
+        final List<PurposeDto> sharePurposes = consent.getSharePurposes().stream()
                 .map(purpose -> modelMapper.map(purpose, PurposeDto.class))
                 .collect(toList());
         final Set<Identifier> providerIdentifiersWithConsents = ProviderServiceImpl.getProviderIdentifiersWithConsents(consent.getPatient());
@@ -352,8 +305,8 @@ public class ConsentServiceImpl implements ConsentService {
                 .id(consent.getId())
                 .fromProviders(fromProviders)
                 .toProviders(toProviders)
-                .sensitivityCategories(shareSensitivityCategories)
-                .purposes(sharePurposes)
+                .shareSensitivityCategories(shareSensitivityCategories)
+                .sharePurposes(sharePurposes)
                 .startDate(consent.getStartDate())
                 .endDate(consent.getEndDate())
                 .consentStage(consent.getConsentStage())
@@ -547,7 +500,6 @@ public class ConsentServiceImpl implements ConsentService {
     @Transactional
     public void updateConsent(String patientId, Long consentId, ConsentDto consentDto, Optional<String> lastUpdatedBy) {
         final Patient patient = patientRepository.saveAndGet(patientId);
-        ConsentTypeConfiguration consentTypeConfiguration =  getConsentShareSensitivityCategory();
         Consent consent = consentRepository.findOneByIdAndPatientIdAndConsentAttestationIsNullAndConsentRevocationIsNull(consentId, patientId).orElseThrow(ConsentNotFoundException::new);
 
         final List<Provider> fromProviders = consentDto.getFromProviders().getIdentifiers().stream()
@@ -556,9 +508,10 @@ public class ConsentServiceImpl implements ConsentService {
         final List<Provider> toProviders = consentDto.getToProviders().getIdentifiers().stream()
                 .map(toProvider(patient))
                 .collect(toList());
-        final List<SensitivityCategory> sensitivityCategories = getSensitivityCategoriesByConsentType( getConsentShareSensitivityCategory(), consentDto);
-
-        final List<Purpose> sharePurposes = consentDto.getPurposes().getIdentifiers().stream()
+        final List<SensitivityCategory> shareSensitivityCategories = consentDto.getShareSensitivityCategories().getIdentifiers().stream()
+                .map(toSensitivityCategory())
+                .collect(toList());
+        final List<Purpose> sharePurposes = consentDto.getSharePurposes().getIdentifiers().stream()
                 .map(toPurpose())
                 .collect(toList());
 
@@ -566,9 +519,8 @@ public class ConsentServiceImpl implements ConsentService {
         consent.setEndDate(consentDto.getEndDate());
         consent.setFromProviders(fromProviders);
         consent.setToProviders(toProviders);
-        consent.setSensitivityCategories(sensitivityCategories);
-        consent.setPurposes(sharePurposes);
-        consent.setConsentTypeConfiguration(consentTypeConfiguration);
+        consent.setShareSensitivityCategories(shareSensitivityCategories);
+        consent.setSharePurposes(sharePurposes);
         consent.setLastUpdatedBy(lastUpdatedBy.orElse(null));
 
         //generate pdf
@@ -643,14 +595,6 @@ public class ConsentServiceImpl implements ConsentService {
     }
 
     @Override
-    public ConsentTypeConfigurationDto getConsentTypeConfiguration() {
-        ConsentTypeConfigurationDto sensitivityCategoriesDto = new ConsentTypeConfigurationDto();
-        ConsentTypeConfiguration consentTypeConfiguration =    consentTypeConfigurationRepository.findOneById(Long.valueOf(1)).get();
-        sensitivityCategoriesDto.setShareConsentTypeConfigured(consentTypeConfiguration.isShareConsentTypeConfigured());
-        return sensitivityCategoriesDto;
-    }
-
-    @Override
     @Transactional(readOnly = true)
     public Object getAttestedConsent(String patientId, Long consentId, String format) {
         final Consent consent = consentRepository.findOneByIdAndPatientId(consentId, patientId).orElseThrow(ConsentNotFoundException::new);
@@ -691,12 +635,12 @@ public class ConsentServiceImpl implements ConsentService {
     }
 
     private ConsentDto toConsentDto(Consent consent) {
-        IdentifiersDto shareSensitivityCategory = IdentifiersDto.of(consent.getSensitivityCategories().stream().distinct()
+        IdentifiersDto shareSensitivityCategory = IdentifiersDto.of(consent.getShareSensitivityCategories().stream().distinct()
                 .map(sensitivityCategory -> modelMapper.map(sensitivityCategory, SensitivityCategoryDto.class))
                 .map(sensitivityCategoryDto -> sensitivityCategoryDto.getIdentifier())
                 .collect(Collectors.toSet()));
 
-        IdentifiersDto sharePurposs = IdentifiersDto.of(consent.getPurposes().stream().distinct()
+        IdentifiersDto sharePurposs = IdentifiersDto.of(consent.getSharePurposes().stream().distinct()
                 .map(sensitivityCategory -> modelMapper.map(sensitivityCategory, SensitivityCategoryDto.class))
                 .map(sensitivityCategoryDto -> sensitivityCategoryDto.getIdentifier())
                 .collect(Collectors.toSet()));
@@ -715,9 +659,8 @@ public class ConsentServiceImpl implements ConsentService {
         return ConsentDto.builder()
                 .endDate(consent.getEndDate())
                 .startDate(consent.getStartDate())
-                .sensitivityCategories(shareSensitivityCategory)
-                .purposes(sharePurposs)
-                .shareConsentTypeConfigured(consent.getConsentTypeConfiguration().isShareConsentTypeConfigured())
+                .shareSensitivityCategories(shareSensitivityCategory)
+                .sharePurposes(sharePurposs)
                 .fromProviders(fromProviders)
                 .toProviders(toProviders)
                 .id(consent.getId())
@@ -731,7 +674,7 @@ public class ConsentServiceImpl implements ConsentService {
     public List<SensitivityCategoryDto> getSharedSensitivityCategories(String patientId, Long consentId) {
         final Consent consent = consentRepository.findOneByIdAndPatientId(consentId, patientId).orElseThrow(ConsentNotFoundException::new);
 
-        return consent.getSensitivityCategories().stream()
+        return consent.getShareSensitivityCategories().stream()
                 .map(sensitivityCategory -> modelMapper.map(sensitivityCategory, SensitivityCategoryDto.class))
                 .collect(toList());
     }
@@ -740,7 +683,7 @@ public class ConsentServiceImpl implements ConsentService {
     @Transactional(readOnly = true)
     public DetailedConsentDto searchConsent(XacmlRequestDto xacmlRequestDto) {
         log.debug("Invoking searchConsent Method" + xacmlRequestDto);
-        final Consent searchConsent = consentRepository.findOneByPatientIdAndFromProvidersIdentifierValueAndToProvidersIdentifierValueAndPurposesIdentifierValueAndStartDateLessThanEqualAndEndDateGreaterThanEqualAndConsentAttestationNotNull(
+        final Consent searchConsent = consentRepository.findOneByPatientIdAndFromProvidersIdentifierValueAndToProvidersIdentifierValueAndSharePurposesIdentifierValueAndStartDateLessThanEqualAndEndDateGreaterThanEqualAndConsentAttestationNotNull(
                 xacmlRequestDto.getPatientId().getExtension(),
                 xacmlRequestDto.getIntermediaryNpi(),
                 xacmlRequestDto.getRecipientNpi(),
