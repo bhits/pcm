@@ -42,9 +42,6 @@ public class PcmProperties {
         @Valid
         private Publish publish;
 
-        @Valid
-        private ShareConsentTypeConfigured shareConsentTypeConfigured;
-
         @Data
         public static class Publish {
             @NotNull
@@ -55,13 +52,6 @@ public class PcmProperties {
 
             @NotEmpty
             private String clientSocketTimeoutInMs;
-        }
-
-        @Data
-        public static class ShareConsentTypeConfigured {
-            @NotNull
-            private boolean enabled;
-
         }
 
         @Data
