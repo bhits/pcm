@@ -2,6 +2,7 @@ package gov.samhsa.c2s.pcm.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import gov.samhsa.c2s.common.validator.constraint.PresentOrFuture;
+import gov.samhsa.c2s.common.validator.constraint.StartOfTodayOrFuture;
 import gov.samhsa.c2s.pcm.domain.valueobject.ConsentStage;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -41,7 +42,7 @@ import java.util.List;
 @ScriptAssert(
         lang = "javascript",
         alias = "_",
-        script = "_.startDate != null && _.endDate != null && _.startDate.isBefore(_.endDate)",
+        script = "_.startDate != null && _.endDate != null && _.startDate.isBefore(_.endDate) || _.startDate.isEqual(_.endDate)",
         message = "consent end date must be after consent start date")
 @Data
 @ToString(exclude = "patient")
@@ -95,7 +96,7 @@ public class Consent {
     @NotNull
     private ConsentStage consentStage = ConsentStage.SAVED;
 
-    @PresentOrFuture
+    @StartOfTodayOrFuture
     private LocalDateTime startDate;
 
     @Future
