@@ -6,3 +6,4 @@ gov.samhsa.c2s.common.validator.PastValidatorForLocalDateTime
 gov.samhsa.c2s.common.validator.PastOrPresentValidatorForLocalDateTime
 gov.samhsa.c2s.common.validator.FutureValidatorForLocalDateTime
 gov.samhsa.c2s.common.validator.PresentOrFutureValidatorForLocalDateTime
+gov.samhsa.c2s.common.validator.StartOfTodayOrFutureValidatorForLocalDateTime
