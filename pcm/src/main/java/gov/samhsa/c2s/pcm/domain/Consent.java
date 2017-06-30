@@ -2,6 +2,7 @@ package gov.samhsa.c2s.pcm.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import gov.samhsa.c2s.common.validator.constraint.PresentOrFuture;
+import gov.samhsa.c2s.common.validator.constraint.StartOfTodayOrFuture;
 import gov.samhsa.c2s.pcm.domain.valueobject.ConsentStage;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -30,6 +31,7 @@ import javax.persistence.OneToOne;
 import javax.validation.constraints.Future;
 import javax.validation.constraints.NotNull;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -94,11 +96,11 @@ public class Consent {
     @NotNull
     private ConsentStage consentStage = ConsentStage.SAVED;
 
-    @PresentOrFuture
-    private LocalDate startDate;
+    @StartOfTodayOrFuture
+    private LocalDateTime startDate;
 
     @Future
-    private LocalDate endDate;
+    private LocalDateTime endDate;
 
     @NotNull
     private String consentReferenceId;
