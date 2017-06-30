@@ -202,7 +202,7 @@ public class FhirConsentServiceImpl implements FhirConsentService {
 
 
         // set POU
-        for (Purpose purpose : c2sConsent.getConsentAttestation().getConsent().getPurposes()) {
+        for (Purpose purpose : c2sConsent.getConsentAttestation().getConsent().getSharePurposes()) {
             String pou = purpose.getIdentifier().getValue();
             Coding coding = new Coding(fhirProperties.getPou().getSystem(), pou, purpose.getDisplay());
             fhirConsent.getPurpose().add(coding);
@@ -274,7 +274,7 @@ public class FhirConsentServiceImpl implements FhirConsentService {
 
 
         // get share categories from consent
-        List<String> shareCodes = c2sConsent.getSensitivityCategories()
+        List<String> shareCodes = c2sConsent.getShareSensitivityCategories()
                 .stream()
                 .map(codes -> codes.getIdentifier().getValue())
                 .collect(Collectors.toList());
