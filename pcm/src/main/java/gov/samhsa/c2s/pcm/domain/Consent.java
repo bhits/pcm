@@ -1,8 +1,6 @@
 package gov.samhsa.c2s.pcm.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import gov.samhsa.c2s.common.validator.constraint.PresentOrFuture;
-import gov.samhsa.c2s.common.validator.constraint.StartOfTodayOrFuture;
 import gov.samhsa.c2s.pcm.domain.valueobject.ConsentStage;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -28,10 +26,9 @@ import javax.persistence.Lob;
 import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToOne;
-import javax.validation.constraints.Future;
 import javax.validation.constraints.NotNull;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -42,14 +39,15 @@ import java.util.List;
 @ScriptAssert(
         lang = "javascript",
         alias = "_",
-        script = "_.startDate != null && _.endDate != null && _.startDate.isBefore(_.endDate)",
-        message = "consent end date must be after consent start date")
+        script = "_.hasValidDates()",
+        message = "consent end date must be after consent start date, consent start date must be start of today or future unless it is being revoked")
 @Data
 @ToString(exclude = "patient")
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
 public class Consent {
+
     @Id
     @GeneratedValue
     private Long id;
@@ -96,10 +94,10 @@ public class Consent {
     @NotNull
     private ConsentStage consentStage = ConsentStage.SAVED;
 
-    @StartOfTodayOrFuture
+    @NotNull
     private LocalDateTime startDate;
 
-    @Future
+    @NotNull
     private LocalDateTime endDate;
 
     @NotNull
@@ -113,5 +111,31 @@ public class Consent {
     public void setConsentRevocation(ConsentRevocation consentRevocation) {
         setConsentStage(ConsentStage.REVOKED);
         this.consentRevocation = consentRevocation;
+    }
+
+    public boolean hasValidStartDate(LocalDateTime now) {
+        if (!ConsentStage.REVOKED.equals(getConsentStage())) {
+            final LocalDateTime startOfToday = LocalDateTime.of(now.toLocalDate(), LocalTime.MIN);
+            final boolean validStartDate = getStartDate() != null && (startOfToday.isBefore(getStartDate()) || startOfToday.isEqual(getStartDate()));
+            return validStartDate;
+        }
+        final boolean validStartDate = true;
+        return validStartDate;
+    }
+
+    public boolean hasValidEndDate(LocalDateTime now) {
+        final boolean validEndDate = getEndDate() != null && now.isBefore(getEndDate());
+        return validEndDate;
+    }
+
+    public boolean hasValidDateRange() {
+        final boolean startDateIsBeforeEndDate = getStartDate() != null && getEndDate() != null && getStartDate().isBefore(getEndDate());
+        return startDateIsBeforeEndDate;
+    }
+
+    public boolean hasValidDates() {
+        final LocalDateTime now = LocalDateTime.now();
+        final boolean validDates = hasValidStartDate(now) && hasValidEndDate(now) && hasValidDateRange();
+        return validDates;
     }
 }
