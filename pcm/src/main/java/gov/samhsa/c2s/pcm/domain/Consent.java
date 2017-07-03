@@ -114,12 +114,13 @@ public class Consent {
     }
 
     public boolean hasValidStartDate(LocalDateTime now) {
+        // Enforce strict validation for start date if the consent is not getting revoked
         if (!ConsentStage.REVOKED.equals(getConsentStage())) {
             final LocalDateTime startOfToday = LocalDateTime.of(now.toLocalDate(), LocalTime.MIN);
             final boolean validStartDate = getStartDate() != null && (startOfToday.isBefore(getStartDate()) || startOfToday.isEqual(getStartDate()));
             return validStartDate;
         }
-        final boolean validStartDate = true;
+        final boolean validStartDate = getStartDate() != null;
         return validStartDate;
     }
 
