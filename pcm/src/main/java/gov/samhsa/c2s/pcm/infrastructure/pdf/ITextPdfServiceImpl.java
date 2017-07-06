@@ -220,7 +220,36 @@ public class ITextPdfServiceImpl implements ITextPdfService {
     }
 
     @Override
-    public PdfPTable createSpaceForSignatureByPatientAndOtherRole(String role) {
-        return null;
+    public PdfPTable createSpaceForSignatureByPatientAndOtherRole(String role, boolean isSigned) {
+        PdfPTable signatureTable = createBorderlessTable(2);
+        final String patientLabel =  "Patient:";
+        final String otherRoleLabel =  role.substring(0, 1).toUpperCase() + role.substring(1)+ ":";
+        final String signatureLabel = "Signature: ______________________";
+        final String firstNameLabel = "Print Name: _____________________";
+        final String dateLabel =      "Date: ___________________________";
+        Font roleFont = new Font(Font.FontFamily.TIMES_ROMAN, 12, Font.BOLD);
+        Font labelFont = new Font(Font.FontFamily.TIMES_ROMAN, 10, Font.NORMAL);
+
+        if(isSigned){
+            signatureTable.addCell(createBorderlessCell(otherRoleLabel, roleFont));
+            signatureTable.addCell(createBorderlessCell(patientLabel, roleFont));
+
+            //Add a blank line
+            signatureTable.addCell(createBorderlessCell(null, null));
+            signatureTable.addCell(createBorderlessCell(null, null));
+
+            //Add signatureLabel twice
+            signatureTable.addCell(createBorderlessCell(signatureLabel, labelFont));
+            signatureTable.addCell(createBorderlessCell(signatureLabel, labelFont));
+
+            //Add firstNameLabel twice
+            signatureTable.addCell(createBorderlessCell(firstNameLabel, labelFont));
+            signatureTable.addCell(createBorderlessCell(firstNameLabel, labelFont));
+
+            //Add dateLabel twice
+            signatureTable.addCell(createBorderlessCell(dateLabel, labelFont));
+            signatureTable.addCell(createBorderlessCell(dateLabel, labelFont));
+        }
+        return signatureTable;
     }
 }

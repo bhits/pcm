@@ -72,7 +72,8 @@ public class ConsentRevocationPdfGeneratorImpl implements ConsentRevocationPdfGe
                 String lastName = revokedByUserDto.get().getLastName();
                 email = revokedByUserDto.get().getTelecoms().stream().filter(telecomDto -> telecomDto.getSystem().equalsIgnoreCase(EMAIL)).findFirst().get().getValue();
                 document.add(iTextPdfService.createProviderSigningDetailsTable(firstName, lastName, email, true, attestedOnDateTime));
-                document.add(iTextPdfService.createSpaceForSignatureByPatientAndOtherRole("Provider"));
+                document.add(new Paragraph(" "));
+                document.add(iTextPdfService.createSpaceForSignatureByPatientAndOtherRole("Provider", true));
             } else {
                 document.add(iTextPdfService.createPatientSigningDetailsTable(patient.getFirstName(), patient.getLastName(), email, true, attestedOnDateTime));
             }

@@ -48,5 +48,5 @@ public interface ITextPdfService {
 
     String getFullName(String firstName, String lastName);
 
-    PdfPTable createSpaceForSignatureByPatientAndOtherRole(String role);
+    PdfPTable createSpaceForSignatureByPatientAndOtherRole(String role, boolean isSigned);
 }
