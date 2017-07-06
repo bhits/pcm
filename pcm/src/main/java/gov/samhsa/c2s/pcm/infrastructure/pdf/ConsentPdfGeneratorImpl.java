@@ -168,8 +168,8 @@ public class ConsentPdfGeneratorImpl implements ConsentPdfGenerator {
     private PdfPTable createProviderPropertyValueTable(String propertyName, String propertyValue) {
         PdfPTable providerTable = iTextPdfService.createBorderlessTable(1);
 
-        Font propertNameFont = new Font(Font.FontFamily.TIMES_ROMAN, 10);
-        providerTable.addCell(iTextPdfService.createBorderlessCell(propertyName, propertNameFont));
+        Font propertyNameFont = new Font(Font.FontFamily.TIMES_ROMAN, 10);
+        providerTable.addCell(iTextPdfService.createBorderlessCell(propertyName, propertyNameFont));
         Font valueFont = new Font(Font.FontFamily.TIMES_ROMAN, 10, Font.BOLD);
         providerTable.addCell(iTextPdfService.createBorderlessCell(propertyValue, valueFont));
 
