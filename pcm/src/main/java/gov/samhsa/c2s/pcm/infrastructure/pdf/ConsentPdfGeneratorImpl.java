@@ -114,15 +114,14 @@ public class ConsentPdfGeneratorImpl implements ConsentPdfGenerator {
             String email = patientProfile.getTelecoms().stream().filter(telecomDto -> telecomDto.getSystem().equalsIgnoreCase(EMAIL)).findFirst().get().getValue();
 
             //Signing details
-            if(attesterUserDto.isPresent()){
+            if (attesterUserDto.isPresent()) {
                 String firstName = attesterUserDto.get().getFirstName();
                 String lastName = attesterUserDto.get().getLastName();
                 email = attesterUserDto.get().getTelecoms().stream().filter(telecomDto -> telecomDto.getSystem().equalsIgnoreCase(EMAIL)).findFirst().get().getValue();
-                document.add(iTextPdfService.createProviderSigningDetailsTable(firstName, lastName, email, isSigned, attestedOn));
+                document.add(iTextPdfService.createNonPatientSigningDetailsTable("Provider", firstName, lastName, email, isSigned, attestedOn));
             } else {
                 document.add(iTextPdfService.createPatientSigningDetailsTable(patientProfile.getFirstName(), patientProfile.getLastName(), email, isSigned, attestedOn));
             }
-
 
 
             document.close();
