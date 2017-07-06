@@ -218,4 +218,9 @@ public class ITextPdfServiceImpl implements ITextPdfService {
 
         return consentReferenceNumberTable;
     }
+
+    @Override
+    public PdfPTable createSpaceForSignatureByPatientAndOtherRole(String role) {
+        return null;
+    }
 }

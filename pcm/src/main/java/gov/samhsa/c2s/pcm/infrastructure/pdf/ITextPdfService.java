@@ -47,4 +47,6 @@ public interface ITextPdfService {
     String formatLocalDate(LocalDate aDate);
 
     String getFullName(String firstName, String lastName);
+
+    PdfPTable createSpaceForSignatureByPatientAndOtherRole(String role);
 }
