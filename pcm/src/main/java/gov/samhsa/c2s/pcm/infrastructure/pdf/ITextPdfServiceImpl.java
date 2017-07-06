@@ -143,11 +143,11 @@ public class ITextPdfServiceImpl implements ITextPdfService {
         PdfPTable consentReferenceNumberTable = createBorderlessTable(1);
 
         if (consent != null && consent.getConsentReferenceId() != null) {
-            consentReferenceNumberTable.addCell(createBorderlessCell("Consent Reference Number:", null));
             Font consentRefNumberFont = new Font(Font.FontFamily.TIMES_ROMAN, 13, Font.BOLD);
-            consentReferenceNumberTable.addCell(createBorderlessCell(consent.getConsentReferenceId(), consentRefNumberFont));
+            PdfPCell consentRefNumCell = new PdfPCell(createCellContent("Consent Reference Number: ", null, consent.getConsentReferenceId(), consentRefNumberFont));
+            consentRefNumCell.setBorder(Rectangle.NO_BORDER);
+            consentReferenceNumberTable.addCell(consentRefNumCell);
         }
-
         return consentReferenceNumberTable;
     }
 
