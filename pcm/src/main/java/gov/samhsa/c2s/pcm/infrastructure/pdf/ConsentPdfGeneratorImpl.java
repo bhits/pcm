@@ -328,26 +328,4 @@ public class ConsentPdfGeneratorImpl implements ConsentPdfGenerator {
         return consent.getSharePurposes().stream().map(Purpose::getDisplay).collect(toList());
     }
 
-    private PdfPTable createSigningDetailsTable(Consent consent, Boolean isSigned, Date attestedOn, PatientDto patientProfile) {
-        PdfPTable signingDetailsTable = iTextPdfService.createBorderlessTable(1);
-
-        if (isSigned && consent != null && attestedOn != null) {
-            Font patientInfoFont = new Font(Font.FontFamily.TIMES_ROMAN, 13, Font.BOLD);
-            String email = patientProfile.getTelecoms().stream().filter(telecomDto -> telecomDto.getSystem().equalsIgnoreCase(EMAIL)).findFirst().get().getValue();
-
-            PdfPCell attesterEmailCell = new PdfPCell(iTextPdfService.createCellContent("Email: ", patientInfoFont, email, null));
-            attesterEmailCell.setBorder(Rectangle.NO_BORDER);
-            signingDetailsTable.addCell(attesterEmailCell);
-
-            PdfPCell attesterFullNameCell = new PdfPCell(iTextPdfService.createCellContent("Signed By: ", patientInfoFont, getFullName(patientProfile), null));
-            attesterFullNameCell.setBorder(Rectangle.NO_BORDER);
-            signingDetailsTable.addCell(attesterFullNameCell);
-
-            PdfPCell attesterSignDateCell = new PdfPCell(iTextPdfService.createCellContent("Signed On: ", patientInfoFont, iTextPdfService.formatDate(attestedOn), null));
-            attesterSignDateCell.setBorder(Rectangle.NO_BORDER);
-            signingDetailsTable.addCell(attesterSignDateCell);
-
-        }
-        return signingDetailsTable;
-    }
 }
