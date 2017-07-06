@@ -2,7 +2,6 @@ package gov.samhsa.c2s.pcm.infrastructure.pdf;
 
 
 import com.google.common.collect.ImmutableMap;
-import com.itextpdf.text.Chunk;
 import com.itextpdf.text.Document;
 import com.itextpdf.text.Font;
 import com.itextpdf.text.Paragraph;
@@ -65,9 +64,6 @@ public class ConsentPdfGeneratorImpl implements ConsentPdfGenerator {
             // Title
             Font titleFont = new Font(Font.FontFamily.TIMES_ROMAN, 20, Font.BOLD);
             document.add(iTextPdfService.createParagraphWithContent(CREATE_CONSENT_TITLE, titleFont));
-
-            // Blank line
-            document.add(Chunk.NEWLINE);
 
             document.add(new Paragraph(" "));
 
