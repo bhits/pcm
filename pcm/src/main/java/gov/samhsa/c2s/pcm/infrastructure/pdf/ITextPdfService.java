@@ -44,7 +44,7 @@ public interface ITextPdfService {
 
     String formatDate(Date aDate);
 
-    public String formatLocalDate(LocalDate aDate);
+    String formatLocalDate(LocalDate aDate);
 
     String getFullName(String firstName, String lastName);
 }
