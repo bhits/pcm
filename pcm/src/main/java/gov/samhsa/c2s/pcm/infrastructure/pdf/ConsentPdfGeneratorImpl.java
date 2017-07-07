@@ -114,10 +114,11 @@ public class ConsentPdfGeneratorImpl implements ConsentPdfGenerator {
                 String firstName = attesterUserDto.get().getFirstName();
                 String lastName = attesterUserDto.get().getLastName();
                 email = attesterUserDto.get().getTelecoms().stream().filter(telecomDto -> telecomDto.getSystem().equalsIgnoreCase(EMAIL)).findFirst().get().getValue();
-                document.add(new Paragraph(" "));
-                document.add(iTextPdfService.createSpaceForSignatureByPatientAndOtherRole("Provider", isSigned));
-                //TODO: Ideally, "Provider" should come from a DTO or request
+                //TODO: Ideally, "Provider"/role should come either from a DTO or a request
                 document.add(iTextPdfService.createNonPatientSigningDetailsTable("Provider", firstName, lastName, email, isSigned, attestedOn));
+                document.add(new Paragraph(" "));
+                //TODO: Ideally, "Provider"/role should come either from a DTO or a request
+                document.add(iTextPdfService.createSpaceForSignatureByPatientAndOtherRole("Provider", isSigned));
             } else {
                 document.add(iTextPdfService.createPatientSigningDetailsTable(patientProfile.getFirstName(), patientProfile.getLastName(), email, isSigned, attestedOn));
             }
