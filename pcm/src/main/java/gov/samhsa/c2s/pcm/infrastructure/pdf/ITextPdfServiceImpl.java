@@ -174,13 +174,14 @@ public class ITextPdfServiceImpl implements ITextPdfService {
     }
 
     @Override
-    public PdfPTable createProviderSigningDetailsTable(String firstName, String lastName, String email, boolean isSigned, Date attestedOn) {
+    public PdfPTable createNonPatientSigningDetailsTable(String role, String firstName, String lastName, String email, boolean isSigned, Date attestedOn) {
         PdfPTable signingDetailsTable = createBorderlessTable(1);
 
         if (isSigned && StringUtils.hasText(firstName) && StringUtils.hasText(lastName) && StringUtils.hasText(email) && Objects.nonNull(attestedOn)) {
             Font providerInfoFont = new Font(Font.FontFamily.TIMES_ROMAN, 13, Font.BOLD);
 
-            PdfPCell attesterName = new PdfPCell(createCellContent("Signed by Provider: ", providerInfoFont, getFullName(firstName, lastName), null));
+            String signedByRole = "Signed by " + role.substring(0, 1).toUpperCase() + role.substring(1) + ":";
+            PdfPCell attesterName = new PdfPCell(createCellContent(signedByRole, providerInfoFont, getFullName(firstName, lastName), null));
             attesterName.setBorder(Rectangle.NO_BORDER);
             signingDetailsTable.addCell(attesterName);
 
