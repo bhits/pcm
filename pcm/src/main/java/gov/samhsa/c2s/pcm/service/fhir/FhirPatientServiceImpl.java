@@ -14,7 +14,6 @@ import org.hl7.fhir.dstu3.model.Enumerations.AdministrativeGender;
 import org.hl7.fhir.dstu3.model.IdType;
 import org.hl7.fhir.dstu3.model.Identifier;
 import org.hl7.fhir.dstu3.model.Patient;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.sql.Date;
@@ -23,11 +22,15 @@ import java.util.function.Function;
 @Service
 public class FhirPatientServiceImpl implements FhirPatientService {
 
-    @Autowired
-    private FhirProperties fhirProperties;
 
-    @Autowired
-    private IGenericClient fhirClient;
+    private final FhirProperties fhirProperties;
+
+    private final IGenericClient fhirClient;
+
+    public FhirPatientServiceImpl(FhirProperties fhirProperties, IGenericClient fhirClient) {
+        this.fhirProperties = fhirProperties;
+        this.fhirClient = fhirClient;
+    }
 
     @Override
     public Patient getFhirPatient(PatientDto patientDto) {
@@ -52,7 +55,7 @@ public class FhirPatientServiceImpl implements FhirPatientService {
 
             //optional fields
             patientDto.getAddresses().stream().forEach(addressDto ->
-                    fhirPatient.addAddress().addLine(addressDto.getLine1()).addLine(addressDto.getLine2()).setCity(addressDto.getCity()).setState(addressDto.getStateCode()).setPostalCode(addressDto.getPostalCode())
+                    fhirPatient.addAddress().addLine(addressDto.getLine1()).addLine(addressDto.getLine2()).setCity(addressDto.getCity()).setState(addressDto.getStateCode()).setPostalCode(addressDto.getPostalCode()).setCountry(addressDto.getCountryCode())
             );
 
             patientDto.getTelecoms().stream().forEach(telecomDto ->
