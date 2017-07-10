@@ -38,13 +38,15 @@ public interface ITextPdfService {
 
     PdfPTable createPatientSigningDetailsTable(String firstName, String lastName, String email, boolean isSigned, Date attestedOn);
 
-    PdfPTable createProviderSigningDetailsTable(String firstName, String lastName, String email, boolean isSigned, Date attestedOn);
+    PdfPTable createNonPatientSigningDetailsTable(String role, String firstName, String lastName, String email, boolean isSigned, Date attestedOn);
 
     PdfPTable createPatientNameAndDOBTable(String firstName, String lastName, Date birthDate);
 
     String formatDate(Date aDate);
 
-    public String formatLocalDate(LocalDate aDate);
+    String formatLocalDate(LocalDate aDate);
 
     String getFullName(String firstName, String lastName);
+
+    PdfPTable createSpaceForSignatureByPatientAndOtherRole(String role, boolean isSigned);
 }
