@@ -19,7 +19,7 @@ public interface ConsentRepository extends JpaRepository<Consent, Long> {
 
     Optional<Consent> findOneByIdAndPatientId(Long consentId, String patientId);
 
-    Page<Consent> findAllByPatientId(String patientId, Pageable pageable);
+    Page<Consent> findAllByPatientIdOrderByLastUpdatedDateDesc(String patientId, Pageable pageable);
 
     Optional<Consent>
     findOneByPatientIdAndFromProvidersIdentifierValueAndToProvidersIdentifierValueAndSharePurposesIdentifierValueAndStartDateLessThanEqualAndEndDateGreaterThanEqualAndConsentAttestationNotNullAndConsentRevocationIsNullAndConsentStage(String patientId, String fromoProviderNpi, String toProviderNpi, String pouValue, LocalDateTime startDateBefore, LocalDateTime endDateAfter, ConsentStage consentStage);
