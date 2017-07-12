@@ -117,7 +117,7 @@ public class ConsentServiceImpl implements ConsentService {
                                                 Optional<Integer> page, Optional<Integer> size) {
         final PageRequest pageRequest = new PageRequest(page.filter(p -> p >= 0).orElse(0),
                 size.filter(s -> s > 0 && s <= pcmProperties.getConsent().getPagination().getMaxSize()).orElse(pcmProperties.getConsent().getPagination().getDefaultSize()));
-        final Page<Consent> consentsPage = consentRepository.findAllByPatientId(patientId, pageRequest);
+        final Page<Consent> consentsPage = consentRepository.findAllByPatientIdOrderByLastUpdatedDateDesc(patientId, pageRequest);
         List<Consent> consents = consentsPage.getContent();
 
         if (purposeOfUse.isPresent()) {
