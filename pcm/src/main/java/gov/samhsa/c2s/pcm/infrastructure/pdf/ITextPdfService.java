@@ -49,4 +49,6 @@ public interface ITextPdfService {
     String getFullName(String firstName, String lastName);
 
     PdfPTable createSpaceForSignatureByPatientOrPatientRep(boolean isSigned);
+
+    PdfPTable createPageFooter(int currentPage, int totalPages);
 }

@@ -247,4 +247,17 @@ public class ITextPdfServiceImpl implements ITextPdfService {
         }
         return signatureTable;
     }
+
+    @Override
+    public PdfPTable createPageFooter(int currentPage, int totalPages) {
+        PdfPTable footerTable = createBorderlessTable(3);
+        Font footerFont = new Font(Font.FontFamily.TIMES_ROMAN, 8, Font.NORMAL);
+        String footerText = "Page " + String.valueOf(currentPage) + " of " + String.valueOf(totalPages);
+
+        footerTable.addCell(createBorderlessCell(null, null));
+        footerTable.addCell(createBorderlessCell(footerText, footerFont));
+        footerTable.addCell(createBorderlessCell(null, null));
+
+        return footerTable;
+    }
 }
