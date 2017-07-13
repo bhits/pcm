@@ -6,6 +6,7 @@ info:
   component: Patient Consent Management Service
 ribbon:
   ReadTimeout: 50000
+hystrix.command.default.execution.timeout.enabled: false
 spring:
   datasource:
     # configure url, username and password per environment
@@ -18,7 +19,7 @@ c2s:
       - "http://hl7.org/fhir/sid/us-npi"
     consent:
       publish:
-        enabled: true
+        enabled: false
         # configure fhir server base url
         serverUrl: http://bhitsdevhie01/hapi-fhir-jpaserver/baseStu3
         clientSocketTimeoutInMs: 768000
