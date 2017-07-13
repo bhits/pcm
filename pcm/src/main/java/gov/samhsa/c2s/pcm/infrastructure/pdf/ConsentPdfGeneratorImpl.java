@@ -117,8 +117,7 @@ public class ConsentPdfGeneratorImpl implements ConsentPdfGenerator {
                 //TODO: Ideally, "Provider"/role should come either from a DTO or a request
                 document.add(iTextPdfService.createNonPatientSigningDetailsTable("Provider", firstName, lastName, email, isSigned, attestedOn));
                 document.add(new Paragraph(" "));
-                //TODO: Ideally, "Provider"/role should come either from a DTO or a request
-                document.add(iTextPdfService.createSpaceForSignatureByPatientAndOtherRole("Provider", isSigned));
+                document.add(iTextPdfService.createSpaceForSignatureByPatientOrPatientRep(isSigned));
             } else {
                 document.add(iTextPdfService.createPatientSigningDetailsTable(patientProfile.getFirstName(), patientProfile.getLastName(), email, isSigned, attestedOn));
             }
