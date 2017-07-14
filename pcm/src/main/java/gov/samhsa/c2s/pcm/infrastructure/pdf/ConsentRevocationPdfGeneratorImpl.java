@@ -35,7 +35,7 @@ public class ConsentRevocationPdfGeneratorImpl implements ConsentRevocationPdfGe
     @Override
     public byte[] generateConsentRevocationPdf(Consent consent, PatientDto patient, Date attestedOnDateTime, String consentRevocationTerm, Optional<UserDto> revokedByUserDto) {
         Assert.notNull(consent, "Consent is required.");
-        final boolean IS_SIGNED = false;
+        final boolean IS_SIGNED = true;
 
         Document document = new Document(PageSize.A4);
 
