@@ -50,5 +50,7 @@ public interface ITextPdfService {
 
     PdfPTable createSpaceForSignatureByPatientOrPatientRep(boolean isSigned);
 
+    PdfPTable printOtherRoleESignDetailsOnLeftAndPatientSignatureSpaceOnRight(String role, String providerFirstName, String providerLastName, String providerEmail, boolean isSigned, Date attestedOn);
+
     PdfPTable createPageFooter(int currentPage, int totalPages);
 }

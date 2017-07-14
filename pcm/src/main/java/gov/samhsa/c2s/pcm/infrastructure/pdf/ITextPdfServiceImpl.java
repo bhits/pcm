@@ -224,11 +224,11 @@ public class ITextPdfServiceImpl implements ITextPdfService {
     public PdfPTable createSpaceForSignatureByPatientOrPatientRep(boolean isSigned) {
         PdfPTable signatureTable = createBorderlessTable(1);
         final String patientLabel =  "Patient/Patient Representative:";
-        final String signatureLabel = "Signature: ______________________";
-        final String firstNameLabel = "Print Name: _____________________";
-        final String dateLabel =      "Date: ___________________________";
-        Font patientLabelFont = new Font(Font.FontFamily.TIMES_ROMAN, 12, Font.BOLD);
-        Font labelFont = new Font(Font.FontFamily.TIMES_ROMAN, 10, Font.NORMAL);
+        final String signatureLabel = "Signature: __________________________";
+        final String firstNameLabel = "Print Name: _________________________";
+        final String dateLabel =      "Date: _______________________________";
+        Font patientLabelFont = new Font(Font.FontFamily.TIMES_ROMAN, 13, Font.BOLD);
+        Font labelFont = new Font(Font.FontFamily.TIMES_ROMAN, 11, Font.NORMAL);
 
         if(isSigned){
             signatureTable.addCell(createBorderlessCell(patientLabel, patientLabelFont));
@@ -259,5 +259,16 @@ public class ITextPdfServiceImpl implements ITextPdfService {
         footerTable.addCell(createBorderlessCell(null, null));
 
         return footerTable;
+    }
+
+
+    @Override
+    public PdfPTable printOtherRoleESignDetailsOnLeftAndPatientSignatureSpaceOnRight(String role, String firstName, String lastName, String email, boolean isSigned, Date attestedOn) {
+        PdfPTable table = createBorderlessTable(2);
+        if(isSigned){
+            table.addCell(this.createNonPatientSigningDetailsTable(role, firstName, lastName, email, isSigned, attestedOn ));
+            table.addCell(this.createSpaceForSignatureByPatientOrPatientRep(isSigned));
+        }
+        return table;
     }
 }

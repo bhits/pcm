@@ -104,62 +104,26 @@ public class ConsentPdfGeneratorImpl implements ConsentPdfGenerator {
 
             document.add(new Paragraph(" "));
 
+            // Consent effective and expiration date
+            document.add(createStartAndEndDateTable(consent));
+
+            document.add(new Paragraph(" "));
+
             if (attesterUserDto.isPresent()) {
                 String firstName = attesterUserDto.get().getFirstName();
                 String lastName = attesterUserDto.get().getLastName();
                 String email = attesterUserDto.get().getTelecoms().stream().filter(telecomDto -> telecomDto.getSystem().equalsIgnoreCase(EMAIL)).findFirst().get().getValue();
 
-                if (isSigned) {
-                    //This case makes the signed PDF run into 2 pages ...
-                    // ...and the order of the content changes
-                    //Add Page numbers and repeat patient name, DOB and consent Ref Id on Page 2
-
-                    //Add Page number (1 of 2)
-                    document.add(iTextPdfService.createPageFooter(1, 2));
-
-
-                    document.add(new Paragraph(" "));
-
-                    //consent Reference Number
-                    document.add(iTextPdfService.createConsentReferenceNumberTable(consent));
-
-                    //Patient Name and date of birth
-                    document.add(iTextPdfService.createPatientNameAndDOBTable(patientProfile.getFirstName(), patientProfile.getLastName(), java.sql.Date.valueOf(patientProfile.getBirthDate())));
-
-                    document.add(new Paragraph(" "));
-
-                }
-
-                // Consent effective and expiration date
-                document.add(createStartAndEndDateTable(consent));
-
-                document.add(new Paragraph(" "));
-
                 //Signing details
-                //TODO: Ideally, "Provider"/role should come either from a DTO or a request
-                document.add(iTextPdfService.createNonPatientSigningDetailsTable("Provider", firstName, lastName, email, isSigned, attestedOn));
-                document.add(new Paragraph(" "));
-                document.add(iTextPdfService.createSpaceForSignatureByPatientOrPatientRep(isSigned));
-
-                if (isSigned) {
-                    document.add(new Paragraph(" "));
-
-                    //Add Page number (2 of 2)
-                    document.add(iTextPdfService.createPageFooter(2, 2));
-                }
+                //TODO: Ideally, "Provider"(role) should come either from a DTO or a request
+               document.add(iTextPdfService.printOtherRoleESignDetailsOnLeftAndPatientSignatureSpaceOnRight("Provider", firstName, lastName, email, isSigned, attestedOn));
 
             } else {
-                // Contents of the PDF when saved/signed by a patient is different
-                // Consent effective and expiration date
-                document.add(createStartAndEndDateTable(consent));
-
-                document.add(new Paragraph(" "));
                 String email = patientProfile.getTelecoms().stream().filter(telecomDto -> telecomDto.getSystem().equalsIgnoreCase(EMAIL)).findFirst().get().getValue();
 
                 //Signing details
                 document.add(iTextPdfService.createPatientSigningDetailsTable(patientProfile.getFirstName(), patientProfile.getLastName(), email, isSigned, attestedOn));
             }
-
 
             document.close();
 
