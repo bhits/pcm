@@ -38,16 +38,16 @@ public class PcmProperties {
         private Pagination pagination = new Pagination();
 
         @NotNull
-        private Long activePatientAttestationTermId;
+        private Long attestationTermIdWhenPatientSigns;
 
         @NotNull
-        private Long activePatientRevocationTermId;
+        private Long attestationTermIdWhenProviderSigns;
 
         @NotNull
-        private Long activeProviderAttestationTermId;
+        private Long revocationTermIdWhenPatientRevokes;
 
         @NotNull
-        private Long activeProviderRevocationTermId;
+        private Long revocationTermIdWhenProviderRevokes;
 
         @Valid
         private Publish publish;

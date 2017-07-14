@@ -219,10 +219,10 @@ public class ConsentServiceImpl implements ConsentService {
 
         if (actionPerformedByPatient(createdByPatient)) {
             //Do not send user info if saved by Patient
-            consent.setSavedPdf(consentPdfGenerator.generate42CfrPart2Pdf(consent, patientDto, CONSENT_SIGNED, null, consentAttestationTermRepository.findOne(pcmProperties.getConsent().getActivePatientAttestationTermId()).getText(), Optional.empty()));
+            consent.setSavedPdf(consentPdfGenerator.generate42CfrPart2Pdf(consent, patientDto, CONSENT_SIGNED, null, consentAttestationTermRepository.findOne(pcmProperties.getConsent().getAttestationTermIdWhenPatientSigns()).getText(), Optional.empty()));
         } else {
             UserDto consentCreatorUserDto = umsService.getUserById(createdBy.get());
-            consent.setSavedPdf(consentPdfGenerator.generate42CfrPart2Pdf(consent, patientDto, CONSENT_SIGNED, null, consentAttestationTermRepository.findOne(pcmProperties.getConsent().getActiveProviderAttestationTermId()).getText(), Optional.ofNullable(consentCreatorUserDto)));
+            consent.setSavedPdf(consentPdfGenerator.generate42CfrPart2Pdf(consent, patientDto, CONSENT_SIGNED, null, consentAttestationTermRepository.findOne(pcmProperties.getConsent().getAttestationTermIdWhenProviderSigns()).getText(), Optional.ofNullable(consentCreatorUserDto)));
         }
 
         consentRepository.save(consent);
@@ -298,9 +298,9 @@ public class ConsentServiceImpl implements ConsentService {
             //Set the right attestation terms
             ConsentAttestationTerm consentAttestationTerm;
             if (actionPerformedByPatient(attestedByPatient)) {
-                consentAttestationTerm = consentAttestationTermRepository.findOne(pcmProperties.getConsent().getActivePatientAttestationTermId());
+                consentAttestationTerm = consentAttestationTermRepository.findOne(pcmProperties.getConsent().getAttestationTermIdWhenPatientSigns());
             } else {
-                consentAttestationTerm = consentAttestationTermRepository.findOne(pcmProperties.getConsent().getActiveProviderAttestationTermId());
+                consentAttestationTerm = consentAttestationTermRepository.findOne(pcmProperties.getConsent().getAttestationTermIdWhenProviderSigns());
             }
 
 
@@ -378,9 +378,9 @@ public class ConsentServiceImpl implements ConsentService {
 
         //Update SAVED PDF
         if (actionPerformedByPatient(updatedByPatient)) {
-            consent.setSavedPdf(consentPdfGenerator.generate42CfrPart2Pdf(consent, patientDto, CONSENT_SIGNED, new Date(), consentAttestationTermRepository.findOne(pcmProperties.getConsent().getActivePatientAttestationTermId()).getText(), Optional.empty()));
+            consent.setSavedPdf(consentPdfGenerator.generate42CfrPart2Pdf(consent, patientDto, CONSENT_SIGNED, new Date(), consentAttestationTermRepository.findOne(pcmProperties.getConsent().getAttestationTermIdWhenPatientSigns()).getText(), Optional.empty()));
         } else {
-            consent.setSavedPdf(consentPdfGenerator.generate42CfrPart2Pdf(consent, patientDto, CONSENT_SIGNED, new Date(), consentAttestationTermRepository.findOne(pcmProperties.getConsent().getActiveProviderAttestationTermId()).getText(), Optional.empty()));
+            consent.setSavedPdf(consentPdfGenerator.generate42CfrPart2Pdf(consent, patientDto, CONSENT_SIGNED, new Date(), consentAttestationTermRepository.findOne(pcmProperties.getConsent().getAttestationTermIdWhenProviderSigns()).getText(), Optional.empty()));
         }
         consentRepository.save(consent);
     }
@@ -392,9 +392,9 @@ public class ConsentServiceImpl implements ConsentService {
 
         ConsentRevocationTerm consentRevocationTerm;
         if (actionPerformedByPatient(revokedByPatient)) {
-            consentRevocationTerm = consentRevocationTermRepository.findOne(pcmProperties.getConsent().getActivePatientRevocationTermId());
+            consentRevocationTerm = consentRevocationTermRepository.findOne(pcmProperties.getConsent().getRevocationTermIdWhenPatientRevokes());
         } else {
-            consentRevocationTerm = consentRevocationTermRepository.findOne(pcmProperties.getConsent().getActiveProviderRevocationTermId());
+            consentRevocationTerm = consentRevocationTermRepository.findOne(pcmProperties.getConsent().getRevocationTermIdWhenProviderRevokes());
         }
 
         if (consentRevocationDto.isAcceptTerms()) {

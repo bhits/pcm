@@ -18,11 +18,11 @@ c2s:
     supported-provider-systems:
       - "http://hl7.org/fhir/sid/us-npi"
     consent:
-      active-patient-attestation-term-id: 1
-      active-patient-revocation-term-id: 1
+      attestation-term-id-when-patient-signs: 1
+      attestation-term-id-when-provider-signs: 2
 
-      active-provider-attestation-term-id: 2
-      active-provider-revocation-term-id: 1
+      revocation-term-id-when-patient-revokes: 1
+      revocation-term-id-when-provider-revokes: 1
       publish:
         enabled: false
         # configure fhir server base url
