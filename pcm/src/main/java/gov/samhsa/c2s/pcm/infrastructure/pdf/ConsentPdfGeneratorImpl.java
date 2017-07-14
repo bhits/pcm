@@ -4,6 +4,7 @@ package gov.samhsa.c2s.pcm.infrastructure.pdf;
 import com.google.common.collect.ImmutableMap;
 import com.itextpdf.text.Document;
 import com.itextpdf.text.Font;
+import com.itextpdf.text.PageSize;
 import com.itextpdf.text.Paragraph;
 import com.itextpdf.text.Rectangle;
 import com.itextpdf.text.pdf.PdfPCell;
@@ -52,7 +53,7 @@ public class ConsentPdfGeneratorImpl implements ConsentPdfGenerator {
     public byte[] generate42CfrPart2Pdf(Consent consent, PatientDto patientProfile, boolean isSigned, Date attestedOn, String consentTerms, Optional<UserDto> attesterUserDto) {
         Assert.notNull(consent, "Consent is required.");
 
-        Document document = new Document();
+        Document document = new Document(PageSize.A4);
 
         ByteArrayOutputStream pdfOutputStream = new ByteArrayOutputStream();
 
