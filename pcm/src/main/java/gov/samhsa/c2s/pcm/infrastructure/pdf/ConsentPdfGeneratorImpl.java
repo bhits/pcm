@@ -110,6 +110,7 @@ public class ConsentPdfGeneratorImpl implements ConsentPdfGenerator {
             document.add(new Paragraph(" "));
 
             if (attesterUserDto.isPresent()) {
+                //Indicates consent not attested/created by Patient
                 String firstName = attesterUserDto.get().getFirstName();
                 String lastName = attesterUserDto.get().getLastName();
                 String email = attesterUserDto.get().getTelecoms().stream().filter(telecomDto -> telecomDto.getSystem().equalsIgnoreCase(EMAIL)).findFirst().get().getValue();

@@ -70,6 +70,7 @@ public class ConsentRevocationPdfGeneratorImpl implements ConsentRevocationPdfGe
 
             //Signing details
             if (revokedByUserDto.isPresent()) {
+                //Indicates consent not revoked by Patient
                 String firstName = revokedByUserDto.get().getFirstName();
                 String lastName = revokedByUserDto.get().getLastName();
                 email = revokedByUserDto.get().getTelecoms().stream().filter(telecomDto -> telecomDto.getSystem().equalsIgnoreCase(EMAIL)).findFirst().get().getValue();
