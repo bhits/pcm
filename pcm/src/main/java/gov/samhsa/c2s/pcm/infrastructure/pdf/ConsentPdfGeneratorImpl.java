@@ -4,6 +4,7 @@ package gov.samhsa.c2s.pcm.infrastructure.pdf;
 import com.google.common.collect.ImmutableMap;
 import com.itextpdf.text.Document;
 import com.itextpdf.text.Font;
+import com.itextpdf.text.PageSize;
 import com.itextpdf.text.Paragraph;
 import com.itextpdf.text.Rectangle;
 import com.itextpdf.text.pdf.PdfPCell;
@@ -52,7 +53,7 @@ public class ConsentPdfGeneratorImpl implements ConsentPdfGenerator {
     public byte[] generate42CfrPart2Pdf(Consent consent, PatientDto patientProfile, boolean isSigned, Date attestedOn, String consentTerms, Optional<UserDto> attesterUserDto) {
         Assert.notNull(consent, "Consent is required.");
 
-        Document document = new Document();
+        Document document = new Document(PageSize.A4);
 
         ByteArrayOutputStream pdfOutputStream = new ByteArrayOutputStream();
 
@@ -107,22 +108,23 @@ public class ConsentPdfGeneratorImpl implements ConsentPdfGenerator {
             document.add(createStartAndEndDateTable(consent));
 
             document.add(new Paragraph(" "));
-            String email = patientProfile.getTelecoms().stream().filter(telecomDto -> telecomDto.getSystem().equalsIgnoreCase(EMAIL)).findFirst().get().getValue();
 
-            //Signing details
             if (attesterUserDto.isPresent()) {
+                //Indicates consent not attested/created by Patient
                 String firstName = attesterUserDto.get().getFirstName();
                 String lastName = attesterUserDto.get().getLastName();
-                email = attesterUserDto.get().getTelecoms().stream().filter(telecomDto -> telecomDto.getSystem().equalsIgnoreCase(EMAIL)).findFirst().get().getValue();
-                //TODO: Ideally, "Provider"/role should come either from a DTO or a request
-                document.add(iTextPdfService.createNonPatientSigningDetailsTable("Provider", firstName, lastName, email, isSigned, attestedOn));
-                document.add(new Paragraph(" "));
-                //TODO: Ideally, "Provider"/role should come either from a DTO or a request
-                document.add(iTextPdfService.createSpaceForSignatureByPatientAndOtherRole("Provider", isSigned));
+                String email = attesterUserDto.get().getTelecoms().stream().filter(telecomDto -> telecomDto.getSystem().equalsIgnoreCase(EMAIL)).findFirst().get().getValue();
+
+                //Signing details
+                //TODO: Ideally, "Provider"(role) should come either from a DTO or a request
+               document.add(iTextPdfService.printOtherRoleESignDetailsOnLeftAndPatientSignatureSpaceOnRight("Provider", firstName, lastName, email, isSigned, attestedOn));
+
             } else {
+                String email = patientProfile.getTelecoms().stream().filter(telecomDto -> telecomDto.getSystem().equalsIgnoreCase(EMAIL)).findFirst().get().getValue();
+
+                //Signing details
                 document.add(iTextPdfService.createPatientSigningDetailsTable(patientProfile.getFirstName(), patientProfile.getLastName(), email, isSigned, attestedOn));
             }
-
 
             document.close();
 

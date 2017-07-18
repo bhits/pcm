@@ -3,6 +3,7 @@ package gov.samhsa.c2s.pcm.infrastructure.pdf;
 import com.itextpdf.text.Chunk;
 import com.itextpdf.text.Document;
 import com.itextpdf.text.Font;
+import com.itextpdf.text.PageSize;
 import com.itextpdf.text.Paragraph;
 import com.itextpdf.text.pdf.PdfWriter;
 import gov.samhsa.c2s.pcm.domain.Consent;
@@ -34,8 +35,9 @@ public class ConsentRevocationPdfGeneratorImpl implements ConsentRevocationPdfGe
     @Override
     public byte[] generateConsentRevocationPdf(Consent consent, PatientDto patient, Date attestedOnDateTime, String consentRevocationTerm, Optional<UserDto> revokedByUserDto) {
         Assert.notNull(consent, "Consent is required.");
+        final boolean IS_SIGNED = true;
 
-        Document document = new Document();
+        Document document = new Document(PageSize.A4);
 
         ByteArrayOutputStream pdfOutputStream = new ByteArrayOutputStream();
 
@@ -68,17 +70,17 @@ public class ConsentRevocationPdfGeneratorImpl implements ConsentRevocationPdfGe
 
             //Signing details
             if (revokedByUserDto.isPresent()) {
+                //Indicates consent not revoked by Patient
                 String firstName = revokedByUserDto.get().getFirstName();
                 String lastName = revokedByUserDto.get().getLastName();
                 email = revokedByUserDto.get().getTelecoms().stream().filter(telecomDto -> telecomDto.getSystem().equalsIgnoreCase(EMAIL)).findFirst().get().getValue();
                //TODO: Ideally, "Provider"/role should come either from a DTO or a request
-                document.add(iTextPdfService.createNonPatientSigningDetailsTable("Provider", firstName, lastName, email, true, attestedOnDateTime));
+                document.add(iTextPdfService.createNonPatientSigningDetailsTable("Provider", firstName, lastName, email, IS_SIGNED, attestedOnDateTime));
                 document.add(new Paragraph(" "));
-                //TODO: Ideally, "Provider"/role should come either from a DTO or a request
-                document.add(iTextPdfService.createSpaceForSignatureByPatientAndOtherRole("Provider", true));
+                document.add(iTextPdfService.createSpaceForSignatureByPatientOrPatientRep(IS_SIGNED));
 
             } else {
-                document.add(iTextPdfService.createPatientSigningDetailsTable(patient.getFirstName(), patient.getLastName(), email, true, attestedOnDateTime));
+                document.add(iTextPdfService.createPatientSigningDetailsTable(patient.getFirstName(), patient.getLastName(), email, IS_SIGNED, attestedOnDateTime));
             }
 
             document.close();

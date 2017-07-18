@@ -67,8 +67,9 @@ public class ConsentRestController {
     @ResponseStatus(HttpStatus.OK)
     public void updateConsent(@PathVariable String patientId, @PathVariable Long consentId,
                               @Valid @RequestBody ConsentDto consentDto,
-                              @RequestParam(value = "lastUpdatedBy") Optional<String> lastUpdatedBy) {
-        consentService.updateConsent(patientId, consentId, consentDto, lastUpdatedBy);
+                              @RequestParam(value = "lastUpdatedBy") Optional<String> lastUpdatedBy,
+                              @RequestParam(value = "updatedByPatient") Optional<Boolean> updatedByPatient) {
+        consentService.updateConsent(patientId, consentId, consentDto, lastUpdatedBy, updatedByPatient);
     }
 
     @PutMapping("/consents/{consentId}/attestation")

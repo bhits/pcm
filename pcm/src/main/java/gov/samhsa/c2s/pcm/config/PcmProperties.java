@@ -6,11 +6,9 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.validator.constraints.NotEmpty;
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.cloud.netflix.feign.FeignClient;
 import org.springframework.context.annotation.Configuration;
 
 import javax.validation.Valid;
-import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 import java.util.ArrayList;
@@ -38,6 +36,18 @@ public class PcmProperties {
 
         @Valid
         private Pagination pagination = new Pagination();
+
+        @NotNull
+        private Long attestationTermIdWhenPatientSigns;
+
+        @NotNull
+        private Long attestationTermIdWhenProviderSigns;
+
+        @NotNull
+        private Long revocationTermIdWhenPatientRevokes;
+
+        @NotNull
+        private Long revocationTermIdWhenProviderRevokes;
 
         @Valid
         private Publish publish;
