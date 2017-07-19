@@ -5,4 +5,4 @@ SELECT
   last_updated_by,
   last_updated_date
 FROM
-  consent_aud;
+  consent_aud

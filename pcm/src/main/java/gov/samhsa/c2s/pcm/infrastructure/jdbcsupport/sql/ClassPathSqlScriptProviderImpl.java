@@ -1,4 +1,4 @@
-package gov.samhsa.c2s.pcm.infrastructure.jdbcsupport;
+package gov.samhsa.c2s.pcm.infrastructure.jdbcsupport.sql;
 
 import gov.samhsa.c2s.pcm.config.ActivityProperties;
 import gov.samhsa.c2s.pcm.infrastructure.exception.SqlScriptFileNotFoundException;
