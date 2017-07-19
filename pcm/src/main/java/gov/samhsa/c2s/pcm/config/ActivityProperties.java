@@ -8,6 +8,7 @@ import org.springframework.stereotype.Component;
 import javax.validation.Valid;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
+import java.util.List;
 
 @Component
 @ConfigurationProperties(prefix = "c2s.pcm")
@@ -23,7 +24,7 @@ public class ActivityProperties {
         public Pagination pagination;
 
         @NotNull
-        public Sql sql;
+        public List<Sql> sqls;
 
         @Data
         public static class Pagination {
@@ -33,6 +34,9 @@ public class ActivityProperties {
 
         @Data
         public static class Sql {
+            @NotNull
+            @Min(1)
+            public int index;
             @NotEmpty
             public String filePath;
         }

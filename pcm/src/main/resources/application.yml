@@ -47,8 +47,9 @@ c2s:
         label: MRN
       patientReference: true
     activity:
-      sql:
-        file-path: activity/consent-activity.sql
+      sqls:
+        - index: 1
+          file-path: activity/consent-activity.sql
       pagination:
         default-size: 10
 ---
