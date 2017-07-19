@@ -46,6 +46,11 @@ c2s:
         oid: urn:oid:1.3.6.1.4.1.21367.13.20.200
         label: MRN
       patientReference: true
+    activity:
+      sql:
+        file-path: activity/consent-activity.sql
+      pagination:
+        default-size: 10
 ---
 spring.profiles: standalone-ssl
 spring:
