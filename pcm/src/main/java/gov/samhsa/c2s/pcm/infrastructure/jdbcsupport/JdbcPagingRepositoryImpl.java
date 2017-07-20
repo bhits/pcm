@@ -2,7 +2,7 @@ package gov.samhsa.c2s.pcm.infrastructure.jdbcsupport;
 
 import gov.samhsa.c2s.pcm.infrastructure.exception.JdbcPagingException;
 import gov.samhsa.c2s.pcm.infrastructure.jdbcsupport.sql.SqlFromClause;
-import gov.samhsa.c2s.pcm.infrastructure.jdbcsupport.sql.SqlRebuilder;
+import gov.samhsa.c2s.pcm.infrastructure.jdbcsupport.sql.SqlGenerator;
 import gov.samhsa.c2s.pcm.infrastructure.jdbcsupport.sql.SqlScriptProvider;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,11 +35,11 @@ public class JdbcPagingRepositoryImpl implements JdbcPagingRepository {
     @Override
     public <T> Page<T> findAll(int indexOfSqls, Pageable pageable) {
         try {
-            SqlRebuilder sqlRebuilder = getSqlRebuilder(indexOfSqls);
+            SqlGenerator sqlGenerator = getSqlGenerator(indexOfSqls);
             SqlFromClause sqlFromClause = getSqlFromClause(indexOfSqls);
-            String query = sqlRebuilder.selectAll(sqlFromClause, pageable);
+            String query = sqlGenerator.selectAll(sqlFromClause, pageable);
             log.debug("Query: " + query);
-            return new PageImpl<T>(jdbcOperations.query(query, queryMappingConfig.getRowMapper()), pageable, count(sqlRebuilder, sqlFromClause));
+            return new PageImpl<T>(jdbcOperations.query(query, queryMappingConfig.getRowMapper()), pageable, count(sqlGenerator, sqlFromClause));
         } catch (Exception e) {
             log.error(e.getMessage(), e);
             throw new JdbcPagingException(e);
@@ -49,26 +49,26 @@ public class JdbcPagingRepositoryImpl implements JdbcPagingRepository {
     @Override
     public <T> Page<T> findAllByArgs(int indexOfSqls, Pageable pageable, Object... args) {
         try {
-            SqlRebuilder sqlRebuilder = getSqlRebuilder(indexOfSqls);
+            SqlGenerator sqlGenerator = getSqlGenerator(indexOfSqls);
             SqlFromClause sqlFromClause = getSqlFromClause(indexOfSqls);
-            String query = sqlRebuilder.selectByIdPageable(sqlFromClause, pageable);
+            String query = sqlGenerator.selectByIdPageable(sqlFromClause, pageable);
 
-            return new PageImpl<T>(jdbcOperations.query(query, queryMappingConfig.getRowMapper(), args), pageable, countByArgs(sqlRebuilder, sqlFromClause, args[0]));
+            return new PageImpl<T>(jdbcOperations.query(query, queryMappingConfig.getRowMapper(), args), pageable, countByArgs(sqlGenerator, sqlFromClause, args[0]));
         } catch (Exception e) {
             log.error(e.getMessage(), e);
             throw new JdbcPagingException(e);
         }
     }
 
-    private long count(SqlRebuilder sqlRebuilder, SqlFromClause sqlFromClause) {
-        return jdbcOperations.queryForObject(sqlRebuilder.count(sqlFromClause), Long.class);
+    private long count(SqlGenerator sqlGenerator, SqlFromClause sqlFromClause) {
+        return jdbcOperations.queryForObject(sqlGenerator.count(sqlFromClause), Long.class);
     }
 
-    private long countByArgs(SqlRebuilder sqlRebuilder, SqlFromClause sqlFromClause, Object arg) {
-        return jdbcOperations.queryForObject(sqlRebuilder.countByArgs(sqlFromClause, arg), Long.class);
+    private long countByArgs(SqlGenerator sqlGenerator, SqlFromClause sqlFromClause, Object arg) {
+        return jdbcOperations.queryForObject(sqlGenerator.countByArgs(sqlFromClause, arg), Long.class);
     }
 
-    private SqlRebuilder getSqlRebuilder(int indexOfSqls) {
+    private SqlGenerator getSqlGenerator(int indexOfSqls) {
         String sqlScript = sqlScriptProvider.getSqlScriptByIndex(indexOfSqls);
         Pattern pattern = Pattern.compile(FROM_PATTERN);
         Matcher matcher = pattern.matcher(sqlScript);
@@ -76,7 +76,7 @@ public class JdbcPagingRepositoryImpl implements JdbcPagingRepository {
         while (matcher.find()) {
             selectClause = sqlScript.substring(SELECT_PATTERN.length(), matcher.start());
         }
-        return new SqlRebuilder(selectClause);
+        return new SqlGenerator(selectClause);
     }
 
     private SqlFromClause getSqlFromClause(int indexOfSqls) {

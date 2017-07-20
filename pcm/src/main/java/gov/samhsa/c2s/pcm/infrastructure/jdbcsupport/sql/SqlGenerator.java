@@ -5,7 +5,7 @@ import org.springframework.data.domain.Sort;
 
 import java.util.Iterator;
 
-public class SqlRebuilder {
+public class SqlGenerator {
     private static final String WHERE = " WHERE ";
     private static final String AND = " AND ";
     private static final String OR = " OR ";
@@ -18,11 +18,11 @@ public class SqlRebuilder {
 
     private String columnNames;
 
-    public SqlRebuilder() {
+    public SqlGenerator() {
         this("*");
     }
 
-    public SqlRebuilder(String columnNames) {
+    public SqlGenerator(String columnNames) {
         this.columnNames = columnNames;
     }
 
