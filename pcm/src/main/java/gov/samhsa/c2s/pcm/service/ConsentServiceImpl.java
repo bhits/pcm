@@ -252,9 +252,17 @@ public class ConsentServiceImpl implements ConsentService {
     public void attestConsent(String patientId, Long consentId, ConsentAttestationDto consentAttestationDto, Optional<String> attestedBy, Optional<Boolean> attestedByPatient) {
         //get patient
         final Patient patient = patientRepository.saveAndGet(patientId);
-        final boolean CONSENT_SIGNED = true;
-
+        //get consent
         Consent consent = consentRepository.findOneByIdAndPatientIdAndConsentAttestationIsNullAndConsentRevocationIsNull(consentId, patientId).orElseThrow(ConsentNotFoundException::new);
+
+        // Check the sign date before the consent start date
+        LocalDateTime consentStartDate = consent.getStartDate();
+        LocalDateTime currentTime = LocalDateTime.now();
+        if(currentTime.isAfter(consentStartDate)){
+            throw new BadRequestException();
+        }
+
+        final boolean CONSENT_SIGNED = true;
 
         if (consentAttestationDto.isAcceptTerms()) {
             //get getFromProviders
