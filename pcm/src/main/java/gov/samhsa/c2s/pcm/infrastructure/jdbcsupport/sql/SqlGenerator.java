@@ -15,6 +15,7 @@ public class SqlGenerator {
     private static final String ORDERBY = " ORDER BY ";
     private static final String COMMA = ", ";
     private static final String PARAM = " = ?";
+    private static final String EQUAL = " = ";
 
     private String columnNames;
 
@@ -30,12 +31,12 @@ public class SqlGenerator {
         return SELECT + "COUNT(*) " + FROM + fromClause.getFromClause();
     }
 
-    //TODO (#30): Refactor
     public String countByArgs(SqlFromClause fromClause, Object arg) {
         StringBuilder whereClause = new StringBuilder(WHERE);
-        for (String s : fromClause.getIdColumns()) {
-            whereClause.append(s).append(" = ");
-        }
+        String columnIds = fromClause.getIdColumns().stream()
+                .map(columnId -> columnId.concat(EQUAL))
+                .reduce("", String::concat);
+        whereClause.append(columnIds);
         return SELECT + "COUNT(*) " + FROM + fromClause.getFromClause() + whereClause + "'" + arg + "'";
     }
 
