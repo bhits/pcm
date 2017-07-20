@@ -3,17 +3,13 @@ package gov.samhsa.c2s.pcm.config;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.hibernate.validator.constraints.NotEmpty;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.SpringApplication;
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.context.ApplicationContext;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.PostConstruct;
 import javax.validation.Valid;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
-import java.util.HashSet;
 import java.util.List;
 
 @Component
@@ -21,20 +17,27 @@ import java.util.List;
 @Slf4j
 @Data
 public class ActivityProperties {
-    @Autowired
-    private ApplicationContext applicationContext;
 
     @NotNull
     @Valid
-    public Activity activity;
+    public List<Activity> activities;
 
     @Data
     public static class Activity {
+        @NotEmpty
+        public String type;
+
         @NotNull
+        @Valid
         public Pagination pagination;
 
         @NotNull
-        public List<Sql> sqls;
+        @Valid
+        public SortBy sortBy;
+
+        @NotNull
+        @Valid
+        public Sql sql;
 
         @Data
         public static class Pagination {
@@ -43,20 +46,16 @@ public class ActivityProperties {
         }
 
         @Data
+        public static class SortBy {
+            private Sort.Direction direction;
+            @NotEmpty
+            private String property;
+        }
+
+        @Data
         public static class Sql {
             @NotEmpty
             public String filePath;
-        }
-    }
-
-    @PostConstruct
-    private void checkDuplicateSqlSource() {
-        boolean isUniqueSqlSource = activity.getSqls().stream()
-                .allMatch(new HashSet<>()::add);
-
-        if (!isUniqueSqlSource) {
-            log.error("The sql file path of activity configuration is unique.");
-            SpringApplication.exit(applicationContext, () -> 2);
         }
     }
 }

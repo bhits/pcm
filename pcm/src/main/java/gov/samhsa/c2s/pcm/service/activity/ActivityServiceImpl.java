@@ -4,15 +4,19 @@ import gov.samhsa.c2s.pcm.config.ActivityProperties;
 import gov.samhsa.c2s.pcm.domain.PatientRepository;
 import gov.samhsa.c2s.pcm.domain.valueobject.ConsentStage;
 import gov.samhsa.c2s.pcm.infrastructure.UmsService;
+import gov.samhsa.c2s.pcm.infrastructure.dto.RoleDto;
 import gov.samhsa.c2s.pcm.infrastructure.dto.UserDto;
 import gov.samhsa.c2s.pcm.infrastructure.jdbcsupport.JdbcPagingRepository;
 import gov.samhsa.c2s.pcm.service.dto.ConsentActivityDto;
+import gov.samhsa.c2s.pcm.service.exception.ActivityNotFoundException;
+import gov.samhsa.c2s.pcm.service.exception.NoMatchRoleFoundException;
 import gov.samhsa.c2s.pcm.service.exception.PatientNotFoundException;
 import gov.samhsa.c2s.pcm.service.util.UserInfoHelper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,7 +25,7 @@ import java.util.Optional;
 @Service
 @Slf4j
 public class ActivityServiceImpl implements ActivityService {
-    private static final String SQL_PATH_OF_CONSENT_ACTIVITY = "activity/consent-activity.sql";
+    private static final String TYPE_OF_ACTIVITIES = "consent-activity";
 
     private final ActivityProperties activityProperties;
     private final JdbcPagingRepository jdbcPagingRepository;
@@ -43,9 +47,19 @@ public class ActivityServiceImpl implements ActivityService {
     @Transactional(readOnly = true)
     public Page<ConsentActivityDto> getConsentActivities(String patientId, Optional<Integer> page, Optional<Integer> size) {
         assertPatientExist(patientId);
-        final PageRequest pageRequest = new PageRequest(page.filter(p -> p >= 0).orElse(0),
-                size.filter(s -> s > 0).orElse(activityProperties.getActivity().getPagination().getDefaultSize()));
-        Page<ConsentActivityQueryResult> pagedActivityQueryResult = jdbcPagingRepository.findAllByArgs(SQL_PATH_OF_CONSENT_ACTIVITY, pageRequest, patientId);
+
+        ActivityProperties.Activity consentActivity = activityProperties.getActivities().stream()
+                .filter(activity -> activity.type.equalsIgnoreCase(TYPE_OF_ACTIVITIES))
+                .findAny()
+                .orElseThrow(ActivityNotFoundException::new);
+
+        Sort.Direction sortDirection = Optional.of(consentActivity.getSortBy().getDirection()).orElse(Sort.Direction.ASC);
+        final PageRequest pageRequest = new PageRequest(
+                page.filter(p -> p >= 0).orElse(0),
+                size.filter(s -> s > 0).orElse(consentActivity.getPagination().getDefaultSize()),
+                sortDirection,
+                consentActivity.getSortBy().getProperty());
+        Page<ConsentActivityQueryResult> pagedActivityQueryResult = jdbcPagingRepository.findAllByArgs(consentActivity.getSql().getFilePath(), pageRequest, patientId);
         return mapConsentActivityQueryResultToConsentActivityDto(pagedActivityQueryResult);
     }
 
@@ -55,8 +69,15 @@ public class ActivityServiceImpl implements ActivityService {
                 .actionType(getConsentActivityActionType(pagedActivityQueryResult1.getConsentStage(), pagedActivityQueryResult1.getRevType()))
                 .updatedBy(UserInfoHelper.getUserFullName(getUserByAuthId(pagedActivityQueryResult1.getLastUpdatedBy())))
                 .updatedDateTime(pagedActivityQueryResult1.getLastUpdatedDateTime())
-                .roles(getUserByAuthId(pagedActivityQueryResult1.getLastUpdatedBy()).getRoles())
+                .role(determineUserRole(pagedActivityQueryResult1))
                 .build());
+    }
+
+    private RoleDto determineUserRole(ConsentActivityQueryResult pagedActivityQueryResult) {
+        //TODO: determine a single role in current login user
+        return getUserByAuthId(pagedActivityQueryResult.getLastUpdatedBy()).getRoles().stream()
+                .findAny()
+                .orElseThrow(NoMatchRoleFoundException::new);
     }
 
     private UserDto getUserByAuthId(String userAuthId) {

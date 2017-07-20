@@ -6,8 +6,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.List;
-
 @Data
 @Builder
 @AllArgsConstructor
@@ -17,5 +15,5 @@ public class ConsentActivityDto {
     private String actionType;
     private String updatedBy;
     private String updatedDateTime;
-    private List<RoleDto> roles;
+    private RoleDto role;
 }
