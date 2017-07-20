@@ -19,9 +19,9 @@ public class ClassPathSqlScriptProviderImpl implements SqlScriptProvider {
     private ActivityProperties activityProperties;
 
     @Override
-    public String getSqlScriptByIndex(int indexOfSqls) {
+    public String getSqlScriptByPath(String sqlFilePath) {
         try {
-            byte[] fileBytes = IOUtils.toByteArray(getSqlResourceByIndex(indexOfSqls));
+            byte[] fileBytes = IOUtils.toByteArray(getSqlResourceByPath(sqlFilePath));
             String sqlString = new String(fileBytes);
             log.debug("Sql Script: " + sqlString);
             return sqlString;
@@ -31,12 +31,12 @@ public class ClassPathSqlScriptProviderImpl implements SqlScriptProvider {
         }
     }
 
-    private InputStream getSqlResourceByIndex(int index) throws IOException {
+    private InputStream getSqlResourceByPath(String sqlPath) throws IOException {
         String sqlFilePath = activityProperties
                 .getActivity()
                 .getSqls()
                 .stream()
-                .filter(sql -> sql.index == index)
+                .filter(sql -> sql.getFilePath().equalsIgnoreCase(sqlPath))
                 .map(ActivityProperties.Activity.Sql::getFilePath)
                 .findAny().orElseThrow(SqlScriptFileNotFoundException::new);
         return new ClassPathResource(sqlFilePath).getInputStream();

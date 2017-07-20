@@ -33,10 +33,10 @@ public class JdbcPagingRepositoryImpl implements JdbcPagingRepository {
     }
 
     @Override
-    public <T> Page<T> findAll(int indexOfSqls, Pageable pageable) {
+    public <T> Page<T> findAll(String sqlFilePath, Pageable pageable) {
         try {
-            SqlGenerator sqlGenerator = getSqlGenerator(indexOfSqls);
-            SqlFromClause sqlFromClause = getSqlFromClause(indexOfSqls);
+            SqlGenerator sqlGenerator = getSqlGenerator(sqlFilePath);
+            SqlFromClause sqlFromClause = getSqlFromClause(sqlFilePath);
             String query = sqlGenerator.selectAll(sqlFromClause, pageable);
             log.debug("Query: " + query);
             return new PageImpl<T>(jdbcOperations.query(query, queryMappingConfig.getRowMapper()), pageable, count(sqlGenerator, sqlFromClause));
@@ -47,10 +47,10 @@ public class JdbcPagingRepositoryImpl implements JdbcPagingRepository {
     }
 
     @Override
-    public <T> Page<T> findAllByArgs(int indexOfSqls, Pageable pageable, Object... args) {
+    public <T> Page<T> findAllByArgs(String sqlFilePath, Pageable pageable, Object... args) {
         try {
-            SqlGenerator sqlGenerator = getSqlGenerator(indexOfSqls);
-            SqlFromClause sqlFromClause = getSqlFromClause(indexOfSqls);
+            SqlGenerator sqlGenerator = getSqlGenerator(sqlFilePath);
+            SqlFromClause sqlFromClause = getSqlFromClause(sqlFilePath);
             String query = sqlGenerator.selectByIdPageable(sqlFromClause, pageable);
 
             return new PageImpl<T>(jdbcOperations.query(query, queryMappingConfig.getRowMapper(), args), pageable, countByArgs(sqlGenerator, sqlFromClause, args[0]));
@@ -68,8 +68,8 @@ public class JdbcPagingRepositoryImpl implements JdbcPagingRepository {
         return jdbcOperations.queryForObject(sqlGenerator.countByArgs(sqlFromClause, arg), Long.class);
     }
 
-    private SqlGenerator getSqlGenerator(int indexOfSqls) {
-        String sqlScript = sqlScriptProvider.getSqlScriptByIndex(indexOfSqls);
+    private SqlGenerator getSqlGenerator(String sqlFilePath) {
+        String sqlScript = sqlScriptProvider.getSqlScriptByPath(sqlFilePath);
         Pattern pattern = Pattern.compile(FROM_PATTERN);
         Matcher matcher = pattern.matcher(sqlScript);
         String selectClause = "*";
@@ -79,8 +79,8 @@ public class JdbcPagingRepositoryImpl implements JdbcPagingRepository {
         return new SqlGenerator(selectClause);
     }
 
-    private SqlFromClause getSqlFromClause(int indexOfSqls) {
-        String sqlScript = sqlScriptProvider.getSqlScriptByIndex(indexOfSqls);
+    private SqlFromClause getSqlFromClause(String sqlFilePath) {
+        String sqlScript = sqlScriptProvider.getSqlScriptByPath(sqlFilePath);
         Pattern pattern = Pattern.compile(FROM_PATTERN);
         Matcher matcher = pattern.matcher(sqlScript);
         String fromClause = null;

@@ -21,7 +21,7 @@ import java.util.Optional;
 @Service
 @Slf4j
 public class ActivityServiceImpl implements ActivityService {
-    private static final int INDEX_OF_CONSENT_ACTIVITY = 1;
+    private static final String SQL_PATH_OF_CONSENT_ACTIVITY = "activity/consent-activity.sql";
 
     private final ActivityProperties activityProperties;
     private final JdbcPagingRepository jdbcPagingRepository;
@@ -45,7 +45,7 @@ public class ActivityServiceImpl implements ActivityService {
         assertPatientExist(patientId);
         final PageRequest pageRequest = new PageRequest(page.filter(p -> p >= 0).orElse(0),
                 size.filter(s -> s > 0).orElse(activityProperties.getActivity().getPagination().getDefaultSize()));
-        Page<ConsentActivityQueryResult> pagedActivityQueryResult = jdbcPagingRepository.findAllByArgs(INDEX_OF_CONSENT_ACTIVITY, pageRequest, patientId);
+        Page<ConsentActivityQueryResult> pagedActivityQueryResult = jdbcPagingRepository.findAllByArgs(SQL_PATH_OF_CONSENT_ACTIVITY, pageRequest, patientId);
         return mapConsentActivityQueryResultToConsentActivityDto(pagedActivityQueryResult);
     }
 

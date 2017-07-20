@@ -7,5 +7,5 @@ public interface SqlScriptProvider {
      *
      * @return the sql script
      */
-    String getSqlScriptByIndex(int indexOfSqls);
+    String getSqlScriptByPath(String sqlFilePath);
 }

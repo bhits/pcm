@@ -48,8 +48,7 @@ c2s:
       patientReference: true
     activity:
       sqls:
-        - index: 1
-          file-path: activity/consent-activity.sql
+        - file-path: activity/consent-activity.sql
       pagination:
         default-size: 10
 ---

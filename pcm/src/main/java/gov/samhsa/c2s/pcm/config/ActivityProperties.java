@@ -44,9 +44,6 @@ public class ActivityProperties {
 
         @Data
         public static class Sql {
-            @NotNull
-            @Min(1)
-            public int index;
             @NotEmpty
             public String filePath;
         }
@@ -58,7 +55,7 @@ public class ActivityProperties {
                 .allMatch(new HashSet<>()::add);
 
         if (!isUniqueSqlSource) {
-            log.error("The index or file path configuration of activity sql source is unique.");
+            log.error("The sql file path of activity configuration is unique.");
             SpringApplication.exit(applicationContext, () -> 2);
         }
     }

@@ -5,7 +5,7 @@ import org.springframework.data.domain.Pageable;
 
 public interface JdbcPagingRepository {
 
-    <T> Page<T> findAll(int indexOfSqls, Pageable pageable);
+    <T> Page<T> findAll(String sqlFilePath, Pageable pageable);
 
-    <T> Page<T> findAllByArgs(int indexOfSqls, Pageable pageable, Object... args);
+    <T> Page<T> findAllByArgs(String sqlFilePath, Pageable pageable, Object... args);
 }
