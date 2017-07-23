@@ -232,19 +232,21 @@ public class ConsentServiceImpl implements ConsentService {
 
     @Override
     @Transactional
-    public void deleteConsent(String patientId, Long consentId, Optional<String> lastUpdatedBy) {
+    public void softDeleteConsent(String patientId, Long consentId, Optional<String> lastUpdatedBy) {
         Consent consent = consentRepository.findOneByIdAndPatientIdAndConsentAttestationIsNullAndConsentRevocationIsNull(consentId, patientId).orElseThrow(PatientOrSavedConsentNotFoundException::new);
         Assert.isNull(consent.getConsentAttestation(), "Cannot delete an attested consent");
         Assert.isNull(consent.getConsentRevocation(), "Cannot delete an revoked consent");
         Assert.isTrue(ConsentStage.SAVED.equals(consent.getConsentStage()), "Cannot delete a consent that is not in 'SAVED' stage");
+
         consent.setLastUpdatedBy(lastUpdatedBy.orElse(null));
+        consent.setConsentStage(ConsentStage.DELETED);
+        consent.setDeleted(true);
         /*
           An entity when deleted will only contain the id of the entity and no data in the audit table.
-          Therefore, saving the consent before deleting to track the lastUpdatedBy info
+          Therefore, using soft delete to be able to get all info
           TODO: Find a better way
          */
         consentRepository.save(consent);
-        consentRepository.delete(consent);
     }
 
     @Override
@@ -704,7 +706,7 @@ public class ConsentServiceImpl implements ConsentService {
                 .build();
     }
 
-    private boolean actionPerformedByPatient(Optional<Boolean> byPatient){
+    private boolean actionPerformedByPatient(Optional<Boolean> byPatient) {
         if ((byPatient == null) || !byPatient.isPresent() || byPatient.get()) {
             return true;
         } else return false;

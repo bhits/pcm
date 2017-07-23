@@ -108,6 +108,8 @@ public class ActivityServiceImpl implements ActivityService {
                 return "Sign Consent";
             case REVOKED:
                 return "Revoke Consent";
+            case DELETED:
+                return "Delete Consent";
             default:
                 return "Edit Consent";
         }

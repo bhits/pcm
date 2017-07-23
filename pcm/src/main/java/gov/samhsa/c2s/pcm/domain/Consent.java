@@ -7,6 +7,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
+import org.hibernate.annotations.Where;
 import org.hibernate.envers.Audited;
 import org.hibernate.validator.constraints.ScriptAssert;
 import org.springframework.data.annotation.CreatedDate;
@@ -34,6 +35,7 @@ import java.util.Date;
 import java.util.List;
 
 @Entity
+@Where(clause = "deleted=0")
 @EntityListeners(AuditingEntityListener.class)
 @Audited
 @ScriptAssert(
@@ -102,6 +104,9 @@ public class Consent {
 
     @NotNull
     private String consentReferenceId;
+
+    @NotNull
+    private boolean deleted = false;
 
     public void setConsentAttestation(ConsentAttestation consentAttestation) {
         setConsentStage(ConsentStage.SIGNED);
