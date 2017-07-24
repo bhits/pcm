@@ -52,6 +52,7 @@ import gov.samhsa.c2s.pcm.service.exception.PatientOrSavedConsentNotFoundExcepti
 import gov.samhsa.c2s.pcm.service.fhir.FhirConsentService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.RandomStringUtils;
+import org.apache.tomcat.jni.Local;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -255,10 +256,10 @@ public class ConsentServiceImpl implements ConsentService {
         //get consent
         Consent consent = consentRepository.findOneByIdAndPatientIdAndConsentAttestationIsNullAndConsentRevocationIsNull(consentId, patientId).orElseThrow(ConsentNotFoundException::new);
 
-        // Check the sign date before the consent start date
-        LocalDateTime consentStartDate = consent.getStartDate();
-        LocalDateTime currentTime = LocalDateTime.now();
-        if(currentTime.isAfter(consentStartDate)){
+        // Check if the sign date after the consent start date throw the exception
+        LocalDate consentStartDate = consent.getStartDate().toLocalDate();
+        LocalDate signTime = LocalDate.now();
+        if(signTime.isAfter(consentStartDate)){
             throw new BadRequestException();
         }
 
