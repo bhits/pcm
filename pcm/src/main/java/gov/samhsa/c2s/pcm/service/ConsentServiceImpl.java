@@ -174,6 +174,8 @@ public class ConsentServiceImpl implements ConsentService {
         final Set<Identifier> toProviderIdentifiers = toProviders.stream().map(Provider::getIdentifier).collect(toSet());
         final Set<Identifier> sharePurposeIdentifiers = sharePurposes.stream().map(Purpose::getIdentifier).collect(toSet());
         final boolean duplicate = patient.getConsents().stream()
+                // find any consent that is not in 'DELETED' stage
+                .filter(consent -> !ConsentStage.DELETED.equals(consent.getConsentStage()))
                 // find any consent that is not in 'REVOKED' stage
                 .filter(consent -> !ConsentStage.REVOKED.equals(consent.getConsentStage()))
                 .anyMatch(consent ->
