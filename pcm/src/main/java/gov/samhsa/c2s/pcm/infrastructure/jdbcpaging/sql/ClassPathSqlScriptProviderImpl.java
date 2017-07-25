@@ -1,4 +1,4 @@
-package gov.samhsa.c2s.pcm.infrastructure.jdbcsupport.sql;
+package gov.samhsa.c2s.pcm.infrastructure.jdbcpaging.sql;
 
 import gov.samhsa.c2s.pcm.infrastructure.exception.SqlScriptFileNotFoundException;
 import lombok.extern.slf4j.Slf4j;

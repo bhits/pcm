@@ -1,6 +1,6 @@
 package gov.samhsa.c2s.pcm.service.activity;
 
-import gov.samhsa.c2s.pcm.infrastructure.jdbcsupport.QueryMappingConfig;
+import gov.samhsa.c2s.pcm.infrastructure.jdbcpaging.QueryMappingConfig;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Service;
 

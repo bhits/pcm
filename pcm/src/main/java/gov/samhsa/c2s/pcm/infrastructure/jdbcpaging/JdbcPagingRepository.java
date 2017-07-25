@@ -1,4 +1,4 @@
-package gov.samhsa.c2s.pcm.infrastructure.jdbcsupport;
+package gov.samhsa.c2s.pcm.infrastructure.jdbcpaging;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;

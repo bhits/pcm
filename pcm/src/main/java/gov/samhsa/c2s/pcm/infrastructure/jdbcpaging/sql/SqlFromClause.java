@@ -1,4 +1,4 @@
-package gov.samhsa.c2s.pcm.infrastructure.jdbcsupport.sql;
+package gov.samhsa.c2s.pcm.infrastructure.jdbcpaging.sql;
 
 import lombok.Data;
 import org.springframework.util.Assert;

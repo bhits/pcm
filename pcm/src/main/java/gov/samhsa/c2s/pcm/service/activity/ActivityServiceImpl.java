@@ -6,7 +6,7 @@ import gov.samhsa.c2s.pcm.domain.valueobject.ConsentStage;
 import gov.samhsa.c2s.pcm.infrastructure.UmsService;
 import gov.samhsa.c2s.pcm.infrastructure.dto.RoleDto;
 import gov.samhsa.c2s.pcm.infrastructure.dto.UserDto;
-import gov.samhsa.c2s.pcm.infrastructure.jdbcsupport.JdbcPagingRepository;
+import gov.samhsa.c2s.pcm.infrastructure.jdbcpaging.JdbcPagingRepository;
 import gov.samhsa.c2s.pcm.service.dto.ConsentActivityDto;
 import gov.samhsa.c2s.pcm.service.exception.ActivityNotFoundException;
 import gov.samhsa.c2s.pcm.service.exception.NoMatchRoleFoundException;

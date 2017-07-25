@@ -1,9 +1,9 @@
-package gov.samhsa.c2s.pcm.infrastructure.jdbcsupport;
+package gov.samhsa.c2s.pcm.infrastructure.jdbcpaging;
 
 import gov.samhsa.c2s.pcm.infrastructure.exception.JdbcPagingException;
-import gov.samhsa.c2s.pcm.infrastructure.jdbcsupport.sql.SqlFromClause;
-import gov.samhsa.c2s.pcm.infrastructure.jdbcsupport.sql.SqlGenerator;
-import gov.samhsa.c2s.pcm.infrastructure.jdbcsupport.sql.SqlScriptProvider;
+import gov.samhsa.c2s.pcm.infrastructure.jdbcpaging.sql.SqlFromClause;
+import gov.samhsa.c2s.pcm.infrastructure.jdbcpaging.sql.SqlGenerator;
+import gov.samhsa.c2s.pcm.infrastructure.jdbcpaging.sql.SqlScriptProvider;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
