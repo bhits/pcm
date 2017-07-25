@@ -31,13 +31,8 @@ public class SqlGenerator {
         return SELECT + "COUNT(*) " + FROM + fromClause.getFromClause();
     }
 
-    public String countByArgs(SqlFromClause fromClause, Object arg) {
-        StringBuilder whereClause = new StringBuilder(WHERE);
-        String columnIds = fromClause.getIdColumns().stream()
-                .map(columnId -> columnId.concat(EQUAL))
-                .reduce("", String::concat);
-        whereClause.append(columnIds);
-        return SELECT + "COUNT(*) " + FROM + fromClause.getFromClause() + whereClause + "'" + arg + "'";
+    public String countByArgs(SqlFromClause fromClause) {
+        return SELECT + "COUNT(*) " + FROM + fromClause.getFromClause() + whereByIdClause(fromClause);
     }
 
     public String selectAll(SqlFromClause fromClause) {

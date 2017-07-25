@@ -35,7 +35,7 @@ public class JdbcPagingRepositoryImpl implements JdbcPagingRepository {
     @Override
     public <T> Page<T> findAll(String sqlFilePath, Pageable pageable) {
         try {
-            SqlGenerator sqlGenerator = getSqlGenerator(sqlFilePath);
+            SqlGenerator sqlGenerator = getColumnNames(sqlFilePath);
             SqlFromClause sqlFromClause = getSqlFromClause(sqlFilePath);
             String query = sqlGenerator.selectAll(sqlFromClause, pageable);
             log.debug("Query: " + query);
@@ -49,11 +49,11 @@ public class JdbcPagingRepositoryImpl implements JdbcPagingRepository {
     @Override
     public <T> Page<T> findAllByArgs(String sqlFilePath, Pageable pageable, Object... args) {
         try {
-            SqlGenerator sqlGenerator = getSqlGenerator(sqlFilePath);
+            SqlGenerator sqlGenerator = getColumnNames(sqlFilePath);
             SqlFromClause sqlFromClause = getSqlFromClause(sqlFilePath);
             String query = sqlGenerator.selectByIdPageable(sqlFromClause, pageable);
-
-            return new PageImpl<T>(jdbcOperations.query(query, queryMappingConfig.getRowMapper(), args), pageable, countByArgs(sqlGenerator, sqlFromClause, args[0]));
+            log.debug("Query: " + query);
+            return new PageImpl<T>(jdbcOperations.query(query, queryMappingConfig.getRowMapper(), args), pageable, countByArgs(sqlGenerator, sqlFromClause, args));
         } catch (Exception e) {
             log.error(e.getMessage(), e);
             throw new JdbcPagingException(e);
@@ -64,11 +64,11 @@ public class JdbcPagingRepositoryImpl implements JdbcPagingRepository {
         return jdbcOperations.queryForObject(sqlGenerator.count(sqlFromClause), Long.class);
     }
 
-    private long countByArgs(SqlGenerator sqlGenerator, SqlFromClause sqlFromClause, Object arg) {
-        return jdbcOperations.queryForObject(sqlGenerator.countByArgs(sqlFromClause, arg), Long.class);
+    private long countByArgs(SqlGenerator sqlGenerator, SqlFromClause sqlFromClause, Object... args) {
+        return jdbcOperations.queryForObject(sqlGenerator.countByArgs(sqlFromClause), args, Long.class);
     }
 
-    private SqlGenerator getSqlGenerator(String sqlFilePath) {
+    private SqlGenerator getColumnNames(String sqlFilePath) {
         String sqlScript = sqlScriptProvider.getSqlScriptByPath(sqlFilePath);
         Pattern pattern = Pattern.compile(FROM_PATTERN);
         Matcher matcher = pattern.matcher(sqlScript);

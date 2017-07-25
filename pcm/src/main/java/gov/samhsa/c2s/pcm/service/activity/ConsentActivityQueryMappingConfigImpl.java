@@ -4,6 +4,9 @@ import gov.samhsa.c2s.pcm.infrastructure.jdbcsupport.QueryMappingConfig;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Service;
 
+import java.util.Arrays;
+import java.util.List;
+
 @Service
 public class ConsentActivityQueryMappingConfigImpl implements QueryMappingConfig {
 
@@ -21,7 +24,7 @@ public class ConsentActivityQueryMappingConfigImpl implements QueryMappingConfig
     }
 
     @Override
-    public String getIdColumn() {
-        return WHERE_CONDITION;
+    public List<String> getIdColumn() {
+        return Arrays.asList(WHERE_CONDITION);
     }
 }
