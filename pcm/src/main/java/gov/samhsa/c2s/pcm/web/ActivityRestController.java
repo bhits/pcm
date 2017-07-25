@@ -6,10 +6,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.Locale;
 import java.util.Optional;
 
 @RestController
@@ -26,7 +28,8 @@ public class ActivityRestController {
     @GetMapping("/consent-activities")
     public Page<ConsentActivityDto> getConsentActivities(@PathVariable String patientId,
                                                          @RequestParam Optional<Integer> page,
-                                                         @RequestParam Optional<Integer> size) {
-        return activityService.getConsentActivities(patientId, page, size);
+                                                         @RequestParam Optional<Integer> size,
+                                                         @RequestHeader("Accept-Language") Locale locale) {
+        return activityService.getConsentActivities(patientId, page, size, locale);
     }
 }
