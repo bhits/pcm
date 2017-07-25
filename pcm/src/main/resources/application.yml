@@ -13,6 +13,8 @@ spring:
     url: jdbc:mysql://localhost:3306/pcm?autoReconnect=true
     username: root
     password: admin
+  messages:
+    basename: i18n/messages
 c2s:
   pcm:
     supported-provider-systems:

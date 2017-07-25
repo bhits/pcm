@@ -15,6 +15,7 @@ import gov.samhsa.c2s.pcm.service.util.UserInfoHelper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -49,7 +50,7 @@ public class ActivityServiceImpl implements ActivityService {
 
     @Override
     @Transactional(readOnly = true)
-    public Page<ConsentActivityDto> getConsentActivities(String patientId, Optional<Integer> page, Optional<Integer> size, Locale locale) {
+    public Page<ConsentActivityDto> getConsentActivities(String patientId, Optional<Integer> page, Optional<Integer> size) {
         assertPatientExist(patientId);
 
         ActivityProperties.Activity consentActivity = activityProperties.getActivities().stream()
@@ -64,13 +65,13 @@ public class ActivityServiceImpl implements ActivityService {
                 sortDirection,
                 consentActivity.getSortBy().getProperty());
         Page<ConsentActivityQueryResult> pagedActivityQueryResult = jdbcPagingRepository.findAllByArgs(consentActivity.getSql().getFilePath(), pageRequest, patientId);
-        return mapConsentActivityQueryResultToConsentActivityDto(pagedActivityQueryResult, locale);
+        return mapConsentActivityQueryResultToConsentActivityDto(pagedActivityQueryResult);
     }
 
-    private Page<ConsentActivityDto> mapConsentActivityQueryResultToConsentActivityDto(Page<ConsentActivityQueryResult> pagedActivityQueryResult, Locale locale) {
+    private Page<ConsentActivityDto> mapConsentActivityQueryResultToConsentActivityDto(Page<ConsentActivityQueryResult> pagedActivityQueryResult) {
         return pagedActivityQueryResult.map(pagedActivityQueryResult1 -> ConsentActivityDto.builder()
                 .consentReferenceId(pagedActivityQueryResult1.getConsentReferenceId())
-                .actionType(getConsentActivityActionType(pagedActivityQueryResult1.getConsentStage(), pagedActivityQueryResult1.getRevType(), locale))
+                .actionType(getConsentActivityActionType(pagedActivityQueryResult1.getConsentStage(), pagedActivityQueryResult1.getRevType()))
                 .updatedBy(UserInfoHelper.getUserFullName(getUserByAuthId(pagedActivityQueryResult1.getLastUpdatedBy())))
                 .updatedDateTime(pagedActivityQueryResult1.getLastUpdatedDateTime())
                 .role(determineUserRole(pagedActivityQueryResult1))
@@ -88,33 +89,34 @@ public class ActivityServiceImpl implements ActivityService {
         return umsService.getUserById(userAuthId);
     }
 
-    private String getConsentActivityActionType(String consentStage, String revType, Locale locale) {
+    private String getConsentActivityActionType(String consentStage, String revType) {
         switch (revType) {
             case "0":
-                return translateToSelectedLocale("ACTIVITY.ACTION_TYPE.CREATE_CONSENT", locale);
+                return translateToSelectedLocale("ACTIVITY.ACTION_TYPE.CREATE_CONSENT");
             case "1":
-                return determineUpdatedConsentActionType(consentStage, locale);
+                return determineUpdatedConsentActionType(consentStage);
             case "2":
-                return translateToSelectedLocale("ACTIVITY.ACTION_TYPE.DELETE_CONSENT", locale);
+                return translateToSelectedLocale("ACTIVITY.ACTION_TYPE.DELETE_CONSENT");
             default:
-                return translateToSelectedLocale("ACTIVITY.ACTION_TYPE.INVALID_ACTION_TYPE", locale);
+                return translateToSelectedLocale("ACTIVITY.ACTION_TYPE.INVALID_ACTION_TYPE");
         }
     }
 
-    private String translateToSelectedLocale(String messageCode, Locale locale) {
-        return messageSource.getMessage(messageCode, null, locale);
+    private String translateToSelectedLocale(String messageCode) {
+        Locale selectedLocale = LocaleContextHolder.getLocale();
+        return messageSource.getMessage(messageCode, null, selectedLocale);
     }
 
-    private String determineUpdatedConsentActionType(String consentStage, Locale locale) {
+    private String determineUpdatedConsentActionType(String consentStage) {
         switch (ConsentStage.valueOf(consentStage)) {
             case SIGNED:
-                return translateToSelectedLocale("ACTIVITY.ACTION_TYPE.SIGN_CONSENT", locale);
+                return translateToSelectedLocale("ACTIVITY.ACTION_TYPE.SIGN_CONSENT");
             case REVOKED:
-                return translateToSelectedLocale("ACTIVITY.ACTION_TYPE.REVOKE_CONSENT", locale);
+                return translateToSelectedLocale("ACTIVITY.ACTION_TYPE.REVOKE_CONSENT");
             case DELETED:
-                return translateToSelectedLocale("ACTIVITY.ACTION_TYPE.DELETE_CONSENT", locale);
+                return translateToSelectedLocale("ACTIVITY.ACTION_TYPE.DELETE_CONSENT");
             default:
-                return translateToSelectedLocale("ACTIVITY.ACTION_TYPE.EDIT_CONSENT", locale);
+                return translateToSelectedLocale("ACTIVITY.ACTION_TYPE.EDIT_CONSENT");
         }
     }
 
