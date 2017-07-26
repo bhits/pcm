@@ -103,8 +103,15 @@ public class ActivityServiceImpl implements ActivityService {
     }
 
     private String translateToSelectedLocale(String messageCode) {
-        Locale selectedLocale = LocaleContextHolder.getLocale();
-        return messageSource.getMessage(messageCode, null, selectedLocale);
+        return messageSource.getMessage(messageCode, null, getLocaleFromContext());
+    }
+
+    private Locale getLocaleFromContext() {
+        if (LocaleContextHolder.getLocale().getLanguage().isEmpty()) {
+            return Locale.US;
+        } else {
+            return LocaleContextHolder.getLocale();
+        }
     }
 
     private String determineUpdatedConsentActionType(String consentStage) {
