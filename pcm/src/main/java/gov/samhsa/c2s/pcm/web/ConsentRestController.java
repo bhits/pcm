@@ -60,7 +60,7 @@ public class ConsentRestController {
     public void deleteConsent(@PathVariable String patientId,
                               @PathVariable Long consentId,
                               @RequestParam(value = "lastUpdatedBy") Optional<String> lastUpdatedBy) {
-        consentService.deleteConsent(patientId, consentId, lastUpdatedBy);
+        consentService.softDeleteConsent(patientId, consentId, lastUpdatedBy);
     }
 
     @PutMapping("/consents/{consentId}")

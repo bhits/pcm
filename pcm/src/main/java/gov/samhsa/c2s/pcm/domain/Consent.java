@@ -7,6 +7,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
+import org.hibernate.annotations.Where;
 import org.hibernate.envers.Audited;
 import org.hibernate.validator.constraints.ScriptAssert;
 import org.springframework.data.annotation.CreatedDate;
@@ -34,6 +35,7 @@ import java.util.Date;
 import java.util.List;
 
 @Entity
+@Where(clause = "deleted=0")
 @EntityListeners(AuditingEntityListener.class)
 @Audited
 @ScriptAssert(
@@ -103,6 +105,9 @@ public class Consent {
     @NotNull
     private String consentReferenceId;
 
+    @NotNull
+    private boolean deleted = false;
+
     public void setConsentAttestation(ConsentAttestation consentAttestation) {
         setConsentStage(ConsentStage.SIGNED);
         this.consentAttestation = consentAttestation;
@@ -114,11 +119,14 @@ public class Consent {
     }
 
     public boolean hasValidStartDate(LocalDateTime now) {
-        // Enforce strict validation for start date if the consent is not getting revoked
-        if (!ConsentStage.REVOKED.equals(getConsentStage())) {
-            final LocalDateTime startOfToday = LocalDateTime.of(now.toLocalDate(), LocalTime.MIN);
-            final boolean validStartDate = getStartDate() != null && (startOfToday.isBefore(getStartDate()) || startOfToday.isEqual(getStartDate()));
-            return validStartDate;
+        // Enforce strict validation for start date if the consent is not getting deleted
+        if (!ConsentStage.DELETED.equals(getConsentStage())) {
+            // Enforce strict validation for start date if the consent is not getting revoked
+            if (!ConsentStage.REVOKED.equals(getConsentStage())) {
+                final LocalDateTime startOfToday = LocalDateTime.of(now.toLocalDate(), LocalTime.MIN);
+                final boolean validStartDate = getStartDate() != null && (startOfToday.isBefore(getStartDate()) || startOfToday.isEqual(getStartDate()));
+                return validStartDate;
+            }
         }
         final boolean validStartDate = getStartDate() != null;
         return validStartDate;

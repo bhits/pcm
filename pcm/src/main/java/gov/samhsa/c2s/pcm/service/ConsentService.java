@@ -21,7 +21,7 @@ public interface ConsentService {
     void saveConsent(String patientId, ConsentDto consentDto, Optional<String> createdBy, Optional<Boolean> createdByPatient);
 
     @Transactional
-    void deleteConsent(String patientId, Long consentId, Optional<String> lastUpdatedBy);
+    void softDeleteConsent(String patientId, Long consentId, Optional<String> lastUpdatedBy);
 
     @Transactional
     void updateConsent(String patientId, Long consentId, ConsentDto consentDto, Optional<String> lastUpdatedBy, Optional<Boolean> updatedByPatient);
