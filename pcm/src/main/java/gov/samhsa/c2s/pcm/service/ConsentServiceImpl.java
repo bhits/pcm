@@ -52,7 +52,6 @@ import gov.samhsa.c2s.pcm.service.exception.PatientOrSavedConsentNotFoundExcepti
 import gov.samhsa.c2s.pcm.service.fhir.FhirConsentService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.RandomStringUtils;
-import org.apache.tomcat.jni.Local;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -236,6 +235,10 @@ public class ConsentServiceImpl implements ConsentService {
     @Override
     @Transactional
     public void softDeleteConsent(String patientId, Long consentId, Optional<String> lastUpdatedBy) {
+        /*
+          An entity when deleted will only contain the id of the entity and no data in the audit table.
+          Therefore, using soft delete to be able to get all info
+         */
         Consent consent = consentRepository.findOneByIdAndPatientIdAndConsentAttestationIsNullAndConsentRevocationIsNull(consentId, patientId).orElseThrow(PatientOrSavedConsentNotFoundException::new);
         Assert.isNull(consent.getConsentAttestation(), "Cannot delete an attested consent");
         Assert.isNull(consent.getConsentRevocation(), "Cannot delete an revoked consent");
@@ -244,11 +247,6 @@ public class ConsentServiceImpl implements ConsentService {
         consent.setLastUpdatedBy(lastUpdatedBy.orElse(null));
         consent.setConsentStage(ConsentStage.DELETED);
         consent.setDeleted(true);
-        /*
-          An entity when deleted will only contain the id of the entity and no data in the audit table.
-          Therefore, using soft delete to be able to get all info
-          TODO: Find a better way
-         */
         consentRepository.save(consent);
     }
 
@@ -263,7 +261,7 @@ public class ConsentServiceImpl implements ConsentService {
         // Check if the sign date after the consent start date throw the exception
         LocalDate consentStartDate = consent.getStartDate().toLocalDate();
         LocalDate signTime = LocalDate.now();
-        if(signTime.isAfter(consentStartDate)){
+        if (signTime.isAfter(consentStartDate)) {
             throw new BadRequestException();
         }
 
