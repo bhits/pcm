@@ -248,9 +248,9 @@ public class ConsentPdfGeneratorImpl implements ConsentPdfGenerator {
                             providerTable.addCell(createProviderPropertyValueTable("Provider Name", providerDto.getFirstName() + " " + providerDto.getLastName()));
                         else
                             providerTable.addCell(createProviderPropertyValueTable("Provider Name", providerDto.getOrganizationName()));
-                        providerTable.addCell(createProviderPropertyValueTable("NPI Number", providerDto.getNpi()));
-                        providerTable.addCell(createProviderPropertyValueTable("Address", composeAddress(providerDto)));
-                        providerTable.addCell(createProviderPropertyValueTable("Phone", providerDto.getPracticeLocationAddressTelephoneNumber()));
+                            providerTable.addCell(createProviderPropertyValueTable("NPI Number", providerDto.getNpi()));
+                            providerTable.addCell(createProviderPropertyValueTable("Address", composeAddress(providerDto)));
+                            providerTable.addCell(createProviderPropertyValueTable("Phone", providerDto.getPracticeLocationAddressTelephoneNumber()));
 
                     });
 
@@ -279,15 +279,15 @@ public class ConsentPdfGeneratorImpl implements ConsentPdfGenerator {
                         providerTable.addCell(createProviderPropertyValueTable("Phone", practitioner.getPhoneNumber()));
                     });
         } else {
-            consent.getFromProviders().stream().map(provider -> plsService.getFlattenedSmallProvider(provider.getIdentifier().getValue(), PlsService.Projection.FLATTEN_SMALL_PROVIDER))
+            consent.getToProviders().stream().map(provider -> plsService.getFlattenedSmallProvider(provider.getIdentifier().getValue(), PlsService.Projection.FLATTEN_SMALL_PROVIDER))
                     .forEach(providerDto -> {
                         if (providerDto.getEntityTypeDisplayName().equals(PlsService.ProviderType.INDIVIDUAL))
                             providerTable.addCell(createProviderPropertyValueTable("Provider Name", providerDto.getFirstName() + " " + providerDto.getLastName()));
                         else
                             providerTable.addCell(createProviderPropertyValueTable("Provider Name", providerDto.getOrganizationName()));
-                        providerTable.addCell(createProviderPropertyValueTable("NPI Number", providerDto.getNpi()));
-                        providerTable.addCell(createProviderPropertyValueTable("Address", composeAddress(providerDto)));
-                        providerTable.addCell(createProviderPropertyValueTable("Phone", providerDto.getPracticeLocationAddressTelephoneNumber()));
+                            providerTable.addCell(createProviderPropertyValueTable("NPI Number", providerDto.getNpi()));
+                            providerTable.addCell(createProviderPropertyValueTable("Address", composeAddress(providerDto)));
+                            providerTable.addCell(createProviderPropertyValueTable("Phone", providerDto.getPracticeLocationAddressTelephoneNumber()));
 
                     });
 
