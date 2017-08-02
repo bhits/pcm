@@ -11,11 +11,12 @@ import org.springframework.data.domain.Page;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Locale;
 import java.util.Optional;
 
 public interface ConsentService {
     @Transactional(readOnly = true)
-    Page<DetailedConsentDto> getConsents(String patientId, Optional<Long> purposeOfUse, Optional<Long> fromProvider, Optional<Long> toProvider, Optional<Integer> page, Optional<Integer> size);
+    Page<DetailedConsentDto> getConsents(String patientId, Optional<Long> purposeOfUse, Optional<Long> fromProvider, Optional<Long> toProvider, Optional<Integer> page, Optional<Integer> size,  Locale locale);
 
     @Transactional
     void saveConsent(String patientId, ConsentDto consentDto, Optional<String> createdBy, Optional<Boolean> createdByPatient);

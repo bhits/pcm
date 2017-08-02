@@ -26,6 +26,7 @@ import gov.samhsa.c2s.pcm.infrastructure.UmsService;
 import gov.samhsa.c2s.pcm.infrastructure.dto.FlattenedSmallProviderDto;
 import gov.samhsa.c2s.pcm.infrastructure.dto.PatientDto;
 import gov.samhsa.c2s.pcm.infrastructure.dto.UserDto;
+import gov.samhsa.c2s.pcm.infrastructure.i18n.HorizontalDatabaseMessageSource;
 import gov.samhsa.c2s.pcm.infrastructure.pdf.ConsentPdfGenerator;
 import gov.samhsa.c2s.pcm.infrastructure.pdf.ConsentRevocationPdfGenerator;
 import gov.samhsa.c2s.pcm.service.dto.AbstractProviderDto;
@@ -54,6 +55,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -64,10 +66,7 @@ import org.springframework.util.Assert;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -92,9 +91,12 @@ public class ConsentServiceImpl implements ConsentService {
     private final PurposeRepository purposeRepository;
     private final SensitivityCategoryRepository sensitivityCategoryRepository;
     private final FhirConsentService fhirConsentService;
+    private final HorizontalDatabaseMessageSource horizontalDatabaseMessageSource;
+    private final String PURPOSE = "PURPOSE";
+    private final String DISPLAY = "DISPLAY";
 
     @Autowired
-    public ConsentServiceImpl(ConsentAttestationTermRepository consentAttestationTermRepository, ConsentPdfGenerator consentPdfGenerator, ConsentRepository consentRepository, ConsentRevocationPdfGenerator consentRevocationPdfGenerator, ConsentRevocationTermRepository consentRevocationTermRepository, ModelMapper modelMapper, PatientRepository patientRepository, PcmProperties pcmProperties, UmsService umsService, PlsService plsService, PurposeRepository purposeRepository, SensitivityCategoryRepository sensitivityCategoryRepository, FhirConsentService fhirConsentService) {
+    public ConsentServiceImpl(ConsentAttestationTermRepository consentAttestationTermRepository, ConsentPdfGenerator consentPdfGenerator, ConsentRepository consentRepository, ConsentRevocationPdfGenerator consentRevocationPdfGenerator, ConsentRevocationTermRepository consentRevocationTermRepository, ModelMapper modelMapper, PatientRepository patientRepository, PcmProperties pcmProperties, UmsService umsService, PlsService plsService, PurposeRepository purposeRepository, SensitivityCategoryRepository sensitivityCategoryRepository, FhirConsentService fhirConsentService, HorizontalDatabaseMessageSource horizontalDatabaseMessageSource) {
         this.consentAttestationTermRepository = consentAttestationTermRepository;
         this.consentPdfGenerator = consentPdfGenerator;
         this.consentRepository = consentRepository;
@@ -108,13 +110,14 @@ public class ConsentServiceImpl implements ConsentService {
         this.purposeRepository = purposeRepository;
         this.sensitivityCategoryRepository = sensitivityCategoryRepository;
         this.fhirConsentService = fhirConsentService;
+        this.horizontalDatabaseMessageSource = horizontalDatabaseMessageSource;
     }
 
     @Override
     @Transactional(readOnly = true)
     public Page<DetailedConsentDto> getConsents(String patientId, Optional<Long> purposeOfUse,
                                                 Optional<Long> fromProvider, Optional<Long> toProvider,
-                                                Optional<Integer> page, Optional<Integer> size) {
+                                                Optional<Integer> page, Optional<Integer> size,  Locale locale) {
         final PageRequest pageRequest = new PageRequest(page.filter(p -> p >= 0).orElse(0),
                 size.filter(s -> s > 0 && s <= pcmProperties.getConsent().getPagination().getMaxSize()).orElse(pcmProperties.getConsent().getPagination().getDefaultSize()));
         final Page<Consent> consentsPage = consentRepository.findAllByPatientIdOrderByLastUpdatedDateDesc(patientId, pageRequest);
@@ -542,6 +545,12 @@ public class ConsentServiceImpl implements ConsentService {
         final List<PurposeDto> sharePurposes = consent.getSharePurposes().stream()
                 .map(purpose -> modelMapper.map(purpose, PurposeDto.class))
                 .collect(toList());
+
+        sharePurposes.stream().forEach(purposeDto -> {
+            purposeDto.setDisplay(getPurposeOfUseI18nDisplay(purposeDto.getIdentifier().getValue()));
+            purposeDto.setDescription(getPurposeOfUseI18nDescription(purposeDto.getIdentifier().getValue()));
+        });
+
         final Set<Identifier> providerIdentifiersWithConsents = ProviderServiceImpl.getProviderIdentifiersWithConsents(consent.getPatient());
 
         final List<AbstractProviderDto> fromProviders = Optional.ofNullable(consent.getConsentAttestation())
@@ -606,6 +615,18 @@ public class ConsentServiceImpl implements ConsentService {
                 .revokedBy(revokedBy)
                 .revokedByPatient(revokedByPatient)
                 .build();
+    }
+
+    private String getPurposeOfUseI18nDisplay(String value){
+        Locale locale = LocaleContextHolder.getLocale();
+        String displayCode = PURPOSE.concat(".").concat(value);
+        return horizontalDatabaseMessageSource.getMessage( displayCode,null, locale );
+    }
+
+    private String getPurposeOfUseI18nDescription(String value){
+        Locale locale = LocaleContextHolder.getLocale();
+        String desciptionCode = PURPOSE.concat(".").concat(value).concat(".").concat(DISPLAY);
+        return horizontalDatabaseMessageSource.getMessage( desciptionCode,null, locale );
     }
 
     private AbstractProviderDto toAbstractProviderDto(Provider provider) {
