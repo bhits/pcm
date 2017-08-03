@@ -91,12 +91,11 @@ public class ConsentServiceImpl implements ConsentService {
     private final PurposeRepository purposeRepository;
     private final SensitivityCategoryRepository sensitivityCategoryRepository;
     private final FhirConsentService fhirConsentService;
-    private final HorizontalDatabaseMessageSource horizontalDatabaseMessageSource;
-    private final String PURPOSE = "PURPOSE";
-    private final String DISPLAY = "DISPLAY";
+    private final I18nService i18nService;
+
 
     @Autowired
-    public ConsentServiceImpl(ConsentAttestationTermRepository consentAttestationTermRepository, ConsentPdfGenerator consentPdfGenerator, ConsentRepository consentRepository, ConsentRevocationPdfGenerator consentRevocationPdfGenerator, ConsentRevocationTermRepository consentRevocationTermRepository, ModelMapper modelMapper, PatientRepository patientRepository, PcmProperties pcmProperties, UmsService umsService, PlsService plsService, PurposeRepository purposeRepository, SensitivityCategoryRepository sensitivityCategoryRepository, FhirConsentService fhirConsentService, HorizontalDatabaseMessageSource horizontalDatabaseMessageSource) {
+    public ConsentServiceImpl(ConsentAttestationTermRepository consentAttestationTermRepository, ConsentPdfGenerator consentPdfGenerator, ConsentRepository consentRepository, ConsentRevocationPdfGenerator consentRevocationPdfGenerator, ConsentRevocationTermRepository consentRevocationTermRepository, ModelMapper modelMapper, PatientRepository patientRepository, PcmProperties pcmProperties, UmsService umsService, PlsService plsService, PurposeRepository purposeRepository, SensitivityCategoryRepository sensitivityCategoryRepository, FhirConsentService fhirConsentService, I18nService i18nService) {
         this.consentAttestationTermRepository = consentAttestationTermRepository;
         this.consentPdfGenerator = consentPdfGenerator;
         this.consentRepository = consentRepository;
@@ -110,7 +109,7 @@ public class ConsentServiceImpl implements ConsentService {
         this.purposeRepository = purposeRepository;
         this.sensitivityCategoryRepository = sensitivityCategoryRepository;
         this.fhirConsentService = fhirConsentService;
-        this.horizontalDatabaseMessageSource = horizontalDatabaseMessageSource;
+        this.i18nService = i18nService;
     }
 
     @Override
@@ -547,8 +546,8 @@ public class ConsentServiceImpl implements ConsentService {
                 .collect(toList());
 
         sharePurposes.stream().forEach(purposeDto -> {
-            purposeDto.setDisplay(getPurposeOfUseI18nDisplay(purposeDto.getIdentifier().getValue()));
-            purposeDto.setDescription(getPurposeOfUseI18nDescription(purposeDto.getIdentifier().getValue()));
+            purposeDto.setDisplay(i18nService.getPurposeOfUseI18nDisplay(purposeDto.getIdentifier().getValue()));
+            purposeDto.setDescription(i18nService.getPurposeOfUseI18nDescription(purposeDto.getIdentifier().getValue()));
         });
 
         final Set<Identifier> providerIdentifiersWithConsents = ProviderServiceImpl.getProviderIdentifiersWithConsents(consent.getPatient());
@@ -615,18 +614,6 @@ public class ConsentServiceImpl implements ConsentService {
                 .revokedBy(revokedBy)
                 .revokedByPatient(revokedByPatient)
                 .build();
-    }
-
-    private String getPurposeOfUseI18nDisplay(String value){
-        Locale locale = LocaleContextHolder.getLocale();
-        String displayCode = PURPOSE.concat(".").concat(value);
-        return horizontalDatabaseMessageSource.getMessage( displayCode,null, locale );
-    }
-
-    private String getPurposeOfUseI18nDescription(String value){
-        Locale locale = LocaleContextHolder.getLocale();
-        String desciptionCode = PURPOSE.concat(".").concat(value).concat(".").concat(DISPLAY);
-        return horizontalDatabaseMessageSource.getMessage( desciptionCode,null, locale );
     }
 
     private AbstractProviderDto toAbstractProviderDto(Provider provider) {
