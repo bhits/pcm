@@ -1,23 +1,7 @@
 package gov.samhsa.c2s.pcm.service;
 
 import gov.samhsa.c2s.pcm.config.PcmProperties;
-import gov.samhsa.c2s.pcm.domain.Consent;
-import gov.samhsa.c2s.pcm.domain.ConsentAttestation;
-import gov.samhsa.c2s.pcm.domain.ConsentAttestationTerm;
-import gov.samhsa.c2s.pcm.domain.ConsentAttestationTermRepository;
-import gov.samhsa.c2s.pcm.domain.ConsentRepository;
-import gov.samhsa.c2s.pcm.domain.ConsentRevocation;
-import gov.samhsa.c2s.pcm.domain.ConsentRevocationTerm;
-import gov.samhsa.c2s.pcm.domain.ConsentRevocationTermRepository;
-import gov.samhsa.c2s.pcm.domain.Organization;
-import gov.samhsa.c2s.pcm.domain.Patient;
-import gov.samhsa.c2s.pcm.domain.PatientRepository;
-import gov.samhsa.c2s.pcm.domain.Practitioner;
-import gov.samhsa.c2s.pcm.domain.Provider;
-import gov.samhsa.c2s.pcm.domain.Purpose;
-import gov.samhsa.c2s.pcm.domain.PurposeRepository;
-import gov.samhsa.c2s.pcm.domain.SensitivityCategory;
-import gov.samhsa.c2s.pcm.domain.SensitivityCategoryRepository;
+import gov.samhsa.c2s.pcm.domain.*;
 import gov.samhsa.c2s.pcm.domain.valueobject.Address;
 import gov.samhsa.c2s.pcm.domain.valueobject.ConsentStage;
 import gov.samhsa.c2s.pcm.domain.valueobject.Identifier;
@@ -26,7 +10,6 @@ import gov.samhsa.c2s.pcm.infrastructure.UmsService;
 import gov.samhsa.c2s.pcm.infrastructure.dto.FlattenedSmallProviderDto;
 import gov.samhsa.c2s.pcm.infrastructure.dto.PatientDto;
 import gov.samhsa.c2s.pcm.infrastructure.dto.UserDto;
-import gov.samhsa.c2s.pcm.infrastructure.i18n.HorizontalDatabaseMessageSource;
 import gov.samhsa.c2s.pcm.infrastructure.pdf.ConsentPdfGenerator;
 import gov.samhsa.c2s.pcm.infrastructure.pdf.ConsentRevocationPdfGenerator;
 import gov.samhsa.c2s.pcm.service.dto.AbstractProviderDto;
@@ -55,7 +38,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -487,6 +469,12 @@ public class ConsentServiceImpl implements ConsentService {
     public ConsentTermDto getConsentAttestationTerm(Optional<Long> id) {
         final Long termId = id.filter(i -> i != 1L).orElse(1L);
         ConsentAttestationTerm consentAttestationTerm = consentAttestationTermRepository.findOne(termId);
+
+        Optional<I18nMessage>  i18nMessageOptional = i18nService.getConsentRevocationTermI18nText(consentAttestationTerm.getId().toString());
+        if(i18nMessageOptional.isPresent()){
+            consentAttestationTerm.setText(i18nMessageOptional.get().getMessage());
+        }
+
         Assert.notNull(consentAttestationTerm, "Consent attestation term cannot be found");
         return modelMapper.map(consentAttestationTerm, ConsentTermDto.class);
     }
@@ -496,6 +484,12 @@ public class ConsentServiceImpl implements ConsentService {
     public ConsentTermDto getConsentRevocationTerm(Optional<Long> id) {
         final Long termId = id.filter(i -> i != 1L).orElse(1L);
         ConsentRevocationTerm consentRevocationTerm = consentRevocationTermRepository.findOne(termId);
+
+        Optional<I18nMessage>  i18nMessageOptional = i18nService.getConsentRevocationTermI18nText(consentRevocationTerm.getId().toString());
+        if(i18nMessageOptional.isPresent()){
+            consentRevocationTerm.setText(i18nMessageOptional.get().getMessage());
+        }
+
         Assert.notNull(consentRevocationTerm, "Consent revocation term cannot be found");
         return modelMapper.map(consentRevocationTerm, ConsentTermDto.class);
     }
@@ -546,8 +540,16 @@ public class ConsentServiceImpl implements ConsentService {
                 .collect(toList());
 
         sharePurposes.stream().forEach(purposeDto -> {
-            purposeDto.setDisplay(i18nService.getPurposeOfUseI18nDisplay(purposeDto.getIdentifier().getValue()));
-            purposeDto.setDescription(i18nService.getPurposeOfUseI18nDescription(purposeDto.getIdentifier().getValue()));
+
+            Optional<I18nMessage> displayMessageOptional = i18nService.getPurposeOfUseI18nDisplay(purposeDto.getId().toString());
+            if(displayMessageOptional.isPresent()){
+                purposeDto.setDisplay(displayMessageOptional.get().getMessage());
+            }
+
+            Optional<I18nMessage> descriptionMessageOptional = i18nService.getPurposeOfUseI18nDescription(purposeDto.getId().toString());
+            if(descriptionMessageOptional.isPresent()){
+                purposeDto.setDescription(descriptionMessageOptional.get().getMessage());
+            }
         });
 
         final Set<Identifier> providerIdentifiersWithConsents = ProviderServiceImpl.getProviderIdentifiersWithConsents(consent.getPatient());

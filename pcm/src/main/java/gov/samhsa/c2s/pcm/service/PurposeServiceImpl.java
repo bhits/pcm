@@ -1,5 +1,6 @@
 package gov.samhsa.c2s.pcm.service;
 
+import gov.samhsa.c2s.pcm.domain.I18nMessage;
 import gov.samhsa.c2s.pcm.domain.Purpose;
 import gov.samhsa.c2s.pcm.domain.PurposeRepository;
 import gov.samhsa.c2s.pcm.service.dto.PurposeDto;
@@ -9,6 +10,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Locale;
+import java.util.Optional;
 
 import static java.util.stream.Collectors.toList;
 
@@ -30,8 +32,15 @@ public class PurposeServiceImpl implements PurposeService {
         final List<Purpose> purposes = purposeRepository.findAll();
 
         purposes.stream().forEach(purpose -> {
-            purpose.setDisplay(i18nService.getPurposeOfUseI18nDisplay(purpose.getIdentifier().getValue()));
-            purpose.setDescription(i18nService.getPurposeOfUseI18nDescription(purpose.getIdentifier().getValue()));
+            Optional<I18nMessage> displayMessageOptional = i18nService.getPurposeOfUseI18nDisplay(purpose.getId().toString());
+            if(displayMessageOptional.isPresent()){
+                purpose.setDisplay(displayMessageOptional.get().getMessage());
+            }
+
+            Optional<I18nMessage> descriptionMessageOptional = i18nService.getPurposeOfUseI18nDescription(purpose.getId().toString());
+            if(descriptionMessageOptional.isPresent()){
+                purpose.setDescription(descriptionMessageOptional.get().getMessage());
+            }
         });
 
         return purposes.stream()
