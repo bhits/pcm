@@ -1,42 +1,52 @@
 package gov.samhsa.c2s.pcm.service;
 
-import gov.samhsa.c2s.pcm.domain.Purpose;
-import gov.samhsa.c2s.pcm.domain.PurposeRepository;
-import gov.samhsa.c2s.pcm.infrastructure.i18n.HorizontalDatabaseMessageSource;
-import gov.samhsa.c2s.pcm.service.dto.PurposeDto;
-import org.modelmapper.ModelMapper;
+import gov.samhsa.c2s.pcm.domain.I18nMessage;
+import gov.samhsa.c2s.pcm.domain.I18nMessageRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-import java.util.Locale;
-
-import static java.util.stream.Collectors.toList;
+import java.util.Optional;
 
 @Service
 public class I18nServiceImpl implements I18nService {
-    private HorizontalDatabaseMessageSource horizontalDatabaseMessageSource;
     private final String PURPOSE = "PURPOSE";
-    private final String DISPLAY = "DISPLAY";
-    private final String DESCRIPTION = "DESCRIPTION";
+    private final String CONSENT_ATTESTATON_TERM = "CONSENT_ATTESTATON_TERM";
+    private final String CONSENT_REVOCATION_TERM = "CONSENT_REVOCATION_TERM";
+    private final String CONSENT_TERM_TEXT = "TEXT";
 
     @Autowired
-    public I18nServiceImpl(HorizontalDatabaseMessageSource horizontalDatabaseMessageSource) {
-        this.horizontalDatabaseMessageSource = horizontalDatabaseMessageSource;
+    I18nMessageRepository i18nMessageRepository;
+
+    @Override
+    public Optional<I18nMessage> getPurposeOfUseI18nDisplay(String id) {
+        String PROPERTY_NAME = "DISPLAY";
+        String locale = LocaleContextHolder.getLocale().getLanguage();
+        String key = PURPOSE.concat(".").concat(id).concat(".").concat(PROPERTY_NAME);
+        return i18nMessageRepository.findByKeyAndLocale( key, locale );
     }
 
     @Override
-    public String getPurposeOfUseI18nDisplay(String value) {
-        Locale locale = LocaleContextHolder.getLocale();
-        String displayCode = PURPOSE.concat(".").concat(value).concat(".").concat(DISPLAY);
-        return horizontalDatabaseMessageSource.getMessage( displayCode,null, locale );
+    public  Optional<I18nMessage> getPurposeOfUseI18nDescription(String id) {
+        String PROPERTY_NAME = "DESCRIPTION";
+        String locale = LocaleContextHolder.getLocale().getLanguage();
+        String key = PURPOSE.concat(".").concat(id).concat(".").concat(PROPERTY_NAME);
+        return i18nMessageRepository.findByKeyAndLocale( key, locale );
     }
 
     @Override
-    public String getPurposeOfUseI18nDescription(String value) {
-        Locale locale = LocaleContextHolder.getLocale();
-        String descriptionCode = PURPOSE.concat(".").concat(value).concat(".").concat(DESCRIPTION);
-        return horizontalDatabaseMessageSource.getMessage( descriptionCode,null, locale );
+    public Optional<I18nMessage> getConsentRevocationTermI18nText(String id) {
+        String locale = LocaleContextHolder.getLocale().getLanguage();
+        String key = CONSENT_REVOCATION_TERM.concat(".").concat(id).concat(".").concat(CONSENT_TERM_TEXT);
+        return i18nMessageRepository.findByKeyAndLocale( key, locale );
     }
+
+    @Override
+    public Optional<I18nMessage> getConsentAttestationTermI18nText(String id) {
+        String locale = LocaleContextHolder.getLocale().getLanguage();
+        String key = CONSENT_ATTESTATON_TERM.concat(".").concat(id).concat(".").concat(CONSENT_TERM_TEXT);
+        return i18nMessageRepository.findByKeyAndLocale( key, locale );
+    }
+
+
 }
