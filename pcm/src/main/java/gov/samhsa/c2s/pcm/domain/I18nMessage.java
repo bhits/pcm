@@ -11,10 +11,11 @@ public class I18nMessage {
     @GeneratedValue
     private long id;
 
-    private String code;
+    private String key;
 
-    private String en;
+    private String description;
 
-    private String es;
+    private String message;
 
+    private String locale;
 }
