@@ -9,5 +9,5 @@ import java.util.Locale;
 public interface PurposeService {
 
     @Transactional(readOnly = true)
-    List<PurposeDto> getPurposes(Locale locale);
+    List<PurposeDto> getPurposes();
 }

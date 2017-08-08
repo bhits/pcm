@@ -19,7 +19,7 @@ public class I18nServiceImpl implements I18nService {
     I18nMessageRepository i18nMessageRepository;
 
     @Override
-    public Optional<I18nMessage> getPurposeOfUseI18nDisplay(String id) {
+    public Optional<I18nMessage> getI18nPurposeOfUseDisplay(String id) {
         String PROPERTY_NAME = "DISPLAY";
         String locale = LocaleContextHolder.getLocale().getLanguage();
         String key = PURPOSE.concat(".").concat(id).concat(".").concat(PROPERTY_NAME);
@@ -27,7 +27,7 @@ public class I18nServiceImpl implements I18nService {
     }
 
     @Override
-    public  Optional<I18nMessage> getPurposeOfUseI18nDescription(String id) {
+    public  Optional<I18nMessage> getI18nPurposeOfUseDescription(String id) {
         String PROPERTY_NAME = "DESCRIPTION";
         String locale = LocaleContextHolder.getLocale().getLanguage();
         String key = PURPOSE.concat(".").concat(id).concat(".").concat(PROPERTY_NAME);
@@ -35,14 +35,14 @@ public class I18nServiceImpl implements I18nService {
     }
 
     @Override
-    public Optional<I18nMessage> getConsentRevocationTermI18nText(String id) {
+    public Optional<I18nMessage> getI18nConsentRevocationTermText(String id) {
         String locale = LocaleContextHolder.getLocale().getLanguage();
         String key = CONSENT_REVOCATION_TERM.concat(".").concat(id).concat(".").concat(CONSENT_TERM_TEXT);
         return i18nMessageRepository.findByKeyAndLocale( key, locale );
     }
 
     @Override
-    public Optional<I18nMessage> getConsentAttestationTermI18nText(String id) {
+    public Optional<I18nMessage> getI18nConsentAttestationTermText(String id) {
         String locale = LocaleContextHolder.getLocale().getLanguage();
         String key = CONSENT_ATTESTATON_TERM.concat(".").concat(id).concat(".").concat(CONSENT_TERM_TEXT);
         return i18nMessageRepository.findByKeyAndLocale( key, locale );

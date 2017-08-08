@@ -9,7 +9,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Locale;
 import java.util.Optional;
 
 import static java.util.stream.Collectors.toList;
@@ -28,16 +27,16 @@ public class PurposeServiceImpl implements PurposeService {
     }
 
     @Override
-    public List<PurposeDto> getPurposes(Locale locale) {
+    public List<PurposeDto> getPurposes() {
         final List<Purpose> purposes = purposeRepository.findAll();
 
         purposes.stream().forEach(purpose -> {
-            Optional<I18nMessage> displayMessageOptional = i18nService.getPurposeOfUseI18nDisplay(purpose.getId().toString());
+            Optional<I18nMessage> displayMessageOptional = i18nService.getI18nPurposeOfUseDisplay(purpose.getId().toString());
             if(displayMessageOptional.isPresent()){
                 purpose.setDisplay(displayMessageOptional.get().getMessage());
             }
 
-            Optional<I18nMessage> descriptionMessageOptional = i18nService.getPurposeOfUseI18nDescription(purpose.getId().toString());
+            Optional<I18nMessage> descriptionMessageOptional = i18nService.getI18nPurposeOfUseDescription(purpose.getId().toString());
             if(descriptionMessageOptional.isPresent()){
                 purpose.setDescription(descriptionMessageOptional.get().getMessage());
             }

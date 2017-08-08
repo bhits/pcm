@@ -34,9 +34,8 @@ public class ConsentRestController {
                                                 @RequestParam(value = "fromProvider") Optional<Long> fromProvider,
                                                 @RequestParam(value = "toProvider") Optional<Long> toProvider,
                                                 @RequestParam Optional<Integer> page,
-                                                @RequestParam Optional<Integer> size,
-                                                @RequestHeader("Accept-Language") Locale locale) {
-        return consentService.getConsents(patientId, purposeOfUse, fromProvider, toProvider, page, size, locale);
+                                                @RequestParam Optional<Integer> size) {
+        return consentService.getConsents(patientId, purposeOfUse, fromProvider, toProvider, page, size);
     }
 
     @PostMapping("/consents")

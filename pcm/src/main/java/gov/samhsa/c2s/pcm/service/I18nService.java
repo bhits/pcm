@@ -8,15 +8,15 @@ import java.util.Optional;
 
 public interface I18nService {
     @Transactional
-    Optional<I18nMessage> getPurposeOfUseI18nDisplay(String id);
+    Optional<I18nMessage> getI18nPurposeOfUseDisplay(String id);
 
     @Transactional
-    Optional<I18nMessage> getPurposeOfUseI18nDescription(String id);
+    Optional<I18nMessage> getI18nPurposeOfUseDescription(String id);
 
     @Transactional
-    Optional<I18nMessage> getConsentRevocationTermI18nText(String id);
+    Optional<I18nMessage> getI18nConsentRevocationTermText(String id);
 
     @Transactional
-    Optional<I18nMessage> getConsentAttestationTermI18nText(String id);
+    Optional<I18nMessage> getI18nConsentAttestationTermText(String id);
 
 }

@@ -98,7 +98,7 @@ public class ConsentServiceImpl implements ConsentService {
     @Transactional(readOnly = true)
     public Page<DetailedConsentDto> getConsents(String patientId, Optional<Long> purposeOfUse,
                                                 Optional<Long> fromProvider, Optional<Long> toProvider,
-                                                Optional<Integer> page, Optional<Integer> size,  Locale locale) {
+                                                Optional<Integer> page, Optional<Integer> size) {
         final PageRequest pageRequest = new PageRequest(page.filter(p -> p >= 0).orElse(0),
                 size.filter(s -> s > 0 && s <= pcmProperties.getConsent().getPagination().getMaxSize()).orElse(pcmProperties.getConsent().getPagination().getDefaultSize()));
         final Page<Consent> consentsPage = consentRepository.findAllByPatientIdOrderByLastUpdatedDateDesc(patientId, pageRequest);
@@ -470,7 +470,7 @@ public class ConsentServiceImpl implements ConsentService {
         final Long termId = id.filter(i -> i != 1L).orElse(1L);
         ConsentAttestationTerm consentAttestationTerm = consentAttestationTermRepository.findOne(termId);
 
-        Optional<I18nMessage>  i18nMessageOptional = i18nService.getConsentRevocationTermI18nText(consentAttestationTerm.getId().toString());
+        Optional<I18nMessage>  i18nMessageOptional = i18nService.getI18nConsentRevocationTermText(consentAttestationTerm.getId().toString());
         if(i18nMessageOptional.isPresent()){
             consentAttestationTerm.setText(i18nMessageOptional.get().getMessage());
         }
@@ -485,7 +485,7 @@ public class ConsentServiceImpl implements ConsentService {
         final Long termId = id.filter(i -> i != 1L).orElse(1L);
         ConsentRevocationTerm consentRevocationTerm = consentRevocationTermRepository.findOne(termId);
 
-        Optional<I18nMessage>  i18nMessageOptional = i18nService.getConsentRevocationTermI18nText(consentRevocationTerm.getId().toString());
+        Optional<I18nMessage>  i18nMessageOptional = i18nService.getI18nConsentRevocationTermText(consentRevocationTerm.getId().toString());
         if(i18nMessageOptional.isPresent()){
             consentRevocationTerm.setText(i18nMessageOptional.get().getMessage());
         }
@@ -541,12 +541,12 @@ public class ConsentServiceImpl implements ConsentService {
 
         sharePurposes.stream().forEach(purposeDto -> {
 
-            Optional<I18nMessage> displayMessageOptional = i18nService.getPurposeOfUseI18nDisplay(purposeDto.getId().toString());
+            Optional<I18nMessage> displayMessageOptional = i18nService.getI18nPurposeOfUseDisplay(purposeDto.getId().toString());
             if(displayMessageOptional.isPresent()){
                 purposeDto.setDisplay(displayMessageOptional.get().getMessage());
             }
 
-            Optional<I18nMessage> descriptionMessageOptional = i18nService.getPurposeOfUseI18nDescription(purposeDto.getId().toString());
+            Optional<I18nMessage> descriptionMessageOptional = i18nService.getI18nPurposeOfUseDescription(purposeDto.getId().toString());
             if(descriptionMessageOptional.isPresent()){
                 purposeDto.setDescription(descriptionMessageOptional.get().getMessage());
             }
