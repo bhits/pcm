@@ -31,12 +31,13 @@ public class PurposeServiceImpl implements PurposeService {
         final List<Purpose> purposes = purposeRepository.findAll();
 
         purposes.stream().forEach(purpose -> {
-            Optional<I18nMessage> displayMessageOptional = i18nService.getI18nPurposeOfUseDisplay(purpose.getId().toString());
+
+            Optional<I18nMessage> displayMessageOptional = i18nService.getI18nMessage("PURPOSE", purpose.getId().toString(),"DISPLAY" );
             if(displayMessageOptional.isPresent()){
                 purpose.setDisplay(displayMessageOptional.get().getMessage());
             }
 
-            Optional<I18nMessage> descriptionMessageOptional = i18nService.getI18nPurposeOfUseDescription(purpose.getId().toString());
+            Optional<I18nMessage> descriptionMessageOptional = i18nService.getI18nMessage("PURPOSE", purpose.getId().toString(),"DESCRIPTION" );
             if(descriptionMessageOptional.isPresent()){
                 purpose.setDescription(descriptionMessageOptional.get().getMessage());
             }

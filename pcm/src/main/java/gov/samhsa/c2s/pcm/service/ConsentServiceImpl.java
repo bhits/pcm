@@ -470,7 +470,7 @@ public class ConsentServiceImpl implements ConsentService {
         final Long termId = id.filter(i -> i != 1L).orElse(1L);
         ConsentAttestationTerm consentAttestationTerm = consentAttestationTermRepository.findOne(termId);
 
-        Optional<I18nMessage>  i18nMessageOptional = i18nService.getI18nConsentRevocationTermText(consentAttestationTerm.getId().toString());
+        Optional<I18nMessage>  i18nMessageOptional = i18nService.getI18nMessage("CONSENT_ATTESTATON_TERM", consentAttestationTerm.getId().toString(), "TEXT");
         if(i18nMessageOptional.isPresent()){
             consentAttestationTerm.setText(i18nMessageOptional.get().getMessage());
         }
@@ -485,7 +485,7 @@ public class ConsentServiceImpl implements ConsentService {
         final Long termId = id.filter(i -> i != 1L).orElse(1L);
         ConsentRevocationTerm consentRevocationTerm = consentRevocationTermRepository.findOne(termId);
 
-        Optional<I18nMessage>  i18nMessageOptional = i18nService.getI18nConsentRevocationTermText(consentRevocationTerm.getId().toString());
+        Optional<I18nMessage>  i18nMessageOptional = i18nService.getI18nMessage("CONSENT_REVOCATION_TERM",consentRevocationTerm.getId().toString(), "TEXT");
         if(i18nMessageOptional.isPresent()){
             consentRevocationTerm.setText(i18nMessageOptional.get().getMessage());
         }
@@ -541,12 +541,12 @@ public class ConsentServiceImpl implements ConsentService {
 
         sharePurposes.stream().forEach(purposeDto -> {
 
-            Optional<I18nMessage> displayMessageOptional = i18nService.getI18nPurposeOfUseDisplay(purposeDto.getId().toString());
+            Optional<I18nMessage> displayMessageOptional = i18nService.getI18nMessage("PURPOSE",purposeDto.getId().toString(), "DISPLAY");
             if(displayMessageOptional.isPresent()){
                 purposeDto.setDisplay(displayMessageOptional.get().getMessage());
             }
 
-            Optional<I18nMessage> descriptionMessageOptional = i18nService.getI18nPurposeOfUseDescription(purposeDto.getId().toString());
+            Optional<I18nMessage> descriptionMessageOptional = i18nService.getI18nMessage("PURPOSE",purposeDto.getId().toString(),"DESCRIPTION");
             if(descriptionMessageOptional.isPresent()){
                 purposeDto.setDescription(descriptionMessageOptional.get().getMessage());
             }
