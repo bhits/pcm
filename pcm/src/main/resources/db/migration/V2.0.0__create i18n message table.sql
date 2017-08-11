@@ -1,6 +1,4 @@
 
-use pcm;
-
 create table i18n_message(
     id bigint not null,
     `key` varchar(255) not null,
