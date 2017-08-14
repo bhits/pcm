@@ -32,12 +32,12 @@ public class PurposeServiceImpl implements PurposeService {
 
         purposes.stream().forEach(purpose -> {
 
-            Optional<I18nMessage> displayMessageOptional = i18nService.getI18nMessage("PURPOSE", purpose.getId().toString(),"DISPLAY" );
+            Optional<I18nMessage> displayMessageOptional = i18nService.getI18nMessage(purpose,"DISPLAY" );
             if(displayMessageOptional.isPresent()){
                 purpose.setDisplay(displayMessageOptional.get().getMessage());
             }
 
-            Optional<I18nMessage> descriptionMessageOptional = i18nService.getI18nMessage("PURPOSE", purpose.getId().toString(),"DESCRIPTION" );
+            Optional<I18nMessage> descriptionMessageOptional = i18nService.getI18nMessage(purpose,"DESCRIPTION" );
             if(descriptionMessageOptional.isPresent()){
                 purpose.setDescription(descriptionMessageOptional.get().getMessage());
             }

@@ -9,6 +9,6 @@ import java.util.Optional;
 public interface I18nService {
 
     @Transactional
-    Optional<I18nMessage> getI18nMessage(String className, String id, String methodName) ;
+    Optional<I18nMessage> getI18nMessage(Object entityReference, String fieldName) ;
 
 }
