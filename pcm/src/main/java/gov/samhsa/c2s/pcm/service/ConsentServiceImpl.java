@@ -1,7 +1,23 @@
 package gov.samhsa.c2s.pcm.service;
 
 import gov.samhsa.c2s.pcm.config.PcmProperties;
-import gov.samhsa.c2s.pcm.domain.*;
+import gov.samhsa.c2s.pcm.domain.Consent;
+import gov.samhsa.c2s.pcm.domain.ConsentAttestation;
+import gov.samhsa.c2s.pcm.domain.ConsentAttestationTerm;
+import gov.samhsa.c2s.pcm.domain.ConsentAttestationTermRepository;
+import gov.samhsa.c2s.pcm.domain.ConsentRepository;
+import gov.samhsa.c2s.pcm.domain.ConsentRevocation;
+import gov.samhsa.c2s.pcm.domain.ConsentRevocationTerm;
+import gov.samhsa.c2s.pcm.domain.ConsentRevocationTermRepository;
+import gov.samhsa.c2s.pcm.domain.Organization;
+import gov.samhsa.c2s.pcm.domain.Patient;
+import gov.samhsa.c2s.pcm.domain.PatientRepository;
+import gov.samhsa.c2s.pcm.domain.Practitioner;
+import gov.samhsa.c2s.pcm.domain.Provider;
+import gov.samhsa.c2s.pcm.domain.Purpose;
+import gov.samhsa.c2s.pcm.domain.PurposeRepository;
+import gov.samhsa.c2s.pcm.domain.SensitivityCategory;
+import gov.samhsa.c2s.pcm.domain.SensitivityCategoryRepository;
 import gov.samhsa.c2s.pcm.domain.valueobject.Address;
 import gov.samhsa.c2s.pcm.domain.valueobject.ConsentStage;
 import gov.samhsa.c2s.pcm.domain.valueobject.Identifier;
@@ -27,7 +43,9 @@ import gov.samhsa.c2s.pcm.service.dto.PurposeDto;
 import gov.samhsa.c2s.pcm.service.dto.SensitivityCategoryDto;
 import gov.samhsa.c2s.pcm.service.dto.XacmlRequestDto;
 import gov.samhsa.c2s.pcm.service.exception.BadRequestException;
+import gov.samhsa.c2s.pcm.service.exception.ConsentAttestationTermNotFound;
 import gov.samhsa.c2s.pcm.service.exception.ConsentNotFoundException;
+import gov.samhsa.c2s.pcm.service.exception.ConsentRevocationTermNotFound;
 import gov.samhsa.c2s.pcm.service.exception.DuplicateConsentException;
 import gov.samhsa.c2s.pcm.service.exception.InvalidProviderException;
 import gov.samhsa.c2s.pcm.service.exception.InvalidProviderTypeException;
@@ -48,7 +66,10 @@ import org.springframework.util.Assert;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.util.*;
+import java.util.Date;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -468,30 +489,20 @@ public class ConsentServiceImpl implements ConsentService {
     @Transactional(readOnly = true)
     public ConsentTermDto getConsentAttestationTerm(Optional<Long> id) {
         final Long termId = id.filter(i -> i != 1L).orElse(1L);
-        ConsentAttestationTerm consentAttestationTerm = consentAttestationTermRepository.findOne(termId);
-
-        Optional<I18nMessage>  i18nMessageOptional = i18nService.getI18nMessage(consentAttestationTerm, "TEXT");
-        if(i18nMessageOptional.isPresent()){
-            consentAttestationTerm.setText(i18nMessageOptional.get().getMessage());
-        }
-
-        Assert.notNull(consentAttestationTerm, "Consent attestation term cannot be found");
-        return modelMapper.map(consentAttestationTerm, ConsentTermDto.class);
+        final ConsentAttestationTerm consentAttestationTerm = consentAttestationTermRepository.findById(termId).orElseThrow(() -> new ConsentAttestationTermNotFound("Consent attestation term cannot be found"));
+        final ConsentTermDto consentTermDto = modelMapper.map(consentAttestationTerm, ConsentTermDto.class);
+        consentTermDto.setText(i18nService.getI18nMessage(consentAttestationTerm, "text", consentAttestationTerm::getText));
+        return consentTermDto;
     }
 
     @Override
     @Transactional(readOnly = true)
     public ConsentTermDto getConsentRevocationTerm(Optional<Long> id) {
         final Long termId = id.filter(i -> i != 1L).orElse(1L);
-        ConsentRevocationTerm consentRevocationTerm = consentRevocationTermRepository.findOne(termId);
-
-        Optional<I18nMessage>  i18nMessageOptional = i18nService.getI18nMessage(consentRevocationTerm, "TEXT");
-        if(i18nMessageOptional.isPresent()){
-            consentRevocationTerm.setText(i18nMessageOptional.get().getMessage());
-        }
-
-        Assert.notNull(consentRevocationTerm, "Consent revocation term cannot be found");
-        return modelMapper.map(consentRevocationTerm, ConsentTermDto.class);
+        final ConsentRevocationTerm consentRevocationTerm = consentRevocationTermRepository.findById(termId).orElseThrow(() -> new ConsentRevocationTermNotFound("Consent revocation term cannot be found"));
+        final ConsentTermDto consentTermDto = modelMapper.map(consentRevocationTerm, ConsentTermDto.class);
+        consentTermDto.setText(i18nService.getI18nMessage(consentRevocationTerm, "text", consentRevocationTerm::getText));
+        return consentTermDto;
     }
 
     @Override
@@ -536,21 +547,13 @@ public class ConsentServiceImpl implements ConsentService {
                 .map(sensitivityCategory -> modelMapper.map(sensitivityCategory, SensitivityCategoryDto.class))
                 .collect(toList());
         final List<PurposeDto> sharePurposes = consent.getSharePurposes().stream()
-                .map(purpose -> modelMapper.map(purpose, PurposeDto.class))
+                .map(purpose -> {
+                    final PurposeDto purposeDto = modelMapper.map(purpose, PurposeDto.class);
+                    purposeDto.setDisplay(i18nService.getI18nMessage(purpose, "display", purpose::getDisplay));
+                    purposeDto.setDescription(i18nService.getI18nMessage(purpose, "description", purpose::getDescription));
+                    return purposeDto;
+                })
                 .collect(toList());
-
-        sharePurposes.stream().forEach(purposeDto -> {
-
-            Optional<I18nMessage> displayMessageOptional = i18nService.getI18nMessage(purposeDto, "DISPLAY");
-            if(displayMessageOptional.isPresent()){
-                purposeDto.setDisplay(displayMessageOptional.get().getMessage());
-            }
-
-            Optional<I18nMessage> descriptionMessageOptional = i18nService.getI18nMessage(purposeDto,"DESCRIPTION");
-            if(descriptionMessageOptional.isPresent()){
-                purposeDto.setDescription(descriptionMessageOptional.get().getMessage());
-            }
-        });
 
         final Set<Identifier> providerIdentifiersWithConsents = ProviderServiceImpl.getProviderIdentifiersWithConsents(consent.getPatient());
 
