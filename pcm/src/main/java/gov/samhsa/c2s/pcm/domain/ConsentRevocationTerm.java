@@ -12,7 +12,7 @@ import javax.validation.constraints.Size;
 @Entity
 @Data
 @Audited
-public class ConsentRevocationTerm {
+public class ConsentRevocationTerm implements I18nEnabled {
     @Id
     @GeneratedValue
     private Long id;
@@ -20,4 +20,9 @@ public class ConsentRevocationTerm {
     @NotBlank
     @Size(max = 20000)
     private String text;
+
+    @Override
+    public String getIdAsString() {
+        return longToString(id);
+    }
 }

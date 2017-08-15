@@ -16,7 +16,7 @@ import javax.validation.Valid;
 @Table(indexes = @Index(columnList = "system,value", name = "purpose_identifier_idx", unique = true))
 @Data
 @Audited
-public class Purpose {
+public class Purpose implements I18nEnabled {
     @Id
     @GeneratedValue
     private Long id;
@@ -28,4 +28,9 @@ public class Purpose {
     private String display;
 
     private String description;
+
+    @Override
+    public String getIdAsString() {
+        return longToString(id);
+    }
 }
