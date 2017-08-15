@@ -4,14 +4,16 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.validator.constraints.NotBlank;
 import org.hibernate.validator.constraints.NotEmpty;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.validation.annotation.Validated;
 
 import javax.validation.Valid;
+import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
-import java.util.ArrayList;
 import java.util.List;
 
 @Configuration
@@ -20,12 +22,15 @@ import java.util.List;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
+@Validated
 public class PcmProperties {
 
+    @NotNull
     @NotEmpty
-    private List<String> supportedProviderSystems = new ArrayList<>();
+    private List<String> supportedProviderSystems;
 
     @NotNull
+    @Valid
     private Consent consent;
 
     @Data
@@ -35,7 +40,7 @@ public class PcmProperties {
     public static class Consent {
 
         @Valid
-        private Pagination pagination = new Pagination();
+        private Pagination pagination;
 
         @NotNull
         private Long attestationTermIdWhenPatientSigns;
@@ -49,6 +54,7 @@ public class PcmProperties {
         @NotNull
         private Long revocationTermIdWhenProviderRevokes;
 
+        @NotNull
         @Valid
         private Publish publish;
 
@@ -57,17 +63,20 @@ public class PcmProperties {
             @NotNull
             private boolean enabled;
 
-            @NotEmpty
+            @NotBlank
             private String serverUrl;
 
-            @NotEmpty
+            @NotBlank
             private String clientSocketTimeoutInMs;
         }
 
         @Data
-        public static class Pagination{
+        public static class Pagination {
             @Min(1)
+            @Max(500)
             private int defaultSize = 10;
+            @Min(1)
+            @Max(500)
             private int maxSize = 50;
         }
     }
