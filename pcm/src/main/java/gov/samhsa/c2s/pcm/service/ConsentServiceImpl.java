@@ -1,5 +1,6 @@
 package gov.samhsa.c2s.pcm.service;
 
+import gov.samhsa.c2s.common.i18n.service.I18nService;
 import gov.samhsa.c2s.pcm.config.PcmProperties;
 import gov.samhsa.c2s.pcm.domain.Consent;
 import gov.samhsa.c2s.pcm.domain.ConsentAttestation;
