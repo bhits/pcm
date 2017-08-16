@@ -40,7 +40,7 @@ public class PcmProperties {
     public static class Consent {
 
         @Valid
-        private Pagination pagination;
+        private Pagination pagination = new Pagination();
 
         @NotNull
         private Long attestationTermIdWhenPatientSigns;
