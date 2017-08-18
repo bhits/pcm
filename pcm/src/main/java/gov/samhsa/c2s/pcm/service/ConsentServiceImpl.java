@@ -1,5 +1,6 @@
 package gov.samhsa.c2s.pcm.service;
 
+import gov.samhsa.c2s.common.i18n.service.I18nService;
 import gov.samhsa.c2s.pcm.config.PcmProperties;
 import gov.samhsa.c2s.pcm.domain.Consent;
 import gov.samhsa.c2s.pcm.domain.ConsentAttestation;
@@ -43,7 +44,9 @@ import gov.samhsa.c2s.pcm.service.dto.PurposeDto;
 import gov.samhsa.c2s.pcm.service.dto.SensitivityCategoryDto;
 import gov.samhsa.c2s.pcm.service.dto.XacmlRequestDto;
 import gov.samhsa.c2s.pcm.service.exception.BadRequestException;
+import gov.samhsa.c2s.pcm.service.exception.ConsentAttestationTermNotFound;
 import gov.samhsa.c2s.pcm.service.exception.ConsentNotFoundException;
+import gov.samhsa.c2s.pcm.service.exception.ConsentRevocationTermNotFound;
 import gov.samhsa.c2s.pcm.service.exception.DuplicateConsentException;
 import gov.samhsa.c2s.pcm.service.exception.InvalidProviderException;
 import gov.samhsa.c2s.pcm.service.exception.InvalidProviderTypeException;
@@ -92,9 +95,11 @@ public class ConsentServiceImpl implements ConsentService {
     private final PurposeRepository purposeRepository;
     private final SensitivityCategoryRepository sensitivityCategoryRepository;
     private final FhirConsentService fhirConsentService;
+    private final I18nService i18nService;
+
 
     @Autowired
-    public ConsentServiceImpl(ConsentAttestationTermRepository consentAttestationTermRepository, ConsentPdfGenerator consentPdfGenerator, ConsentRepository consentRepository, ConsentRevocationPdfGenerator consentRevocationPdfGenerator, ConsentRevocationTermRepository consentRevocationTermRepository, ModelMapper modelMapper, PatientRepository patientRepository, PcmProperties pcmProperties, UmsService umsService, PlsService plsService, PurposeRepository purposeRepository, SensitivityCategoryRepository sensitivityCategoryRepository, FhirConsentService fhirConsentService) {
+    public ConsentServiceImpl(ConsentAttestationTermRepository consentAttestationTermRepository, ConsentPdfGenerator consentPdfGenerator, ConsentRepository consentRepository, ConsentRevocationPdfGenerator consentRevocationPdfGenerator, ConsentRevocationTermRepository consentRevocationTermRepository, ModelMapper modelMapper, PatientRepository patientRepository, PcmProperties pcmProperties, UmsService umsService, PlsService plsService, PurposeRepository purposeRepository, SensitivityCategoryRepository sensitivityCategoryRepository, FhirConsentService fhirConsentService, I18nService i18nService) {
         this.consentAttestationTermRepository = consentAttestationTermRepository;
         this.consentPdfGenerator = consentPdfGenerator;
         this.consentRepository = consentRepository;
@@ -108,6 +113,7 @@ public class ConsentServiceImpl implements ConsentService {
         this.purposeRepository = purposeRepository;
         this.sensitivityCategoryRepository = sensitivityCategoryRepository;
         this.fhirConsentService = fhirConsentService;
+        this.i18nService = i18nService;
     }
 
     @Override
@@ -484,18 +490,20 @@ public class ConsentServiceImpl implements ConsentService {
     @Transactional(readOnly = true)
     public ConsentTermDto getConsentAttestationTerm(Optional<Long> id) {
         final Long termId = id.filter(i -> i != 1L).orElse(1L);
-        ConsentAttestationTerm consentAttestationTerm = consentAttestationTermRepository.findOne(termId);
-        Assert.notNull(consentAttestationTerm, "Consent attestation term cannot be found");
-        return modelMapper.map(consentAttestationTerm, ConsentTermDto.class);
+        final ConsentAttestationTerm consentAttestationTerm = consentAttestationTermRepository.findById(termId).orElseThrow(() -> new ConsentAttestationTermNotFound("Consent attestation term cannot be found"));
+        final ConsentTermDto consentTermDto = modelMapper.map(consentAttestationTerm, ConsentTermDto.class);
+        consentTermDto.setText(i18nService.getI18nMessage(consentAttestationTerm, "text", consentAttestationTerm::getText));
+        return consentTermDto;
     }
 
     @Override
     @Transactional(readOnly = true)
     public ConsentTermDto getConsentRevocationTerm(Optional<Long> id) {
         final Long termId = id.filter(i -> i != 1L).orElse(1L);
-        ConsentRevocationTerm consentRevocationTerm = consentRevocationTermRepository.findOne(termId);
-        Assert.notNull(consentRevocationTerm, "Consent revocation term cannot be found");
-        return modelMapper.map(consentRevocationTerm, ConsentTermDto.class);
+        final ConsentRevocationTerm consentRevocationTerm = consentRevocationTermRepository.findById(termId).orElseThrow(() -> new ConsentRevocationTermNotFound("Consent revocation term cannot be found"));
+        final ConsentTermDto consentTermDto = modelMapper.map(consentRevocationTerm, ConsentTermDto.class);
+        consentTermDto.setText(i18nService.getI18nMessage(consentRevocationTerm, "text", consentRevocationTerm::getText));
+        return consentTermDto;
     }
 
     @Override
@@ -540,8 +548,14 @@ public class ConsentServiceImpl implements ConsentService {
                 .map(sensitivityCategory -> modelMapper.map(sensitivityCategory, SensitivityCategoryDto.class))
                 .collect(toList());
         final List<PurposeDto> sharePurposes = consent.getSharePurposes().stream()
-                .map(purpose -> modelMapper.map(purpose, PurposeDto.class))
+                .map(purpose -> {
+                    final PurposeDto purposeDto = modelMapper.map(purpose, PurposeDto.class);
+                    purposeDto.setDisplay(i18nService.getI18nMessage(purpose, "display", purpose::getDisplay));
+                    purposeDto.setDescription(i18nService.getI18nMessage(purpose, "description", purpose::getDescription));
+                    return purposeDto;
+                })
                 .collect(toList());
+
         final Set<Identifier> providerIdentifiersWithConsents = ProviderServiceImpl.getProviderIdentifiersWithConsents(consent.getPatient());
 
         final List<AbstractProviderDto> fromProviders = Optional.ofNullable(consent.getConsentAttestation())
