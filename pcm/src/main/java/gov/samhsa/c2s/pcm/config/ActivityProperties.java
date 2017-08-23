@@ -1,9 +1,7 @@
 package gov.samhsa.c2s.pcm.config;
 
 import lombok.Data;
-import lombok.extern.slf4j.Slf4j;
 import org.hibernate.validator.constraints.NotBlank;
-import org.hibernate.validator.constraints.NotEmpty;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Component;
@@ -17,13 +15,11 @@ import java.util.List;
 
 @Component
 @ConfigurationProperties(prefix = "c2s.pcm")
-@Slf4j
 @Data
 @Validated
 public class ActivityProperties {
 
     @NotNull
-    @NotEmpty
     @Valid
     public List<Activity> activities;
 

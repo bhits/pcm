@@ -27,8 +27,6 @@ import gov.samhsa.c2s.pcm.infrastructure.UmsService;
 import gov.samhsa.c2s.pcm.infrastructure.dto.FlattenedSmallProviderDto;
 import gov.samhsa.c2s.pcm.infrastructure.dto.PatientDto;
 import gov.samhsa.c2s.pcm.infrastructure.dto.UserDto;
-import gov.samhsa.c2s.pcm.infrastructure.pdf.ConsentPdfGenerator;
-import gov.samhsa.c2s.pcm.infrastructure.pdf.ConsentRevocationPdfGenerator;
 import gov.samhsa.c2s.pcm.service.dto.AbstractProviderDto;
 import gov.samhsa.c2s.pcm.service.dto.ConsentAttestationDto;
 import gov.samhsa.c2s.pcm.service.dto.ConsentDto;
@@ -53,6 +51,8 @@ import gov.samhsa.c2s.pcm.service.exception.InvalidProviderTypeException;
 import gov.samhsa.c2s.pcm.service.exception.InvalidPurposeException;
 import gov.samhsa.c2s.pcm.service.exception.PatientOrSavedConsentNotFoundException;
 import gov.samhsa.c2s.pcm.service.fhir.FhirConsentService;
+import gov.samhsa.c2s.pcm.service.pdf.ConsentPdfGenerator;
+import gov.samhsa.c2s.pcm.service.pdf.ConsentRevocationPdfGenerator;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.modelmapper.ModelMapper;
@@ -227,10 +227,10 @@ public class ConsentServiceImpl implements ConsentService {
 
         if (actionPerformedByPatient(createdByPatient)) {
             //Do not send user info if saved by Patient
-            consent.setSavedPdf(consentPdfGenerator.generate42CfrPart2Pdf(consent, patientDto, CONSENT_SIGNED, null, consentAttestationTermRepository.findOne(pcmProperties.getConsent().getAttestationTermIdWhenPatientSigns()).getText(), Optional.empty()));
+            consent.setSavedPdf(consentPdfGenerator.generateConsentPdf(consent, patientDto, CONSENT_SIGNED, null, consentAttestationTermRepository.findOne(pcmProperties.getConsent().getAttestationTermIdWhenPatientSigns()).getText(), Optional.empty()));
         } else {
             UserDto consentCreatorUserDto = umsService.getUserById(createdBy.get());
-            consent.setSavedPdf(consentPdfGenerator.generate42CfrPart2Pdf(consent, patientDto, CONSENT_SIGNED, null, consentAttestationTermRepository.findOne(pcmProperties.getConsent().getAttestationTermIdWhenProviderSigns()).getText(), Optional.ofNullable(consentCreatorUserDto)));
+            consent.setSavedPdf(consentPdfGenerator.generateConsentPdf(consent, patientDto, CONSENT_SIGNED, null, consentAttestationTermRepository.findOne(pcmProperties.getConsent().getAttestationTermIdWhenProviderSigns()).getText(), Optional.ofNullable(consentCreatorUserDto)));
         }
 
         consentRepository.save(consent);
@@ -347,10 +347,10 @@ public class ConsentServiceImpl implements ConsentService {
             //Generate SIGNED PDF
             if (actionPerformedByPatient(attestedByPatient)) {
                 //Do not send user Info if signed by Patient
-                consentAttestation.setConsentAttestationPdf(consentPdfGenerator.generate42CfrPart2Pdf(consent, patientDto, CONSENT_SIGNED, new Date(), consentAttestationTerm.getText(), Optional.empty()));
+                consentAttestation.setConsentAttestationPdf(consentPdfGenerator.generateConsentPdf(consent, patientDto, CONSENT_SIGNED, new Date(), consentAttestationTerm.getText(), Optional.empty()));
             } else {
                 UserDto attesterUserDto = umsService.getUserById(attestedBy.get());
-                consentAttestation.setConsentAttestationPdf(consentPdfGenerator.generate42CfrPart2Pdf(consent, patientDto, CONSENT_SIGNED, new Date(), consentAttestationTerm.getText(), Optional.ofNullable(attesterUserDto)));
+                consentAttestation.setConsentAttestationPdf(consentPdfGenerator.generateConsentPdf(consent, patientDto, CONSENT_SIGNED, new Date(), consentAttestationTerm.getText(), Optional.ofNullable(attesterUserDto)));
             }
 
             // generate FHIR Consent and publish consent to FHIR server if enabled
@@ -395,9 +395,9 @@ public class ConsentServiceImpl implements ConsentService {
 
         //Update SAVED PDF
         if (actionPerformedByPatient(updatedByPatient)) {
-            consent.setSavedPdf(consentPdfGenerator.generate42CfrPart2Pdf(consent, patientDto, CONSENT_SIGNED, new Date(), consentAttestationTermRepository.findOne(pcmProperties.getConsent().getAttestationTermIdWhenPatientSigns()).getText(), Optional.empty()));
+            consent.setSavedPdf(consentPdfGenerator.generateConsentPdf(consent, patientDto, CONSENT_SIGNED, new Date(), consentAttestationTermRepository.findOne(pcmProperties.getConsent().getAttestationTermIdWhenPatientSigns()).getText(), Optional.empty()));
         } else {
-            consent.setSavedPdf(consentPdfGenerator.generate42CfrPart2Pdf(consent, patientDto, CONSENT_SIGNED, new Date(), consentAttestationTermRepository.findOne(pcmProperties.getConsent().getAttestationTermIdWhenProviderSigns()).getText(), Optional.empty()));
+            consent.setSavedPdf(consentPdfGenerator.generateConsentPdf(consent, patientDto, CONSENT_SIGNED, new Date(), consentAttestationTermRepository.findOne(pcmProperties.getConsent().getAttestationTermIdWhenProviderSigns()).getText(), Optional.empty()));
         }
         consentRepository.save(consent);
     }

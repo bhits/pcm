@@ -1,4 +1,4 @@
-package gov.samhsa.c2s.pcm.infrastructure.pdf;
+package gov.samhsa.c2s.pcm.service.pdf;
 
 import gov.samhsa.c2s.pcm.domain.Consent;
 import gov.samhsa.c2s.pcm.infrastructure.dto.PatientDto;
@@ -9,6 +9,5 @@ import java.util.Optional;
 
 public interface ConsentRevocationPdfGenerator {
 
-    byte[] generateConsentRevocationPdf(Consent consent, PatientDto patient, Date attestedOnDateTime, String consentRevocationTerm, Optional<UserDto> revokedByUserDto);
-
+    byte[] generateConsentRevocationPdf(Consent consent, PatientDto patient, Date attestedOnDateTime, String consentRevocationTerm, Optional<UserDto> revokedBy);
 }
