@@ -57,7 +57,7 @@ c2s:
           property: last_updated_date
         sql:
           file-path: activity/consent-activity.sql
-    pdfs:
+    pdfConfigs:
       - type: consent-pdf
         title: Consent to Share My Health Information
         pdFont: TIMES_ROMAN

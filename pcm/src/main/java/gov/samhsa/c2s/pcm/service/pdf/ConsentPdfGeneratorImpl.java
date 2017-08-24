@@ -13,7 +13,7 @@ import java.util.Optional;
 
 @Service
 public class ConsentPdfGeneratorImpl implements ConsentPdfGenerator {
-
+    private static final String CONSENT_PDF = "consent-pdf";
     private final PdfBoxService pdfBoxService;
 
     @Autowired
@@ -23,6 +23,7 @@ public class ConsentPdfGeneratorImpl implements ConsentPdfGenerator {
 
     @Override
     public byte[] generateConsentPdf(Consent consent, PatientDto patientProfile, boolean isSigned, Date attestedOn, String consentTerms, Optional<UserDto> attester) {
+        pdfBoxService.getConfiguredPdfFont(CONSENT_PDF);
         return null;
     }
 }

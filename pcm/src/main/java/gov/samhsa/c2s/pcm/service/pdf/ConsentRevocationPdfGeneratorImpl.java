@@ -12,8 +12,7 @@ import java.util.Optional;
 
 @Service
 public class ConsentRevocationPdfGeneratorImpl implements ConsentRevocationPdfGenerator {
-
-    private static final String CONSENT_REVOCATION_TITLE = "Revocation of Consent to Share My Health Information";
+    private static final String CONSENT_REVOCATION_PDF = "consent-revocation-pdf";
     private final PdfBoxService pdfBoxService;
     private final String EMAIL = "EMAIL";
 
@@ -24,6 +23,7 @@ public class ConsentRevocationPdfGeneratorImpl implements ConsentRevocationPdfGe
 
     @Override
     public byte[] generateConsentRevocationPdf(Consent consent, PatientDto patient, Date attestedOnDateTime, String consentRevocationTerm, Optional<UserDto> revokedByUserDto) {
+        pdfBoxService.getConfiguredPdfFont(CONSENT_REVOCATION_PDF);
         return null;
     }
 }

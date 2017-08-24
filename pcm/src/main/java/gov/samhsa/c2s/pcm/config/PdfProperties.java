@@ -19,10 +19,10 @@ public class PdfProperties {
 
     @NotNull
     @Valid
-    public List<Pdf> pdfs;
+    public List<PdfConfig> pdfConfigs;
 
     @Data
-    public static class Pdf {
+    public static class PdfConfig {
         @NotBlank
         public String type;
 

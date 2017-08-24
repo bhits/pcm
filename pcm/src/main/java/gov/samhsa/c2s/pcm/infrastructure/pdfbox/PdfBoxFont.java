@@ -14,5 +14,5 @@ public enum PdfBoxFont {
     COURIER_OBLIQUE,
     COURIER_BOLD_OBLIQUE,
     SYMBOL,
-    ZAPF_DINGBATS;
+    ZAPF_DINGBATS
 }
