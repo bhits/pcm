@@ -1,6 +1,8 @@
 package gov.samhsa.c2s.pcm.infrastructure.pdfbox.util;
 
 import gov.samhsa.c2s.pcm.infrastructure.pdfbox.PdfBoxFont;
+import gov.samhsa.c2s.pcm.infrastructure.pdfbox.PdfBoxPageSize;
+import org.apache.pdfbox.pdmodel.common.PDRectangle;
 import org.apache.pdfbox.pdmodel.font.PDFont;
 import org.apache.pdfbox.pdmodel.font.PDType1Font;
 
@@ -14,6 +16,10 @@ public class PDFontHandler {
 
     public static PDFont convertPdfBoxFontToPDFont(PdfBoxFont configuredFont) {
         return buildPDFontMap().get(configuredFont);
+    }
+
+    public static PDRectangle convertPdfBoxPageSizeToPDRectangle(PdfBoxPageSize configuredPageSize) {
+        return buildPDRectangleMap().get(configuredPageSize);
     }
 
     private static Map<PdfBoxFont, PDFont> buildPDFontMap() {
@@ -32,6 +38,20 @@ public class PDFontHandler {
                 new AbstractMap.SimpleEntry<>(PdfBoxFont.COURIER_BOLD_OBLIQUE, PDType1Font.COURIER_BOLD_OBLIQUE),
                 new AbstractMap.SimpleEntry<>(PdfBoxFont.SYMBOL, PDType1Font.SYMBOL),
                 new AbstractMap.SimpleEntry<>(PdfBoxFont.ZAPF_DINGBATS, PDType1Font.ZAPF_DINGBATS))
+                .collect(Collectors.toMap(AbstractMap.SimpleEntry::getKey, AbstractMap.SimpleEntry::getValue)));
+    }
+
+    private static Map<PdfBoxPageSize, PDRectangle> buildPDRectangleMap() {
+        return Collections.unmodifiableMap(Stream.of(
+                new AbstractMap.SimpleEntry<>(PdfBoxPageSize.A0, PDRectangle.A0),
+                new AbstractMap.SimpleEntry<>(PdfBoxPageSize.A1, PDRectangle.A1),
+                new AbstractMap.SimpleEntry<>(PdfBoxPageSize.A2, PDRectangle.A2),
+                new AbstractMap.SimpleEntry<>(PdfBoxPageSize.A3, PDRectangle.A3),
+                new AbstractMap.SimpleEntry<>(PdfBoxPageSize.A4, PDRectangle.A4),
+                new AbstractMap.SimpleEntry<>(PdfBoxPageSize.A5, PDRectangle.A5),
+                new AbstractMap.SimpleEntry<>(PdfBoxPageSize.A6, PDRectangle.A6),
+                new AbstractMap.SimpleEntry<>(PdfBoxPageSize.LEGAL, PDRectangle.LEGAL),
+                new AbstractMap.SimpleEntry<>(PdfBoxPageSize.LETTER, PDRectangle.LETTER))
                 .collect(Collectors.toMap(AbstractMap.SimpleEntry::getKey, AbstractMap.SimpleEntry::getValue)));
     }
 }
