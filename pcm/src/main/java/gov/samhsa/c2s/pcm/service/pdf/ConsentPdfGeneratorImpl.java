@@ -31,6 +31,7 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -70,7 +71,7 @@ public class ConsentPdfGeneratorImpl implements ConsentPdfGenerator {
             addConsentTitle(page, contentStream);
 
             // Consent Reference Number and Patient information
-            addConsentReferenceNumberAndPatientInfo(consent, patientProfile, page, contentStream);
+            addConsentReferenceNumberAndPatientInfo(consent, patientProfile, contentStream);
 
             // Make sure that the content stream is closed
             contentStream.close();
@@ -102,16 +103,22 @@ public class ConsentPdfGeneratorImpl implements ConsentPdfGenerator {
         pdfBoxService.addCenteredTextOffsetFromPageCenter(consentTitle, titleFont, titleFontSize, titleOffset, page, contentStream);
     }
 
-    private void addConsentReferenceNumberAndPatientInfo(Consent consent, PatientDto patientProfile, PDPage page, PDPageContentStream contentStream) throws IOException {
+    private void addConsentReferenceNumberAndPatientInfo(Consent consent, PatientDto patientProfile, PDPageContentStream contentStream) throws IOException {
         String consentReferenceNumber = consent.getConsentReferenceId();
         String patientFullName = UserInfoHelper.getFullName(patientProfile.getFirstName(), patientProfile.getMiddleName(), patientProfile.getLastName());
         String patientBirthDate = formatLocalDate(patientProfile.getBirthDate());
 
-        // Load table content
-        String[][] tableContent = {
-                {"Consent Reference Number: ".concat(consentReferenceNumber), null},
-                {"Patient Name: ".concat(patientFullName), "Patient DOB: ".concat(patientBirthDate)}
-        };
+        // Prepare table content
+        // First row
+        String r1 = "Consent Reference Number: ".concat(consentReferenceNumber);
+        java.util.List<String> firstRowContent = Arrays.asList(r1, null);
+
+        // Second row
+        String r3 = "Patient Name: ".concat(patientFullName);
+        String r4 = "Patient DOB: ".concat(patientBirthDate);
+        List<String> secondRowContent = Arrays.asList(r3, r4);
+
+        List<List<String>> tableContent = Arrays.asList(firstRowContent, secondRowContent);
 
         // Config each column width
         Column column1 = new Column(240f);

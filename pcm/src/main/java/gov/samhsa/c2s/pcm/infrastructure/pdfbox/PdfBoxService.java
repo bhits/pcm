@@ -9,6 +9,7 @@ import org.apache.pdfbox.pdmodel.font.PDFont;
 import java.awt.*;
 import java.awt.geom.Point2D;
 import java.io.IOException;
+import java.util.List;
 
 public interface PdfBoxService {
     PDPage generatePage(String typeOfPdf, PDDocument generatedPdDocument);
@@ -22,7 +23,7 @@ public interface PdfBoxService {
     void addColorBox(Color color, float xCoordinate, float yCoordinate, int width, int height, PDPage page, PDPageContentStream contents) throws IOException;
 
     void addTableContent(PDPageContentStream contentStream, TableAttribute tableAttribute,
-                         String[][] content) throws IOException;
+                         List<List<String>> content) throws IOException;
 
     PDFont getConfiguredPdfFont(String typeOfPdf);
 

@@ -64,10 +64,13 @@ public class PdfBoxServiceImpl implements PdfBoxService {
         contents.fill();
     }
 
+    //TODO: Verify TableAttribute Valid
+    //TODO: Prepare tableContent
     @Override
-    public void addTableContent(PDPageContentStream contentStream, TableAttribute tableAttribute, String[][] tableContent) throws IOException {
-        //TODO: Verify TableAttribute Valid
-        //TODO: Prepare tableContent
+    public void addTableContent(PDPageContentStream contentStream, TableAttribute tableAttribute, List<List<String>> content) throws IOException {
+        String[][] tableContent = content.stream()
+                .map(u -> u.toArray(new String[0])).toArray(String[][]::new);
+
         // Draw table line
         drawTableLine(contentStream, tableAttribute, tableContent);
 
