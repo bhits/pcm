@@ -14,6 +14,7 @@ import org.apache.pdfbox.util.Matrix;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.awt.*;
 import java.awt.geom.Point2D;
 import java.io.IOException;
 import java.util.List;
@@ -34,7 +35,7 @@ public class PdfBoxServiceImpl implements PdfBoxService {
     }
 
     @Override
-    public void addTextOffsetOriginPoint(String text, PDFont font, int fontSize, Point2D.Float offset, PDPage page, PDPageContentStream contentStream) throws IOException {
+    public void addTextOffsetFromPageCenter(String text, PDFont font, int fontSize, Point2D.Float offset, PDPage page, PDPageContentStream contentStream) throws IOException {
         if (text.isEmpty()) {
             log.warn("The inputs are empty string start from the position: " + offset);
         }
@@ -46,15 +47,22 @@ public class PdfBoxServiceImpl implements PdfBoxService {
     }
 
     @Override
-    public void addCenteredText(String text, PDFont font, int fontSize, Point2D.Float offset, PDPage page,
-                                PDPageContentStream contentStream) throws IOException {
+    public void addCenteredTextOffsetFromPageCenter(String text, PDFont font, int fontSize, Point2D.Float offset, PDPage page,
+                                                    PDPageContentStream contentStream) throws IOException {
         Point2D.Float pageCenter = new Point2D.Float(page.getMediaBox().getWidth() / 2F, page.getMediaBox().getHeight() / 2F);
         float textWidth = PdfBoxHandler.targetedStringWidth(text, font, fontSize);
         float textHeight = PdfBoxHandler.targetedStringHeight(font, fontSize);
         float textX = pageCenter.x - textWidth / 2F + offset.x;
         float textY = pageCenter.y - textHeight + offset.y;
 
-        addTextOffsetOriginPoint(text, font, fontSize, new Point2D.Float(textX, textY), page, contentStream);
+        addTextOffsetFromPageCenter(text, font, fontSize, new Point2D.Float(textX, textY), page, contentStream);
+    }
+
+    @Override
+    public void addColorBox(Color color, float xCoordinate, float yCoordinate, int width, int height, PDPage page, PDPageContentStream contents) throws IOException {
+        contents.setNonStrokingColor(color);
+        contents.addRect(page.getMediaBox().getLowerLeftX() + xCoordinate, page.getMediaBox().getLowerLeftY() + yCoordinate, width, height);
+        contents.fill();
     }
 
     @Override
