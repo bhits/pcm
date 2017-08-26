@@ -4,7 +4,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.apache.pdfbox.pdmodel.common.PDRectangle;
 import org.apache.pdfbox.pdmodel.font.PDFont;
 
 import java.awt.*;
@@ -19,9 +18,11 @@ public class TableAttribute {
     private float topMargin;
     private float rowHeight;
     private float cellMargin;
-    private PDRectangle pageSize;
     private PDFont contentFont;
     private float contentFontSize;
     private Color borderColor;
+    /**
+     * Define each column with in order to calculate table width
+     */
     private List<Column> columns;
 }

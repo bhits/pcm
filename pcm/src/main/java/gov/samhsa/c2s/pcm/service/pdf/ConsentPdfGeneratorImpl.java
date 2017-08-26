@@ -16,7 +16,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.PDPageContentStream;
-import org.apache.pdfbox.pdmodel.common.PDRectangle;
 import org.apache.pdfbox.pdmodel.font.PDFont;
 import org.apache.pdfbox.pdmodel.font.PDType1Font;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,7 +23,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
 import java.awt.*;
-import java.awt.geom.Point2D;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.time.LocalDate;
@@ -73,6 +71,16 @@ public class ConsentPdfGeneratorImpl implements ConsentPdfGenerator {
             // Consent Reference Number and Patient information
             addConsentReferenceNumberAndPatientInfo(consent, patientProfile, contentStream);
 
+            // Authorization to disclose section
+            addAuthorizationToDisclose(consent, page, contentStream);
+            // Health information to be disclosed section
+
+            //Consent terms section
+
+            // Consent effective and expiration date
+
+            //Signing details
+
             // Make sure that the content stream is closed
             contentStream.close();
 
@@ -98,9 +106,9 @@ public class ConsentPdfGeneratorImpl implements ConsentPdfGenerator {
                 .orElseThrow(PdfConfigMissingException::new);
 
         int titleFontSize = 20;
-        Point2D.Float titleOffset = new Point2D.Float(0f, 350f);
+        float yCoordinate = 746f;
         PDFont titleFont = PDType1Font.TIMES_BOLD;
-        pdfBoxService.addCenteredTextOffsetFromPageCenter(consentTitle, titleFont, titleFontSize, titleOffset, page, contentStream);
+        pdfBoxService.addCenteredTextAtOffset(consentTitle, titleFont, titleFontSize, yCoordinate, page, contentStream);
     }
 
     private void addConsentReferenceNumberAndPatientInfo(Consent consent, PatientDto patientProfile, PDPageContentStream contentStream) throws IOException {
@@ -130,7 +138,6 @@ public class ConsentPdfGeneratorImpl implements ConsentPdfGenerator {
                 .topMargin(700f)
                 .rowHeight(20f)
                 .cellMargin(5f)
-                .pageSize(PDRectangle.LETTER)
                 .contentFont(PDType1Font.TIMES_ROMAN)
                 .contentFontSize(12)
                 .borderColor(Color.WHITE)
@@ -138,6 +145,16 @@ public class ConsentPdfGeneratorImpl implements ConsentPdfGenerator {
                 .build();
 
         pdfBoxService.addTableContent(contentStream, tableAttribute, tableContent);
+    }
+
+    private void addAuthorizationToDisclose(Consent consent, PDPage page, PDPageContentStream contentStream) throws IOException {
+        // Set background color
+        Color color = new Color(73, 89, 105);
+        float xCoordinate = PdfBoxStyle.LR_MARGINS_OF_LETTER;
+        float yCoordinate = 600f;
+        float colorBoxWidth = 300f;
+        float colorBoxHeight = 300f;
+        pdfBoxService.addColorBox(color, xCoordinate, yCoordinate, colorBoxWidth, colorBoxHeight, page, contentStream);
     }
 
     private String formatLocalDate(LocalDate localDate) {

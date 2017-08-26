@@ -1,7 +1,9 @@
 package gov.samhsa.c2s.pcm.infrastructure.pdfbox;
 
 import gov.samhsa.c2s.pcm.config.PdfProperties;
+import gov.samhsa.c2s.pcm.infrastructure.exception.InvalidTableAttributeException;
 import gov.samhsa.c2s.pcm.infrastructure.pdfbox.util.PdfBoxHandler;
+import gov.samhsa.c2s.pcm.infrastructure.pdfbox.util.PdfBoxStyle;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
@@ -9,14 +11,13 @@ import org.apache.pdfbox.pdmodel.PDPageContentStream;
 import org.apache.pdfbox.pdmodel.common.PDRectangle;
 import org.apache.pdfbox.pdmodel.font.PDFont;
 import org.apache.pdfbox.pdmodel.font.PDType1Font;
-import org.apache.pdfbox.util.Matrix;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.awt.*;
-import java.awt.geom.Point2D;
 import java.io.IOException;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @Slf4j
@@ -34,40 +35,38 @@ public class PdfBoxServiceImpl implements PdfBoxService {
     }
 
     @Override
-    public void addTextOffsetFromPageCenter(String text, PDFont font, int fontSize, Point2D.Float offset, PDPage page, PDPageContentStream contentStream) throws IOException {
+    public void addTextAtOffset(String text, PDFont font, int fontSize, float xCoordinate, float yCoordinate, PDPageContentStream contentStream) throws IOException {
         if (text.isEmpty()) {
-            log.warn("The inputs are empty string start from the position: " + offset);
+            log.warn("The inputs are empty string start from the position: ".concat(xCoordinate + ", " + yCoordinate));
         }
         contentStream.setFont(font, fontSize);
         contentStream.beginText();
-        contentStream.setTextMatrix(Matrix.getTranslateInstance(offset.x, offset.y));
+        contentStream.newLineAtOffset(xCoordinate, yCoordinate);
         contentStream.showText(text);
         contentStream.endText();
     }
 
     @Override
-    public void addCenteredTextOffsetFromPageCenter(String text, PDFont font, int fontSize, Point2D.Float offset, PDPage page,
-                                                    PDPageContentStream contentStream) throws IOException {
-        Point2D.Float pageCenter = new Point2D.Float(page.getMediaBox().getWidth() / 2F, page.getMediaBox().getHeight() / 2F);
+    public void addCenteredTextAtOffset(String text, PDFont font, int fontSize, float yCoordinate, PDPage page,
+                                        PDPageContentStream contentStream) throws IOException {
         float textWidth = PdfBoxHandler.targetedStringWidth(text, font, fontSize);
         float textHeight = PdfBoxHandler.targetedStringHeight(font, fontSize);
-        float textX = pageCenter.x - textWidth / 2F + offset.x;
-        float textY = pageCenter.y - textHeight + offset.y;
+        float centeredXCoordinate = (page.getMediaBox().getWidth() - textWidth) / 2;
+        float centeredYCoordinate = yCoordinate - textHeight;
 
-        addTextOffsetFromPageCenter(text, font, fontSize, new Point2D.Float(textX, textY), page, contentStream);
+        addTextAtOffset(text, font, fontSize, centeredXCoordinate, centeredYCoordinate, contentStream);
     }
 
     @Override
-    public void addColorBox(Color color, float xCoordinate, float yCoordinate, int width, int height, PDPage page, PDPageContentStream contents) throws IOException {
+    public void addColorBox(Color color, float xCoordinate, float yCoordinate, float width, float height, PDPage page, PDPageContentStream contents) throws IOException {
         contents.setNonStrokingColor(color);
         contents.addRect(page.getMediaBox().getLowerLeftX() + xCoordinate, page.getMediaBox().getLowerLeftY() + yCoordinate, width, height);
         contents.fill();
     }
 
-    //TODO: Verify TableAttribute Valid
-    //TODO: Prepare tableContent
     @Override
     public void addTableContent(PDPageContentStream contentStream, TableAttribute tableAttribute, List<List<String>> content) throws IOException {
+        assertValidTableAttribute(tableAttribute);
         String[][] tableContent = content.stream()
                 .map(u -> u.toArray(new String[0])).toArray(String[][]::new);
 
@@ -111,7 +110,8 @@ public class PdfBoxServiceImpl implements PdfBoxService {
     private void drawTableLine(PDPageContentStream contentStream, TableAttribute tableAttribute, String[][] tableContent) throws IOException {
         final int rows = tableContent.length;
         final int cols = tableContent[0].length;
-        final float rowHeight = tableAttribute.getRowHeight();
+        final float rowHeight = Optional.of(tableAttribute.getRowHeight())
+                .orElse(PdfBoxStyle.DEFAULT_TABLE_ROW_HEIGHT);
         log.debug("The row height of the table is: " + rowHeight);
 
         //set border color
@@ -180,5 +180,12 @@ public class PdfBoxServiceImpl implements PdfBoxService {
     private float calculateDrawPositionInVertical(TableAttribute tableAttribute) {
         return tableAttribute.getTopMargin() - (tableAttribute.getRowHeight() / 2)
                 - ((tableAttribute.getContentFont().getFontDescriptor().getFontBoundingBox().getHeight() / 1000 * tableAttribute.getContentFontSize()) / 4);
+    }
+
+    //TODO: Verify TableAttribute Valid
+    private void assertValidTableAttribute(TableAttribute tableAttribute) {
+        if (tableAttribute.getColumns() == null || tableAttribute.getColumns().isEmpty()) {
+            throw new InvalidTableAttributeException("The columns in the table must be configured.");
+        }
     }
 }
