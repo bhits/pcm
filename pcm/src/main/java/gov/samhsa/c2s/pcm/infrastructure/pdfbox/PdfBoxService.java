@@ -24,8 +24,6 @@ public interface PdfBoxService {
     void addTableContent(PDPage page, PDPageContentStream contentStream, TableAttribute tableAttribute,
                          String[][] content) throws IOException;
 
-    byte[] convertPDDocumentToByteArray(PDDocument generatedPdDocument) throws IOException;
-
     PDFont getConfiguredPdfFont(String typeOfPdf);
 
     PDRectangle getConfiguredPdfPageSize(String typeOfPdf);

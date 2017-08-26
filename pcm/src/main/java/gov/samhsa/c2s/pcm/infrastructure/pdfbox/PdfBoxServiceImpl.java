@@ -7,7 +7,6 @@ import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.PDPageContentStream;
 import org.apache.pdfbox.pdmodel.common.PDRectangle;
-import org.apache.pdfbox.pdmodel.common.PDStream;
 import org.apache.pdfbox.pdmodel.font.PDFont;
 import org.apache.pdfbox.pdmodel.font.PDType1Font;
 import org.apache.pdfbox.util.Matrix;
@@ -63,12 +62,6 @@ public class PdfBoxServiceImpl implements PdfBoxService {
         contents.setNonStrokingColor(color);
         contents.addRect(page.getMediaBox().getLowerLeftX() + xCoordinate, page.getMediaBox().getLowerLeftY() + yCoordinate, width, height);
         contents.fill();
-    }
-
-    @Override
-    public byte[] convertPDDocumentToByteArray(PDDocument generatedPdDocument) throws IOException {
-        PDStream pdStream = new PDStream(generatedPdDocument);
-        return pdStream.toByteArray();
     }
 
     @Override
