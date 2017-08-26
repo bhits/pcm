@@ -21,7 +21,7 @@ public interface PdfBoxService {
 
     void addColorBox(Color color, float xCoordinate, float yCoordinate, int width, int height, PDPage page, PDPageContentStream contents) throws IOException;
 
-    void addTableContent(PDPage page, PDPageContentStream contentStream, TableAttribute tableAttribute,
+    void addTableContent(PDPageContentStream contentStream, TableAttribute tableAttribute,
                          String[][] content) throws IOException;
 
     PDFont getConfiguredPdfFont(String typeOfPdf);

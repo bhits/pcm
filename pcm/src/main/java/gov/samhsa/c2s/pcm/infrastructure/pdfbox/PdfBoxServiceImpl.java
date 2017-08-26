@@ -65,7 +65,7 @@ public class PdfBoxServiceImpl implements PdfBoxService {
     }
 
     @Override
-    public void addTableContent(PDPage page, PDPageContentStream contentStream, TableAttribute tableAttribute, String[][] tableContent) throws IOException {
+    public void addTableContent(PDPageContentStream contentStream, TableAttribute tableAttribute, String[][] tableContent) throws IOException {
         //TODO: Verify TableAttribute Valid
         //TODO: Prepare tableContent
         // Draw table line
@@ -128,12 +128,16 @@ public class PdfBoxServiceImpl implements PdfBoxService {
         //draw the columns
         final float tableHeight = rowHeight * rows;
         float nextLineX = tableAttribute.getLeftMargin();
-        for (int i = 0; i <= cols; i++) {
+        for (int i = 0; i < cols; i++) {
             contentStream.moveTo(nextLineX, tableAttribute.getTopMargin());
             contentStream.lineTo(nextLineX, tableAttribute.getTopMargin() - tableHeight);
             contentStream.stroke();
             nextLineX += tableAttribute.getColumns().get(i).getCellWidth();
         }
+        //draw the right border
+        contentStream.moveTo(nextLineX, tableAttribute.getTopMargin());
+        contentStream.lineTo(nextLineX, tableAttribute.getTopMargin() - tableHeight);
+        contentStream.stroke();
     }
 
     private void fillTextToTable(PDPageContentStream contentStream, TableAttribute tableAttribute, String[][] tableContent) throws IOException {

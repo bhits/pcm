@@ -6,10 +6,14 @@ public class UserInfoHelper {
 
     private static final String SPACE_PATTERN = " ";
 
+    public static String getFullName(String firstName, String middleName, String lastName) {
+        return firstName
+                .concat(getMiddleName(middleName))
+                .concat(SPACE_PATTERN + lastName);
+    }
+
     public static String getUserFullName(UserDto userDto) {
-        return userDto.getFirstName()
-                .concat(getMiddleName(userDto.getMiddleName()))
-                .concat(SPACE_PATTERN + userDto.getLastName());
+        return getFullName(userDto.getFirstName(), userDto.getMiddleName(), userDto.getLastName());
     }
 
     private static String getMiddleName(String middleName) {

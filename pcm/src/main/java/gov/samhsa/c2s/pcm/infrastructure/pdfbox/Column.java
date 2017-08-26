@@ -10,7 +10,10 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class Column {
-    private int index;
     private String header;
     private float cellWidth;
+
+    public Column(float cellWidth) {
+        this.cellWidth = cellWidth;
+    }
 }
