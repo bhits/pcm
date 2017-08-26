@@ -1,7 +1,7 @@
 package gov.samhsa.c2s.pcm.infrastructure.pdfbox;
 
 import gov.samhsa.c2s.pcm.config.PdfProperties;
-import gov.samhsa.c2s.pcm.infrastructure.pdfbox.util.PDFontHandler;
+import gov.samhsa.c2s.pcm.infrastructure.pdfbox.util.PdfBoxHandler;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
@@ -10,9 +10,11 @@ import org.apache.pdfbox.pdmodel.common.PDRectangle;
 import org.apache.pdfbox.pdmodel.common.PDStream;
 import org.apache.pdfbox.pdmodel.font.PDFont;
 import org.apache.pdfbox.pdmodel.font.PDType1Font;
+import org.apache.pdfbox.util.Matrix;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.awt.geom.Point2D;
 import java.io.IOException;
 import java.util.List;
 
@@ -29,6 +31,30 @@ public class PdfBoxServiceImpl implements PdfBoxService {
         page.setMediaBox(getConfiguredPdfPageSize(typeOfPdf));
         generatedPdDocument.addPage(page);
         return page;
+    }
+
+    @Override
+    public void addTextOffsetOriginPoint(String text, PDFont font, int fontSize, Point2D.Float offset, PDPage page, PDPageContentStream contentStream) throws IOException {
+        if (text.isEmpty()) {
+            log.warn("The inputs are empty string start from the position: " + offset);
+        }
+        contentStream.setFont(font, fontSize);
+        contentStream.beginText();
+        contentStream.setTextMatrix(Matrix.getTranslateInstance(offset.x, offset.y));
+        contentStream.showText(text);
+        contentStream.endText();
+    }
+
+    @Override
+    public void addCenteredText(String text, PDFont font, int fontSize, Point2D.Float offset, PDPage page,
+                                PDPageContentStream contentStream) throws IOException {
+        Point2D.Float pageCenter = new Point2D.Float(page.getMediaBox().getWidth() / 2F, page.getMediaBox().getHeight() / 2F);
+        float textWidth = PdfBoxHandler.targetedStringWidth(text, font, fontSize);
+        float textHeight = PdfBoxHandler.targetedStringHeight(font, fontSize);
+        float textX = pageCenter.x - textWidth / 2F + offset.x;
+        float textY = pageCenter.y - textHeight + offset.y;
+
+        addTextOffsetOriginPoint(text, font, fontSize, new Point2D.Float(textX, textY), page, contentStream);
     }
 
     @Override
@@ -58,7 +84,7 @@ public class PdfBoxServiceImpl implements PdfBoxService {
     public PDFont getConfiguredPdfFont(String typeOfPdf) {
         return pdfProperties.getPdfConfigs().stream()
                 .filter(pdfConfig -> pdfConfig.type.equalsIgnoreCase(typeOfPdf))
-                .map(pdfConfig -> PDFontHandler.convertPdfBoxFontToPDFont(pdfConfig.pdFont))
+                .map(pdfConfig -> PdfBoxHandler.convertPdfBoxFontToPDFont(pdfConfig.pdFont))
                 .findAny()
                 .orElse(PDType1Font.TIMES_ROMAN);
     }
@@ -73,7 +99,7 @@ public class PdfBoxServiceImpl implements PdfBoxService {
     public PDRectangle getConfiguredPdfPageSize(String typeOfPdf) {
         return pdfProperties.getPdfConfigs().stream()
                 .filter(pdfConfig -> pdfConfig.type.equalsIgnoreCase(typeOfPdf))
-                .map(pdfConfig -> PDFontHandler.convertPdfBoxPageSizeToPDRectangle(pdfConfig.pdfPageSize))
+                .map(pdfConfig -> PdfBoxHandler.convertPdfBoxPageSizeToPDRectangle(pdfConfig.pdfPageSize))
                 .findAny()
                 .orElse(PDRectangle.LETTER);
     }
@@ -82,12 +108,14 @@ public class PdfBoxServiceImpl implements PdfBoxService {
         final int rows = tableContent.length;
         final int cols = tableContent[0].length;
         final float rowHeight = tableAttribute.getRowHeight();
+        log.debug("The row height of the table is: " + rowHeight);
 
         //set border color
         contentStream.setStrokingColor(tableAttribute.getBorderColor());
 
         //draw the rows
         final float tableWidth = calculateTableWidth(tableAttribute.getColumns());
+        log.debug("The number of the table rows is: " + tableAttribute.getColumns().size());
         float nextLineY = tableAttribute.getTopMargin();
         for (int i = 0; i <= rows; i++) {
             contentStream.moveTo(tableAttribute.getLeftMargin(), nextLineY);

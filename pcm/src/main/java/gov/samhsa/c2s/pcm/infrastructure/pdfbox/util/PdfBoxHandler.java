@@ -6,13 +6,14 @@ import org.apache.pdfbox.pdmodel.common.PDRectangle;
 import org.apache.pdfbox.pdmodel.font.PDFont;
 import org.apache.pdfbox.pdmodel.font.PDType1Font;
 
+import java.io.IOException;
 import java.util.AbstractMap;
 import java.util.Collections;
 import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public class PDFontHandler {
+public class PdfBoxHandler {
 
     public static PDFont convertPdfBoxFontToPDFont(PdfBoxFont configuredFont) {
         return buildPDFontMap().get(configuredFont);
@@ -20,6 +21,14 @@ public class PDFontHandler {
 
     public static PDRectangle convertPdfBoxPageSizeToPDRectangle(PdfBoxPageSize configuredPageSize) {
         return buildPDRectangleMap().get(configuredPageSize);
+    }
+
+    public static float targetedStringWidth(String text, PDFont font, int fontSize) throws IOException {
+        return font.getStringWidth(text) * fontSize / 1000F;
+    }
+
+    public static float targetedStringHeight(PDFont font, int fontSize) throws IOException {
+        return font.getFontDescriptor().getFontBoundingBox().getHeight() * fontSize / 1000F;
     }
 
     private static Map<PdfBoxFont, PDFont> buildPDFontMap() {
