@@ -35,10 +35,15 @@ public class PdfBoxServiceImpl implements PdfBoxService {
     }
 
     @Override
-    public void addTextAtOffset(String text, PDFont font, int fontSize, float xCoordinate, float yCoordinate, PDPageContentStream contentStream) throws IOException {
+    public void addTextAtOffset(String text, PDFont font, float fontSize, Color textColor,
+                                float xCoordinate, float yCoordinate, PDPageContentStream contentStream) throws IOException {
         if (text.isEmpty()) {
             log.warn("The inputs are empty string start from the position: ".concat(xCoordinate + ", " + yCoordinate));
         }
+        if (textColor == null) {
+            textColor = Color.BLACK;
+        }
+        contentStream.setNonStrokingColor(textColor);
         contentStream.setFont(font, fontSize);
         contentStream.beginText();
         contentStream.newLineAtOffset(xCoordinate, yCoordinate);
@@ -47,14 +52,14 @@ public class PdfBoxServiceImpl implements PdfBoxService {
     }
 
     @Override
-    public void addCenteredTextAtOffset(String text, PDFont font, int fontSize, float yCoordinate, PDPage page,
-                                        PDPageContentStream contentStream) throws IOException {
+    public void addCenteredTextAtOffset(String text, PDFont font, float fontSize, Color textColor, float yCoordinate,
+                                        PDPage page, PDPageContentStream contentStream) throws IOException {
         float textWidth = PdfBoxHandler.targetedStringWidth(text, font, fontSize);
         float textHeight = PdfBoxHandler.targetedStringHeight(font, fontSize);
         float centeredXCoordinate = (page.getMediaBox().getWidth() - textWidth) / 2;
         float centeredYCoordinate = yCoordinate - textHeight;
 
-        addTextAtOffset(text, font, fontSize, centeredXCoordinate, centeredYCoordinate, contentStream);
+        addTextAtOffset(text, font, fontSize, textColor, centeredXCoordinate, centeredYCoordinate, contentStream);
     }
 
     @Override
@@ -120,26 +125,26 @@ public class PdfBoxServiceImpl implements PdfBoxService {
         //draw the rows
         final float tableWidth = calculateTableWidth(tableAttribute.getColumns());
         log.debug("The number of the table rows is: " + tableAttribute.getColumns().size());
-        float nextLineY = tableAttribute.getTopMargin();
+        float nextLineY = tableAttribute.getYCoordinate();
         for (int i = 0; i <= rows; i++) {
-            contentStream.moveTo(tableAttribute.getLeftMargin(), nextLineY);
-            contentStream.lineTo(tableAttribute.getLeftMargin() + tableWidth, nextLineY);
+            contentStream.moveTo(tableAttribute.getXCoordinate(), nextLineY);
+            contentStream.lineTo(tableAttribute.getXCoordinate() + tableWidth, nextLineY);
             contentStream.stroke();
             nextLineY -= rowHeight;
         }
 
         //draw the columns
         final float tableHeight = rowHeight * rows;
-        float nextLineX = tableAttribute.getLeftMargin();
+        float nextLineX = tableAttribute.getXCoordinate();
         for (int i = 0; i < cols; i++) {
-            contentStream.moveTo(nextLineX, tableAttribute.getTopMargin());
-            contentStream.lineTo(nextLineX, tableAttribute.getTopMargin() - tableHeight);
+            contentStream.moveTo(nextLineX, tableAttribute.getYCoordinate());
+            contentStream.lineTo(nextLineX, tableAttribute.getYCoordinate() - tableHeight);
             contentStream.stroke();
             nextLineX += tableAttribute.getColumns().get(i).getCellWidth();
         }
         //draw the right border
-        contentStream.moveTo(nextLineX, tableAttribute.getTopMargin());
-        contentStream.lineTo(nextLineX, tableAttribute.getTopMargin() - tableHeight);
+        contentStream.moveTo(nextLineX, tableAttribute.getYCoordinate());
+        contentStream.lineTo(nextLineX, tableAttribute.getYCoordinate() - tableHeight);
         contentStream.stroke();
     }
 
@@ -149,7 +154,7 @@ public class PdfBoxServiceImpl implements PdfBoxService {
 
         final float cellMargin = tableAttribute.getCellMargin();
         // Define to start drawing content at horizontal position
-        float nextTextX = tableAttribute.getLeftMargin() + cellMargin;
+        float nextTextX = tableAttribute.getXCoordinate() + cellMargin;
         // Define to start drawing content at vertical position
         float nextTextY = calculateDrawPositionInVertical(tableAttribute);
 
@@ -165,7 +170,7 @@ public class PdfBoxServiceImpl implements PdfBoxService {
             }
             // Update new position cursor after writing the content for one row
             nextTextY -= tableAttribute.getRowHeight();
-            nextTextX = tableAttribute.getLeftMargin() + cellMargin;
+            nextTextX = tableAttribute.getXCoordinate() + cellMargin;
         }
     }
 
@@ -178,7 +183,7 @@ public class PdfBoxServiceImpl implements PdfBoxService {
     }
 
     private float calculateDrawPositionInVertical(TableAttribute tableAttribute) {
-        return tableAttribute.getTopMargin() - (tableAttribute.getRowHeight() / 2)
+        return tableAttribute.getYCoordinate() - (tableAttribute.getRowHeight() / 2)
                 - ((tableAttribute.getContentFont().getFontDescriptor().getFontBoundingBox().getHeight() / 1000 * tableAttribute.getContentFontSize()) / 4);
     }
 

@@ -14,8 +14,8 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 public class TableAttribute {
-    private float leftMargin;
-    private float topMargin;
+    private float xCoordinate;
+    private float yCoordinate;
     private float rowHeight;
     private float cellMargin;
     private PDFont contentFont;

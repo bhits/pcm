@@ -105,10 +105,11 @@ public class ConsentPdfGeneratorImpl implements ConsentPdfGenerator {
                 .findAny()
                 .orElseThrow(PdfConfigMissingException::new);
 
-        int titleFontSize = 20;
+        float titleFontSize = 20f;
         float yCoordinate = 746f;
         PDFont titleFont = PDType1Font.TIMES_BOLD;
-        pdfBoxService.addCenteredTextAtOffset(consentTitle, titleFont, titleFontSize, yCoordinate, page, contentStream);
+        Color titleColor = Color.BLACK;
+        pdfBoxService.addCenteredTextAtOffset(consentTitle, titleFont, titleFontSize, titleColor, yCoordinate, page, contentStream);
     }
 
     private void addConsentReferenceNumberAndPatientInfo(Consent consent, PatientDto patientProfile, PDPageContentStream contentStream) throws IOException {
@@ -134,8 +135,8 @@ public class ConsentPdfGeneratorImpl implements ConsentPdfGenerator {
 
         // Config Table attribute
         TableAttribute tableAttribute = TableAttribute.builder()
-                .leftMargin(PdfBoxStyle.LR_MARGINS_OF_LETTER)
-                .topMargin(700f)
+                .xCoordinate(PdfBoxStyle.LR_MARGINS_OF_LETTER)
+                .yCoordinate(700f)
                 .rowHeight(20f)
                 .cellMargin(5f)
                 .contentFont(PDType1Font.TIMES_ROMAN)
@@ -148,13 +149,27 @@ public class ConsentPdfGeneratorImpl implements ConsentPdfGenerator {
     }
 
     private void addAuthorizationToDisclose(Consent consent, PDPage page, PDPageContentStream contentStream) throws IOException {
+        float cardXCoordinate = PdfBoxStyle.LR_MARGINS_OF_LETTER;
+        float cardYCoordinate = 630f;
+        String title = "AUTHORIZATION TO DISCLOSE";
+        drawSectionHeader(title, cardXCoordinate, cardYCoordinate, page, contentStream);
+    }
+
+    private void drawSectionHeader(String title, float cardXCoordinate, float cardYCoordinate, PDPage page, PDPageContentStream contentStream) throws IOException {
         // Set background color
         Color color = new Color(73, 89, 105);
-        float xCoordinate = PdfBoxStyle.LR_MARGINS_OF_LETTER;
-        float yCoordinate = 600f;
-        float colorBoxWidth = 300f;
-        float colorBoxHeight = 300f;
-        pdfBoxService.addColorBox(color, xCoordinate, yCoordinate, colorBoxWidth, colorBoxHeight, page, contentStream);
+        float colorBoxWidth = page.getMediaBox().getWidth() - 2 * PdfBoxStyle.LR_MARGINS_OF_LETTER;
+        float colorBoxHeight = 20f;
+        PDFont titleFont = PDType1Font.TIMES_BOLD;
+        float titleFontSize = 14f;
+        Color titleColor = Color.WHITE;
+
+        pdfBoxService.addColorBox(color, cardXCoordinate, cardYCoordinate, colorBoxWidth, colorBoxHeight, page, contentStream);
+
+        float titleYCoordinate = cardYCoordinate + (colorBoxHeight / 2)
+                - ((titleFont.getFontDescriptor().getFontBoundingBox().getHeight() / 1000 * titleFontSize) / 4);
+
+        pdfBoxService.addTextAtOffset(title, titleFont, titleFontSize, titleColor, cardXCoordinate + 4f, titleYCoordinate, contentStream);
     }
 
     private String formatLocalDate(LocalDate localDate) {

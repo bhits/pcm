@@ -13,10 +13,10 @@ import java.util.List;
 public interface PdfBoxService {
     PDPage generatePage(String typeOfPdf, PDDocument generatedPdDocument);
 
-    void addTextAtOffset(String text, PDFont font, int fontSize, float xCoordinate, float yCoordinate,
+    void addTextAtOffset(String text, PDFont font, float fontSize, Color textColor, float xCoordinate, float yCoordinate,
                          PDPageContentStream contentStream) throws IOException;
 
-    void addCenteredTextAtOffset(String text, PDFont font, int fontSize, float yCoordinate,
+    void addCenteredTextAtOffset(String text, PDFont font, float fontSize, Color textColor, float yCoordinate,
                                  PDPage page, PDPageContentStream contentStream) throws IOException;
 
     void addColorBox(Color color, float xCoordinate, float yCoordinate, float width, float height, PDPage page, PDPageContentStream contents) throws IOException;

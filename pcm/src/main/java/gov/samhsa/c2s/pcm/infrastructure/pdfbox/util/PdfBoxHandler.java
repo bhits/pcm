@@ -23,11 +23,11 @@ public class PdfBoxHandler {
         return buildPDRectangleMap().get(configuredPageSize);
     }
 
-    public static float targetedStringWidth(String text, PDFont font, int fontSize) throws IOException {
+    public static float targetedStringWidth(String text, PDFont font, float fontSize) throws IOException {
         return font.getStringWidth(text) * fontSize / 1000F;
     }
 
-    public static float targetedStringHeight(PDFont font, int fontSize) throws IOException {
+    public static float targetedStringHeight(PDFont font, float fontSize) throws IOException {
         return font.getFontDescriptor().getFontBoundingBox().getHeight() * fontSize / 1000F;
     }
 
