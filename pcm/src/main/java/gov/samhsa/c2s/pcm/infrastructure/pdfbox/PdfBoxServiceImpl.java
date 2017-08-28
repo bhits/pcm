@@ -81,7 +81,6 @@ public class PdfBoxServiceImpl implements PdfBoxService {
             contentStream.newLineAtOffset(0, -lineSpacing);
         }
         contentStream.endText();
-        contentStream.close();
     }
 
     @Override

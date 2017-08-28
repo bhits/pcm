@@ -81,6 +81,7 @@ public class ConsentPdfGeneratorImpl implements ConsentPdfGenerator {
             addConsentTerms(consentTerms, patientProfile, defaultFont, page, contentStream);
 
             // Consent effective and expiration date
+            addEffectiveAndExpirationDate(consent, contentStream);
 
             //Signing details
 
@@ -123,7 +124,7 @@ public class ConsentPdfGeneratorImpl implements ConsentPdfGenerator {
         // Prepare table content
         // First row
         String r1 = "Consent Reference Number: ".concat(consentReferenceNumber);
-        java.util.List<String> firstRowContent = Arrays.asList(r1, null);
+        List<String> firstRowContent = Arrays.asList(r1, null);
 
         // Second row
         String r3 = "Patient Name: ".concat(patientFullName);
@@ -162,7 +163,7 @@ public class ConsentPdfGeneratorImpl implements ConsentPdfGenerator {
         // From providers table
         createProviderPermittedToDiscloseTable(consent, contentStream);
         // Disclose label
-        pdfBoxService.addTextAtOffset("To disclose to:", PDType1Font.TIMES_ROMAN, PdfBoxStyle.TEXT_MEDIUM_SIZE, Color.BLACK, PdfBoxStyle.LR_MARGINS_OF_LETTER, 580f, contentStream);
+        pdfBoxService.addTextAtOffset("To disclose to:", PDType1Font.TIMES_ROMAN, PdfBoxStyle.TEXT_MEDIUM_SIZE, Color.BLACK, PdfBoxStyle.LR_MARGINS_OF_LETTER, 530f, contentStream);
 
     }
 
@@ -195,7 +196,34 @@ public class ConsentPdfGeneratorImpl implements ConsentPdfGenerator {
         final String userNameKey = "ATTESTER_FULL_NAME";
         String termsWithAttestedName = StrSubstitutor.replace(consentTerms,
                 ImmutableMap.of(userNameKey, UserInfoHelper.getFullName(patientProfile.getFirstName(), patientProfile.getMiddleName(), patientProfile.getLastName())));
-        pdfBoxService.addAutoWrapParagraphByPageWidth(termsWithAttestedName, font, PdfBoxStyle.TEXT_SMALL_SIZE, Color.BLACK, 260f, PdfBoxStyle.LR_MARGINS_OF_LETTER, page, contentStream);
+        pdfBoxService.addAutoWrapParagraphByPageWidth(termsWithAttestedName, font, PdfBoxStyle.TEXT_SMALL_SIZE, Color.BLACK, 250f, PdfBoxStyle.LR_MARGINS_OF_LETTER, page, contentStream);
+    }
+
+    private void addEffectiveAndExpirationDate(Consent consent, PDPageContentStream contentStream) throws IOException {
+        // Prepare table content
+        String col1 = "Effective Date: ".concat(formatLocalDate(consent.getStartDate().toLocalDate()));
+        String col2 = "Expiration Date: ".concat(formatLocalDate(consent.getEndDate().toLocalDate()));
+        List<String> firstRowContent = Arrays.asList(col1, col2);
+
+        List<List<String>> tableContent = Arrays.asList(firstRowContent);
+
+        // Config each column width
+        Column column1 = new Column(180f);
+        Column column2 = new Column(180f);
+
+        // Config Table attribute
+        TableAttribute tableAttribute = TableAttribute.builder()
+                .xCoordinate(PdfBoxStyle.LR_MARGINS_OF_LETTER)
+                .yCoordinate(180f)
+                .rowHeight(20f)
+                .cellMargin(1f)
+                .contentFont(PDType1Font.TIMES_BOLD)
+                .contentFontSize(PdfBoxStyle.TEXT_SMALL_SIZE)
+                .borderColor(Color.WHITE)
+                .columns(Arrays.asList(column1, column2))
+                .build();
+
+        pdfBoxService.addTableContent(contentStream, tableAttribute, tableContent);
     }
 
     private String formatLocalDate(LocalDate localDate) {
