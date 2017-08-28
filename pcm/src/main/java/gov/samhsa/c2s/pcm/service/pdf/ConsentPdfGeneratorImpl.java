@@ -1,6 +1,7 @@
 package gov.samhsa.c2s.pcm.service.pdf;
 
 
+import com.google.common.collect.ImmutableMap;
 import gov.samhsa.c2s.pcm.config.PdfProperties;
 import gov.samhsa.c2s.pcm.domain.Consent;
 import gov.samhsa.c2s.pcm.infrastructure.dto.PatientDto;
@@ -13,6 +14,7 @@ import gov.samhsa.c2s.pcm.infrastructure.pdfbox.util.PdfBoxStyle;
 import gov.samhsa.c2s.pcm.service.exception.PdfConfigMissingException;
 import gov.samhsa.c2s.pcm.service.util.UserInfoHelper;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.text.StrSubstitutor;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.PDPageContentStream;
@@ -76,6 +78,7 @@ public class ConsentPdfGeneratorImpl implements ConsentPdfGenerator {
             // Health information to be disclosed section
 
             //Consent terms section
+            addConsentTerms(consentTerms, patientProfile, defaultFont, page, contentStream);
 
             // Consent effective and expiration date
 
@@ -181,6 +184,18 @@ public class ConsentPdfGeneratorImpl implements ConsentPdfGenerator {
     }
 
     private void createProviderPermittedToDiscloseTable(Consent consent, PDPageContentStream contentStream) {
+    }
+
+    private void addConsentTerms(String consentTerms, PatientDto patientProfile, PDFont font, PDPage page, PDPageContentStream contentStream) throws IOException {
+        float cardXCoordinate = PdfBoxStyle.LR_MARGINS_OF_LETTER;
+        float cardYCoordinate = 270f;
+        final String title = "CONSENT TERMS";
+        drawSectionHeader(title, cardXCoordinate, cardYCoordinate, page, contentStream);
+
+        final String userNameKey = "ATTESTER_FULL_NAME";
+        String termsWithAttestedName = StrSubstitutor.replace(consentTerms,
+                ImmutableMap.of(userNameKey, UserInfoHelper.getFullName(patientProfile.getFirstName(), patientProfile.getMiddleName(), patientProfile.getLastName())));
+        pdfBoxService.addAutoWrapParagraphByPageWidth(termsWithAttestedName, font, PdfBoxStyle.TEXT_SMALL_SIZE, Color.BLACK, 260f, PdfBoxStyle.LR_MARGINS_OF_LETTER, page, contentStream);
     }
 
     private String formatLocalDate(LocalDate localDate) {

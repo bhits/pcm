@@ -66,7 +66,7 @@ public class PdfBoxServiceImpl implements PdfBoxService {
     @Override
     public void addAutoWrapParagraphByPageWidth(String content, PDFont font, float fontSize, Color textColor, float yCoordinate, float leftRightMargin,
                                                 PDPage page, PDPageContentStream contentStream) throws IOException {
-        final float lineSpacing = 1.5f * fontSize;
+        final float lineSpacing = 1.2f * fontSize;
         float width = page.getMediaBox().getWidth() - 2 * leftRightMargin;
         float startX = page.getMediaBox().getLowerLeftX() + leftRightMargin;
 
