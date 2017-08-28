@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 
 import java.awt.*;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -60,6 +61,27 @@ public class PdfBoxServiceImpl implements PdfBoxService {
         float centeredYCoordinate = yCoordinate - textHeight;
 
         addTextAtOffset(text, font, fontSize, textColor, centeredXCoordinate, centeredYCoordinate, contentStream);
+    }
+
+    @Override
+    public void addAutoWrapParagraphByPageWidth(String content, PDFont font, float fontSize, Color textColor, float yCoordinate, float leftRightMargin,
+                                                PDPage page, PDPageContentStream contentStream) throws IOException {
+        final float lineSpacing = 1.5f * fontSize;
+        float width = page.getMediaBox().getWidth() - 2 * leftRightMargin;
+        float startX = page.getMediaBox().getLowerLeftX() + leftRightMargin;
+
+        List<String> lines = calculateLinesToWrap(content, font, fontSize, width);
+
+        contentStream.beginText();
+        contentStream.setFont(font, fontSize);
+        contentStream.setNonStrokingColor(textColor);
+        contentStream.newLineAtOffset(startX, yCoordinate);
+        for (String line : lines) {
+            contentStream.showText(line);
+            contentStream.newLineAtOffset(0, -lineSpacing);
+        }
+        contentStream.endText();
+        contentStream.close();
     }
 
     @Override
@@ -185,6 +207,40 @@ public class PdfBoxServiceImpl implements PdfBoxService {
     private float calculateDrawPositionInVertical(TableAttribute tableAttribute) {
         return tableAttribute.getYCoordinate() - (tableAttribute.getRowHeight() / 2)
                 - ((tableAttribute.getContentFont().getFontDescriptor().getFontBoundingBox().getHeight() / 1000 * tableAttribute.getContentFontSize()) / 4);
+    }
+
+    private List<String> calculateLinesToWrap(String content, PDFont font, float fontSize, float width) throws IOException {
+        final String spacePattern = " ";
+        final String emptyString = "";
+        List<String> lines = new ArrayList<>();
+
+        int lastSpace = -1;
+        while (content.length() > 0) {
+            int spaceIndex = content.indexOf(spacePattern, lastSpace + 1);
+            if (spaceIndex < 0) {
+                spaceIndex = content.length();
+            }
+            String subString = content.substring(0, spaceIndex);
+            float subStringWidth = PdfBoxHandler.targetedStringWidth(subString, font, fontSize);
+            log.debug("'%s' - %f of %f\n", subString, subStringWidth, width);
+            if (subStringWidth > width) {
+                if (lastSpace < 0) {
+                    lastSpace = spaceIndex;
+                }
+                subString = content.substring(0, lastSpace);
+                lines.add(subString);
+                content = content.substring(lastSpace).trim();
+                log.debug("'%s' is line\n", subString);
+                lastSpace = -1;
+            } else if (spaceIndex == content.length()) {
+                lines.add(content);
+                log.debug("'%s' is line\n", content);
+                content = emptyString;
+            } else {
+                lastSpace = spaceIndex;
+            }
+        }
+        return lines;
     }
 
     //TODO: Verify TableAttribute Valid

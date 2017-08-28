@@ -140,7 +140,7 @@ public class ConsentPdfGeneratorImpl implements ConsentPdfGenerator {
                 .rowHeight(20f)
                 .cellMargin(5f)
                 .contentFont(PDType1Font.TIMES_ROMAN)
-                .contentFontSize(12)
+                .contentFontSize(PdfBoxStyle.TEXT_SMALL_SIZE)
                 .borderColor(Color.WHITE)
                 .columns(Arrays.asList(column1, column2))
                 .build();
@@ -153,6 +153,14 @@ public class ConsentPdfGeneratorImpl implements ConsentPdfGenerator {
         float cardYCoordinate = 630f;
         String title = "AUTHORIZATION TO DISCLOSE";
         drawSectionHeader(title, cardXCoordinate, cardYCoordinate, page, contentStream);
+
+        // Authorizes label
+        pdfBoxService.addTextAtOffset("Authorizes:", PDType1Font.TIMES_ROMAN, PdfBoxStyle.TEXT_MEDIUM_SIZE, Color.BLACK, PdfBoxStyle.LR_MARGINS_OF_LETTER, 610f, contentStream);
+        // From providers table
+        createProviderPermittedToDiscloseTable(consent, contentStream);
+        // Disclose label
+        pdfBoxService.addTextAtOffset("To disclose to:", PDType1Font.TIMES_ROMAN, PdfBoxStyle.TEXT_MEDIUM_SIZE, Color.BLACK, PdfBoxStyle.LR_MARGINS_OF_LETTER, 580f, contentStream);
+
     }
 
     private void drawSectionHeader(String title, float cardXCoordinate, float cardYCoordinate, PDPage page, PDPageContentStream contentStream) throws IOException {
@@ -161,7 +169,7 @@ public class ConsentPdfGeneratorImpl implements ConsentPdfGenerator {
         float colorBoxWidth = page.getMediaBox().getWidth() - 2 * PdfBoxStyle.LR_MARGINS_OF_LETTER;
         float colorBoxHeight = 20f;
         PDFont titleFont = PDType1Font.TIMES_BOLD;
-        float titleFontSize = 14f;
+        float titleFontSize = PdfBoxStyle.TEXT_MEDIUM_SIZE;
         Color titleColor = Color.WHITE;
 
         pdfBoxService.addColorBox(color, cardXCoordinate, cardYCoordinate, colorBoxWidth, colorBoxHeight, page, contentStream);
@@ -170,6 +178,9 @@ public class ConsentPdfGeneratorImpl implements ConsentPdfGenerator {
                 - ((titleFont.getFontDescriptor().getFontBoundingBox().getHeight() / 1000 * titleFontSize) / 4);
 
         pdfBoxService.addTextAtOffset(title, titleFont, titleFontSize, titleColor, cardXCoordinate + 4f, titleYCoordinate, contentStream);
+    }
+
+    private void createProviderPermittedToDiscloseTable(Consent consent, PDPageContentStream contentStream) {
     }
 
     private String formatLocalDate(LocalDate localDate) {
