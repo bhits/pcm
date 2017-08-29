@@ -211,32 +211,34 @@ public class PdfBoxServiceImpl implements PdfBoxService {
     private List<String> calculateLinesToWrap(String content, PDFont font, float fontSize, float width) throws IOException {
         final String spacePattern = " ";
         final String emptyString = "";
+        final String lineBreak = "\n";
         List<String> lines = new ArrayList<>();
-
-        int lastSpace = -1;
-        while (content.length() > 0) {
-            int spaceIndex = content.indexOf(spacePattern, lastSpace + 1);
-            if (spaceIndex < 0) {
-                spaceIndex = content.length();
-            }
-            String subString = content.substring(0, spaceIndex);
-            float subStringWidth = PdfBoxHandler.targetedStringWidth(subString, font, fontSize);
-            log.debug("'%s' - %f of %f\n", subString, subStringWidth, width);
-            if (subStringWidth > width) {
-                if (lastSpace < 0) {
+        for (String pieceOfContent : content.split(lineBreak)) {
+            int lastSpace = -1;
+            while (pieceOfContent.length() > 0) {
+                int spaceIndex = pieceOfContent.indexOf(spacePattern, lastSpace + 1);
+                if (spaceIndex < 0) {
+                    spaceIndex = pieceOfContent.length();
+                }
+                String subString = pieceOfContent.substring(0, spaceIndex);
+                float subStringWidth = PdfBoxHandler.targetedStringWidth(subString, font, fontSize);
+                log.debug("'%s' - %f of %f\n", subString, subStringWidth, width);
+                if (subStringWidth > width) {
+                    if (lastSpace < 0) {
+                        lastSpace = spaceIndex;
+                    }
+                    subString = pieceOfContent.substring(0, lastSpace);
+                    lines.add(subString);
+                    pieceOfContent = pieceOfContent.substring(lastSpace).trim();
+                    log.debug("'%s' is line\n", subString);
+                    lastSpace = -1;
+                } else if (spaceIndex == pieceOfContent.length()) {
+                    lines.add(pieceOfContent);
+                    log.debug("'%s' is line\n", pieceOfContent);
+                    pieceOfContent = emptyString;
+                } else {
                     lastSpace = spaceIndex;
                 }
-                subString = content.substring(0, lastSpace);
-                lines.add(subString);
-                content = content.substring(lastSpace).trim();
-                log.debug("'%s' is line\n", subString);
-                lastSpace = -1;
-            } else if (spaceIndex == content.length()) {
-                lines.add(content);
-                log.debug("'%s' is line\n", content);
-                content = emptyString;
-            } else {
-                lastSpace = spaceIndex;
             }
         }
         return lines;
