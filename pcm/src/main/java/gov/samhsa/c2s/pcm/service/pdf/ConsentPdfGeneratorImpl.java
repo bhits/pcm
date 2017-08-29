@@ -6,6 +6,7 @@ import gov.samhsa.c2s.pcm.config.PdfProperties;
 import gov.samhsa.c2s.pcm.domain.Consent;
 import gov.samhsa.c2s.pcm.infrastructure.dto.PatientDto;
 import gov.samhsa.c2s.pcm.infrastructure.dto.UserDto;
+import gov.samhsa.c2s.pcm.infrastructure.exception.InvalidContentException;
 import gov.samhsa.c2s.pcm.infrastructure.exception.PdfGenerateException;
 import gov.samhsa.c2s.pcm.infrastructure.pdfbox.Column;
 import gov.samhsa.c2s.pcm.infrastructure.pdfbox.PdfBoxService;
@@ -141,7 +142,7 @@ public class ConsentPdfGeneratorImpl implements ConsentPdfGenerator {
                 .xCoordinate(PdfBoxStyle.LR_MARGINS_OF_LETTER)
                 .yCoordinate(700f)
                 .rowHeight(20f)
-                .cellMargin(5f)
+                .cellMargin(1f)
                 .contentFont(PDType1Font.TIMES_ROMAN)
                 .contentFontSize(PdfBoxStyle.TEXT_SMALL_SIZE)
                 .borderColor(Color.WHITE)
@@ -195,7 +196,13 @@ public class ConsentPdfGeneratorImpl implements ConsentPdfGenerator {
         final String userNameKey = "ATTESTER_FULL_NAME";
         String termsWithAttestedName = StrSubstitutor.replace(consentTerms,
                 ImmutableMap.of(userNameKey, UserInfoHelper.getFullName(patientProfile.getFirstName(), patientProfile.getMiddleName(), patientProfile.getLastName())));
-        pdfBoxService.addAutoWrapParagraphByPageWidth(termsWithAttestedName, font, PdfBoxStyle.TEXT_SMALL_SIZE, Color.BLACK, 250f, PdfBoxStyle.LR_MARGINS_OF_LETTER, page, contentStream);
+
+        try {
+            pdfBoxService.addAutoWrapParagraphByPageWidth(termsWithAttestedName, font, PdfBoxStyle.TEXT_SMALL_SIZE, Color.BLACK, 250f, PdfBoxStyle.LR_MARGINS_OF_LETTER, page, contentStream);
+        } catch (Exception e) {
+            log.error("Invalid character for cast specification", e);
+            throw new InvalidContentException(e);
+        }
     }
 
     private void addEffectiveAndExpirationDate(Consent consent, PDPageContentStream contentStream) throws IOException {

@@ -4,6 +4,7 @@ import gov.samhsa.c2s.pcm.config.PdfProperties;
 import gov.samhsa.c2s.pcm.domain.Consent;
 import gov.samhsa.c2s.pcm.infrastructure.dto.PatientDto;
 import gov.samhsa.c2s.pcm.infrastructure.dto.UserDto;
+import gov.samhsa.c2s.pcm.infrastructure.exception.InvalidContentException;
 import gov.samhsa.c2s.pcm.infrastructure.exception.PdfGenerateException;
 import gov.samhsa.c2s.pcm.infrastructure.pdfbox.Column;
 import gov.samhsa.c2s.pcm.infrastructure.pdfbox.PdfBoxService;
@@ -68,6 +69,9 @@ public class ConsentRevocationPdfGeneratorImpl implements ConsentRevocationPdfGe
             // Consent Reference Number and Patient information
             addConsentReferenceNumberAndPatientInfo(consent, patient, contentStream);
 
+            // Consent revocation terms
+            addConsentRevocationTerms(consentRevocationTerm, defaultFont, page, contentStream);
+
             //Signing details
 
             // Make sure that the content stream is closed
@@ -125,9 +129,9 @@ public class ConsentRevocationPdfGeneratorImpl implements ConsentRevocationPdfGe
         // Config Table attribute
         TableAttribute tableAttribute = TableAttribute.builder()
                 .xCoordinate(PdfBoxStyle.LR_MARGINS_OF_LETTER)
-                .yCoordinate(700f)
-                .rowHeight(20f)
-                .cellMargin(5f)
+                .yCoordinate(670f)
+                .rowHeight(30f)
+                .cellMargin(1f)
                 .contentFont(PDType1Font.TIMES_ROMAN)
                 .contentFontSize(PdfBoxStyle.TEXT_SMALL_SIZE)
                 .borderColor(Color.WHITE)
@@ -135,5 +139,14 @@ public class ConsentRevocationPdfGeneratorImpl implements ConsentRevocationPdfGe
                 .build();
 
         pdfBoxService.addTableContent(contentStream, tableAttribute, tableContent);
+    }
+
+    private void addConsentRevocationTerms(String consentRevocationTerm, PDFont defaultFont, PDPage page, PDPageContentStream contentStream) {
+        try {
+            pdfBoxService.addAutoWrapParagraphByPageWidth(consentRevocationTerm, defaultFont, PdfBoxStyle.TEXT_SMALL_SIZE, Color.BLACK, 580f, PdfBoxStyle.LR_MARGINS_OF_LETTER, page, contentStream);
+        } catch (Exception e) {
+            log.error("Invalid character for cast specification", e);
+            throw new InvalidContentException(e);
+        }
     }
 }
