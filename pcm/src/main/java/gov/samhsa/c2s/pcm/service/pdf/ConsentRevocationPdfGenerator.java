@@ -10,5 +10,5 @@ import java.util.Optional;
 
 public interface ConsentRevocationPdfGenerator {
 
-    byte[] generateConsentRevocationPdf(Consent consent, PatientDto patient, Date attestedOnDateTime, String consentRevocationTerm, Optional<UserDto> revokedBy) throws IOException;
+    byte[] generateConsentRevocationPdf(Consent consent, PatientDto patient, Date attestedOnDateTime, String consentRevocationTerm, Optional<UserDto> revokedBy, Optional<Boolean> attestedByPatient) throws IOException;
 }

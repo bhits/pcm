@@ -7,7 +7,6 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 import org.hibernate.envers.Audited;
-import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import javax.persistence.Basic;
@@ -40,7 +39,6 @@ public class ConsentRevocation {
     @NotNull
     private Consent consent;
 
-    @CreatedDate
     private Date revokedDate;
 
     private String revokedBy;

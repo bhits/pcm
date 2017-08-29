@@ -11,6 +11,7 @@ import gov.samhsa.c2s.pcm.infrastructure.pdfbox.PdfBoxService;
 import gov.samhsa.c2s.pcm.infrastructure.pdfbox.TableAttribute;
 import gov.samhsa.c2s.pcm.infrastructure.pdfbox.util.PdfBoxHandler;
 import gov.samhsa.c2s.pcm.infrastructure.pdfbox.util.PdfBoxStyle;
+import gov.samhsa.c2s.pcm.service.exception.NoDataFoundException;
 import gov.samhsa.c2s.pcm.service.exception.PdfConfigMissingException;
 import gov.samhsa.c2s.pcm.service.util.UserInfoHelper;
 import lombok.extern.slf4j.Slf4j;
@@ -47,7 +48,7 @@ public class ConsentRevocationPdfGeneratorImpl implements ConsentRevocationPdfGe
     }
 
     @Override
-    public byte[] generateConsentRevocationPdf(Consent consent, PatientDto patient, Date attestedOnDateTime, String consentRevocationTerm, Optional<UserDto> revokedByUserDto) throws IOException {
+    public byte[] generateConsentRevocationPdf(Consent consent, PatientDto patient, Date attestedOnDateTime, String consentRevocationTerm, Optional<UserDto> revokedByUserDto, Optional<Boolean> attestedByPatient) throws IOException {
         Assert.notNull(consent, "Consent is required.");
 
         ByteArrayOutputStream pdfOutputStream = new ByteArrayOutputStream();
@@ -73,6 +74,13 @@ public class ConsentRevocationPdfGeneratorImpl implements ConsentRevocationPdfGe
             addConsentRevocationTerms(consentRevocationTerm, defaultFont, page, contentStream);
 
             //Signing details
+            //Todo: Will identify different role once C2S support for multiple role.
+            String role = "Provider";
+            if (attestedByPatient.orElseThrow(NoDataFoundException::new)) {
+                addPatientSigningDetailsTable(patient, attestedOnDateTime);
+            } else {
+                addNonPatientSigningDetailsTable(role, revokedByUserDto, attestedOnDateTime);
+            }
 
             // Make sure that the content stream is closed
             contentStream.close();
@@ -148,5 +156,11 @@ public class ConsentRevocationPdfGeneratorImpl implements ConsentRevocationPdfGe
             log.error("Invalid character for cast specification", e);
             throw new InvalidContentException(e);
         }
+    }
+
+    private void addPatientSigningDetailsTable(PatientDto patient, Date attestedOnDateTime) {
+    }
+
+    private void addNonPatientSigningDetailsTable(String role, Optional<UserDto> revokedByUserDto, Date attestedOnDateTime) {
     }
 }
