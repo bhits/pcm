@@ -3,6 +3,7 @@ package gov.samhsa.c2s.pcm.service.pdf;
 import gov.samhsa.c2s.pcm.config.PdfProperties;
 import gov.samhsa.c2s.pcm.domain.Consent;
 import gov.samhsa.c2s.pcm.infrastructure.dto.PatientDto;
+import gov.samhsa.c2s.pcm.infrastructure.dto.TelecomDto;
 import gov.samhsa.c2s.pcm.infrastructure.dto.UserDto;
 import gov.samhsa.c2s.pcm.infrastructure.exception.InvalidContentException;
 import gov.samhsa.c2s.pcm.infrastructure.exception.PdfGenerateException;
@@ -27,7 +28,10 @@ import org.springframework.util.Assert;
 import java.awt.*;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -35,6 +39,7 @@ import java.util.Optional;
 @Service
 @Slf4j
 public class ConsentRevocationPdfGeneratorImpl implements ConsentRevocationPdfGenerator {
+    public static final String TELECOM_EMAIL = "EMAIL";
     private static final String CONSENT_REVOCATION_PDF = "consent-revocation-pdf";
     private static final String DATE_FORMAT_PATTERN = "MMM dd, yyyy";
 
@@ -48,7 +53,7 @@ public class ConsentRevocationPdfGeneratorImpl implements ConsentRevocationPdfGe
     }
 
     @Override
-    public byte[] generateConsentRevocationPdf(Consent consent, PatientDto patient, Date attestedOnDateTime, String consentRevocationTerm, Optional<UserDto> revokedByUserDto, Optional<Boolean> attestedByPatient) throws IOException {
+    public byte[] generateConsentRevocationPdf(Consent consent, PatientDto patient, Date revokedOnDateTime, String consentRevocationTerm, Optional<UserDto> revokedByUserDto, Optional<Boolean> revokedByPatient) throws IOException {
         Assert.notNull(consent, "Consent is required.");
 
         ByteArrayOutputStream pdfOutputStream = new ByteArrayOutputStream();
@@ -73,13 +78,13 @@ public class ConsentRevocationPdfGeneratorImpl implements ConsentRevocationPdfGe
             // Consent revocation terms
             addConsentRevocationTerms(consentRevocationTerm, defaultFont, page, contentStream);
 
-            //Signing details
-            //Todo: Will identify different role once C2S support for multiple role.
-            String role = "Provider";
-            if (attestedByPatient.orElseThrow(NoDataFoundException::new)) {
-                addPatientSigningDetailsTable(patient, attestedOnDateTime);
+            // Revocation signing details
+            if (revokedByPatient.orElseThrow(NoDataFoundException::new)) {
+                addPatientRevocationSigningDetailsTable(patient, revokedOnDateTime, contentStream);
             } else {
-                addNonPatientSigningDetailsTable(role, revokedByUserDto, attestedOnDateTime);
+                //Todo: Will identify different role once C2S support for multiple role.
+                String role = "Provider";
+                addNonPatientRevocationSigningDetailsTable(role, revokedByUserDto, revokedOnDateTime);
             }
 
             // Make sure that the content stream is closed
@@ -158,9 +163,45 @@ public class ConsentRevocationPdfGeneratorImpl implements ConsentRevocationPdfGe
         }
     }
 
-    private void addPatientSigningDetailsTable(PatientDto patient, Date attestedOnDateTime) {
+    private void addPatientRevocationSigningDetailsTable(PatientDto patient, Date revokedOnDateTime, PDPageContentStream contentStream) throws IOException {
+        String patientName = UserInfoHelper.getFullName(patient.getFirstName(), patient.getMiddleName(), patient.getLastName());
+        String email = patient.getTelecoms().stream()
+                .filter(telecomDto -> telecomDto.getSystem().equalsIgnoreCase(TELECOM_EMAIL))
+                .findAny()
+                .map(TelecomDto::getValue)
+                .orElseThrow(NoDataFoundException::new);
+        LocalDate revokedDate = revokedOnDateTime.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+
+        // Prepare table content
+        // First row
+        String a1 = "Signed by: ".concat(patientName);
+        List<String> firstRowContent = Collections.singletonList(a1);
+
+        // Second row
+        String a2 = "Email: ".concat(email);
+        List<String> secondRowContent = Collections.singletonList(a2);
+        // Third row
+        String a3 = "Signed on: ".concat(PdfBoxHandler.formatLocalDate(revokedDate, DATE_FORMAT_PATTERN));
+        List<String> thirdRowContent = Collections.singletonList(a3);
+
+        List<List<String>> tableContent = Arrays.asList(firstRowContent, secondRowContent, thirdRowContent);
+
+        Column column1 = new Column(240f);
+
+        TableAttribute tableAttribute = TableAttribute.builder()
+                .xCoordinate(PdfBoxStyle.LR_MARGINS_OF_LETTER)
+                .yCoordinate(290f)
+                .rowHeight(20f)
+                .cellMargin(1f)
+                .contentFont(PDType1Font.TIMES_BOLD)
+                .contentFontSize(PdfBoxStyle.TEXT_SMALL_SIZE)
+                .borderColor(Color.WHITE)
+                .columns(Collections.singletonList(column1))
+                .build();
+
+        pdfBoxService.addTableContent(contentStream, tableAttribute, tableContent);
     }
 
-    private void addNonPatientSigningDetailsTable(String role, Optional<UserDto> revokedByUserDto, Date attestedOnDateTime) {
+    private void addNonPatientRevocationSigningDetailsTable(String role, Optional<UserDto> revokedByUserDto, Date attestedOnDateTime) {
     }
 }
