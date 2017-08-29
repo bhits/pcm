@@ -45,6 +45,7 @@ import gov.samhsa.c2s.pcm.service.exception.BadRequestException;
 import gov.samhsa.c2s.pcm.service.exception.ConsentAttestationTermNotFound;
 import gov.samhsa.c2s.pcm.service.exception.ConsentNotFoundException;
 import gov.samhsa.c2s.pcm.service.exception.ConsentPdfGenerateException;
+import gov.samhsa.c2s.pcm.service.exception.ConsentRevocationPdfGenerateException;
 import gov.samhsa.c2s.pcm.service.exception.ConsentRevocationTermNotFound;
 import gov.samhsa.c2s.pcm.service.exception.DuplicateConsentException;
 import gov.samhsa.c2s.pcm.service.exception.InvalidProviderException;
@@ -447,14 +448,18 @@ public class ConsentServiceImpl implements ConsentService {
             PatientDto patientDto = umsService.getPatientProfile(patientId);
 
             //Generate REVOKED PDF
-            if (actionPerformedByPatient(revokedByPatient)) {
-                //Do not send user Info if revoked by Patient
-                consentRevocation.setConsentRevocationPdf(consentRevocationPdfGenerator.generateConsentRevocationPdf(consent, patientDto, new Date(), consentRevocationTerm.getText(), Optional.empty()));
-            } else {
-                UserDto consentRevokerUserDto = umsService.getUserById(revokedBy.get());
-                consentRevocation.setConsentRevocationPdf(consentRevocationPdfGenerator.generateConsentRevocationPdf(consent, patientDto, new Date(), consentRevocationTerm.getText(), Optional.ofNullable(consentRevokerUserDto)));
+            try {
+                if (actionPerformedByPatient(revokedByPatient)) {
+                    //Do not send user Info if revoked by Patient
+                    consentRevocation.setConsentRevocationPdf(consentRevocationPdfGenerator.generateConsentRevocationPdf(consent, patientDto, new Date(), consentRevocationTerm.getText(), Optional.empty()));
+                } else {
+                    UserDto consentRevokerUserDto = umsService.getUserById(revokedBy.get());
+                    consentRevocation.setConsentRevocationPdf(consentRevocationPdfGenerator.generateConsentRevocationPdf(consent, patientDto, new Date(), consentRevocationTerm.getText(), Optional.ofNullable(consentRevokerUserDto)));
+                }
+            } catch (IOException e) {
+                log.error(e.getMessage(), e);
+                throw new ConsentRevocationPdfGenerateException(e);
             }
-
 
             consent.setConsentRevocation(consentRevocation);
 

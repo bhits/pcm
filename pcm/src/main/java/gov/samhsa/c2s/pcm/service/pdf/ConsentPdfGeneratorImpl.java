@@ -110,7 +110,7 @@ public class ConsentPdfGeneratorImpl implements ConsentPdfGenerator {
                 .orElseThrow(PdfConfigMissingException::new);
 
         float titleFontSize = 20f;
-        float yCoordinate = 746f;
+        float yCoordinate = page.getMediaBox().getHeight() - PdfBoxStyle.TB_MARGINS_OF_LETTER;
         PDFont titleFont = PDType1Font.TIMES_BOLD;
         Color titleColor = Color.BLACK;
         pdfBoxService.addCenteredTextAtOffset(consentTitle, titleFont, titleFontSize, titleColor, yCoordinate, page, contentStream);
