@@ -10,6 +10,7 @@ import gov.samhsa.c2s.pcm.infrastructure.exception.PdfGenerateException;
 import gov.samhsa.c2s.pcm.infrastructure.pdfbox.Column;
 import gov.samhsa.c2s.pcm.infrastructure.pdfbox.PdfBoxService;
 import gov.samhsa.c2s.pcm.infrastructure.pdfbox.TableAttribute;
+import gov.samhsa.c2s.pcm.infrastructure.pdfbox.util.PdfBoxHandler;
 import gov.samhsa.c2s.pcm.infrastructure.pdfbox.util.PdfBoxStyle;
 import gov.samhsa.c2s.pcm.service.exception.PdfConfigMissingException;
 import gov.samhsa.c2s.pcm.service.util.UserInfoHelper;
@@ -27,8 +28,6 @@ import org.springframework.util.Assert;
 import java.awt.*;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
@@ -119,7 +118,7 @@ public class ConsentPdfGeneratorImpl implements ConsentPdfGenerator {
     private void addConsentReferenceNumberAndPatientInfo(Consent consent, PatientDto patientProfile, PDPageContentStream contentStream) throws IOException {
         String consentReferenceNumber = consent.getConsentReferenceId();
         String patientFullName = UserInfoHelper.getFullName(patientProfile.getFirstName(), patientProfile.getMiddleName(), patientProfile.getLastName());
-        String patientBirthDate = formatLocalDate(patientProfile.getBirthDate());
+        String patientBirthDate = PdfBoxHandler.formatLocalDate(patientProfile.getBirthDate(), DATE_FORMAT_PATTERN);
 
         // Prepare table content
         // First row
@@ -201,8 +200,8 @@ public class ConsentPdfGeneratorImpl implements ConsentPdfGenerator {
 
     private void addEffectiveAndExpirationDate(Consent consent, PDPageContentStream contentStream) throws IOException {
         // Prepare table content
-        String col1 = "Effective Date: ".concat(formatLocalDate(consent.getStartDate().toLocalDate()));
-        String col2 = "Expiration Date: ".concat(formatLocalDate(consent.getEndDate().toLocalDate()));
+        String col1 = "Effective Date: ".concat(PdfBoxHandler.formatLocalDate(consent.getStartDate().toLocalDate(), DATE_FORMAT_PATTERN));
+        String col2 = "Expiration Date: ".concat(PdfBoxHandler.formatLocalDate(consent.getEndDate().toLocalDate(), DATE_FORMAT_PATTERN));
         List<String> firstRowContent = Arrays.asList(col1, col2);
 
         List<List<String>> tableContent = Arrays.asList(firstRowContent);
@@ -224,10 +223,5 @@ public class ConsentPdfGeneratorImpl implements ConsentPdfGenerator {
                 .build();
 
         pdfBoxService.addTableContent(contentStream, tableAttribute, tableContent);
-    }
-
-    private String formatLocalDate(LocalDate localDate) {
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern(DATE_FORMAT_PATTERN);
-        return localDate.format(formatter);
     }
 }

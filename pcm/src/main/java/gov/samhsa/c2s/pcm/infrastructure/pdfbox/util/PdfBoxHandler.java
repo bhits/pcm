@@ -7,6 +7,8 @@ import org.apache.pdfbox.pdmodel.font.PDFont;
 import org.apache.pdfbox.pdmodel.font.PDType1Font;
 
 import java.io.IOException;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.AbstractMap;
 import java.util.Collections;
 import java.util.Map;
@@ -29,6 +31,11 @@ public class PdfBoxHandler {
 
     public static float targetedStringHeight(PDFont font, float fontSize) throws IOException {
         return font.getFontDescriptor().getFontBoundingBox().getHeight() * fontSize / 1000F;
+    }
+
+    public static String formatLocalDate(LocalDate localDate, String formatPattern) {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern(formatPattern);
+        return localDate.format(formatter);
     }
 
     private static Map<PdfBoxFont, PDFont> buildPDFontMap() {

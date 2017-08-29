@@ -5,9 +5,13 @@ import gov.samhsa.c2s.pcm.domain.Consent;
 import gov.samhsa.c2s.pcm.infrastructure.dto.PatientDto;
 import gov.samhsa.c2s.pcm.infrastructure.dto.UserDto;
 import gov.samhsa.c2s.pcm.infrastructure.exception.PdfGenerateException;
+import gov.samhsa.c2s.pcm.infrastructure.pdfbox.Column;
 import gov.samhsa.c2s.pcm.infrastructure.pdfbox.PdfBoxService;
+import gov.samhsa.c2s.pcm.infrastructure.pdfbox.TableAttribute;
+import gov.samhsa.c2s.pcm.infrastructure.pdfbox.util.PdfBoxHandler;
 import gov.samhsa.c2s.pcm.infrastructure.pdfbox.util.PdfBoxStyle;
 import gov.samhsa.c2s.pcm.service.exception.PdfConfigMissingException;
+import gov.samhsa.c2s.pcm.service.util.UserInfoHelper;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
@@ -21,13 +25,17 @@ import org.springframework.util.Assert;
 import java.awt.*;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Date;
+import java.util.List;
 import java.util.Optional;
 
 @Service
 @Slf4j
 public class ConsentRevocationPdfGeneratorImpl implements ConsentRevocationPdfGenerator {
     private static final String CONSENT_REVOCATION_PDF = "consent-revocation-pdf";
+    private static final String DATE_FORMAT_PATTERN = "MMM dd, yyyy";
+
     private final PdfBoxService pdfBoxService;
     private final PdfProperties pdfProperties;
 
@@ -58,6 +66,7 @@ public class ConsentRevocationPdfGeneratorImpl implements ConsentRevocationPdfGe
             addConsentRevocationTitle(page, contentStream);
 
             // Consent Reference Number and Patient information
+            addConsentReferenceNumberAndPatientInfo(consent, patient, contentStream);
 
             //Signing details
 
@@ -90,5 +99,41 @@ public class ConsentRevocationPdfGeneratorImpl implements ConsentRevocationPdfGe
         PDFont titleFont = PDType1Font.TIMES_BOLD;
         Color titleColor = Color.BLACK;
         pdfBoxService.addCenteredTextAtOffset(consentRevocationTitle, titleFont, titleFontSize, titleColor, yCoordinate, page, contentStream);
+    }
+
+    private void addConsentReferenceNumberAndPatientInfo(Consent consent, PatientDto patient, PDPageContentStream contentStream) throws IOException {
+        String consentReferenceNumber = consent.getConsentReferenceId();
+        String patientFullName = UserInfoHelper.getFullName(patient.getFirstName(), patient.getMiddleName(), patient.getLastName());
+        String patientBirthDate = PdfBoxHandler.formatLocalDate(patient.getBirthDate(), DATE_FORMAT_PATTERN);
+
+        // Prepare table content
+        // First row
+        String a1 = "Consent Reference Number: ".concat(consentReferenceNumber);
+        List<String> firstRowContent = Arrays.asList(a1, null);
+
+        // Second row
+        String a2 = "Patient Name: ".concat(patientFullName);
+        String b2 = "Patient DOB: ".concat(patientBirthDate);
+        List<String> secondRowContent = Arrays.asList(a2, b2);
+
+        List<List<String>> tableContent = Arrays.asList(firstRowContent, secondRowContent);
+
+        // Config each column width
+        Column column1 = new Column(240f);
+        Column column2 = new Column(220f);
+
+        // Config Table attribute
+        TableAttribute tableAttribute = TableAttribute.builder()
+                .xCoordinate(PdfBoxStyle.LR_MARGINS_OF_LETTER)
+                .yCoordinate(700f)
+                .rowHeight(20f)
+                .cellMargin(5f)
+                .contentFont(PDType1Font.TIMES_ROMAN)
+                .contentFontSize(PdfBoxStyle.TEXT_SMALL_SIZE)
+                .borderColor(Color.WHITE)
+                .columns(Arrays.asList(column1, column2))
+                .build();
+
+        pdfBoxService.addTableContent(contentStream, tableAttribute, tableContent);
     }
 }
