@@ -80,11 +80,13 @@ public class ConsentRevocationPdfGeneratorImpl implements ConsentRevocationPdfGe
 
             // Revocation signing details
             if (revokedByPatient.orElseThrow(NoDataFoundException::new)) {
+                // Consent is revoked by Patient
                 addPatientRevocationSigningDetailsTable(patient, revokedOnDateTime, contentStream);
             } else {
+                // Consent is NOT revoked by Patient
                 //Todo: Will identify different role once C2S support for multiple role.
                 String role = "Provider";
-                addNonPatientRevocationSigningDetailsTable(role, revokedByUserDto, revokedOnDateTime);
+                addNonPatientRevocationSigningDetailsTable(role, revokedByUserDto, revokedOnDateTime, defaultFont, contentStream);
             }
 
             // Make sure that the content stream is closed
@@ -186,8 +188,40 @@ public class ConsentRevocationPdfGeneratorImpl implements ConsentRevocationPdfGe
 
         List<List<String>> tableContent = Arrays.asList(firstRowContent, secondRowContent, thirdRowContent);
 
-        Column column1 = new Column(240f);
+        generateSigningDetailsTable(tableContent, contentStream);
+    }
 
+    private void addNonPatientRevocationSigningDetailsTable(String role, Optional<UserDto> revokedByUserDto, Date revokedOnDateTime, PDFont font, PDPageContentStream contentStream) throws IOException {
+        UserDto revokedUser = revokedByUserDto.orElseThrow(NoDataFoundException::new);
+        String userFullName = UserInfoHelper.getUserFullName(revokedUser);
+        String email = revokedUser.getTelecoms().stream()
+                .filter(telecomDto -> telecomDto.getSystem().equalsIgnoreCase(TELECOM_EMAIL))
+                .findAny()
+                .map(TelecomDto::getValue)
+                .orElseThrow(NoDataFoundException::new);
+        LocalDate revokedDate = revokedOnDateTime.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+
+        // Prepare table content
+        // First row
+        String a1 = "Signed by ".concat(role.substring(0, 1).toUpperCase() + role.substring(1) + ": ").concat(userFullName);
+        List<String> firstRowContent = Collections.singletonList(a1);
+
+        // Second row
+        String a2 = "Email: ".concat(email);
+        List<String> secondRowContent = Collections.singletonList(a2);
+        // Third row
+        String a3 = "Signed on: ".concat(PdfBoxHandler.formatLocalDate(revokedDate, DATE_FORMAT_PATTERN));
+        List<String> thirdRowContent = Collections.singletonList(a3);
+
+        List<List<String>> tableContent = Arrays.asList(firstRowContent, secondRowContent, thirdRowContent);
+
+        generateSigningDetailsTable(tableContent, contentStream);
+
+        generateRequestedSignatureTable(font, contentStream);
+    }
+
+    private void generateSigningDetailsTable(List<List<String>> tableContent, PDPageContentStream contentStream) throws IOException {
+        Column column = new Column(240f);
         TableAttribute tableAttribute = TableAttribute.builder()
                 .xCoordinate(PdfBoxStyle.LR_MARGINS_OF_LETTER)
                 .yCoordinate(290f)
@@ -196,12 +230,43 @@ public class ConsentRevocationPdfGeneratorImpl implements ConsentRevocationPdfGe
                 .contentFont(PDType1Font.TIMES_BOLD)
                 .contentFontSize(PdfBoxStyle.TEXT_SMALL_SIZE)
                 .borderColor(Color.WHITE)
-                .columns(Collections.singletonList(column1))
+                .columns(Collections.singletonList(column))
                 .build();
 
         pdfBoxService.addTableContent(contentStream, tableAttribute, tableContent);
     }
 
-    private void addNonPatientRevocationSigningDetailsTable(String role, Optional<UserDto> revokedByUserDto, Date attestedOnDateTime) {
+    private void generateRequestedSignatureTable(PDFont font, PDPageContentStream contentStream) throws IOException {
+        String label = "Patient/Patient Representative:";
+        pdfBoxService.addTextAtOffset(label, PDType1Font.TIMES_BOLD, PdfBoxStyle.TEXT_SMALL_SIZE, Color.BLACK,
+                PdfBoxStyle.LR_MARGINS_OF_LETTER, 200f, contentStream);
+
+        // Prepare table content
+        // First row
+        String a1 = "Signature: __________________________";
+        List<String> firstRowContent = Collections.singletonList(a1);
+
+        // Second row
+        String a2 = "Print Name: _________________________";
+        List<String> secondRowContent = Collections.singletonList(a2);
+        // Third row
+        String a3 = "Date: _______________________________";
+        List<String> thirdRowContent = Collections.singletonList(a3);
+
+        List<List<String>> tableContent = Arrays.asList(firstRowContent, secondRowContent, thirdRowContent);
+
+        Column column = new Column(240f);
+        TableAttribute tableAttribute = TableAttribute.builder()
+                .xCoordinate(PdfBoxStyle.LR_MARGINS_OF_LETTER)
+                .yCoordinate(195f)
+                .rowHeight(20f)
+                .cellMargin(1f)
+                .contentFont(font)
+                .contentFontSize(PdfBoxStyle.TEXT_SMALL_SIZE)
+                .borderColor(Color.WHITE)
+                .columns(Collections.singletonList(column))
+                .build();
+
+        pdfBoxService.addTableContent(contentStream, tableAttribute, tableContent);
     }
 }
