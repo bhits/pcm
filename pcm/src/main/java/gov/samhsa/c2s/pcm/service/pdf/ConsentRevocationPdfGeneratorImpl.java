@@ -39,7 +39,7 @@ import java.util.Optional;
 @Service
 @Slf4j
 public class ConsentRevocationPdfGeneratorImpl implements ConsentRevocationPdfGenerator {
-    public static final String TELECOM_EMAIL = "EMAIL";
+    private static final String TELECOM_EMAIL = "EMAIL";
     private static final String CONSENT_REVOCATION_PDF = "consent-revocation-pdf";
     private static final String DATE_FORMAT_PATTERN = "MMM dd, yyyy";
 

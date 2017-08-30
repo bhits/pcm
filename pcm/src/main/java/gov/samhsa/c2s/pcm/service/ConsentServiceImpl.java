@@ -164,7 +164,6 @@ public class ConsentServiceImpl implements ConsentService {
     @Transactional
     public void saveConsent(String patientId, ConsentDto consentDto, Optional<String> createdBy, Optional<Boolean> createdByPatient) {
         final Patient patient = patientRepository.saveAndGet(patientId);
-        final boolean CONSENT_SIGNED = false;
 
         final List<Provider> fromProviders = consentDto.getFromProviders().getIdentifiers().stream()
                 .map(toProvider(patient))
@@ -234,7 +233,7 @@ public class ConsentServiceImpl implements ConsentService {
 
         try {
             UserDto consentCreatorUserDto = umsService.getUserById(createdBy.orElseThrow(NoClassDefFoundError::new));
-            consent.setSavedPdf(consentPdfGenerator.generateConsentPdf(consent, patientDto, CONSENT_SIGNED, null, consentAttestationTerm.getText(), Optional.ofNullable(consentCreatorUserDto), createdByPatient));
+            consent.setSavedPdf(consentPdfGenerator.generateConsentPdf(consent, patientDto, null, consentAttestationTerm.getText(), Optional.ofNullable(consentCreatorUserDto), createdByPatient));
         } catch (IOException e) {
             log.error(e.getMessage(), e);
             throw new ConsentPdfGenerateException(e);
@@ -277,8 +276,6 @@ public class ConsentServiceImpl implements ConsentService {
         if (signTime.isAfter(consentStartDate)) {
             throw new BadRequestException();
         }
-
-        final boolean CONSENT_SIGNED = true;
 
         if (consentAttestationDto.isAcceptTerms()) {
             //get getFromProviders
@@ -353,7 +350,7 @@ public class ConsentServiceImpl implements ConsentService {
             //Generate SIGNED PDF
             try {
                 UserDto attesterUserDto = umsService.getUserById(attestedBy.orElseThrow(NoDataFoundException::new));
-                consentAttestation.setConsentAttestationPdf(consentPdfGenerator.generateConsentPdf(consent, patientDto, CONSENT_SIGNED, attestedDate, consentAttestationTerm.getText(), Optional.ofNullable(attesterUserDto), attestedByPatient));
+                consentAttestation.setConsentAttestationPdf(consentPdfGenerator.generateConsentPdf(consent, patientDto, attestedDate, consentAttestationTerm.getText(), Optional.ofNullable(attesterUserDto), attestedByPatient));
             } catch (IOException e) {
                 log.error(e.getMessage(), e);
                 throw new ConsentPdfGenerateException(e);
@@ -372,7 +369,6 @@ public class ConsentServiceImpl implements ConsentService {
     @Transactional
     public void updateConsent(String patientId, Long consentId, ConsentDto consentDto, Optional<String> lastUpdatedBy, Optional<Boolean> updatedByPatient) {
         final Patient patient = patientRepository.saveAndGet(patientId);
-        final boolean CONSENT_SIGNED = false;
 
         Consent consent = consentRepository.findOneByIdAndPatientIdAndConsentAttestationIsNullAndConsentRevocationIsNull(consentId, patientId).orElseThrow(ConsentNotFoundException::new);
 
@@ -405,7 +401,7 @@ public class ConsentServiceImpl implements ConsentService {
         //Update SAVED PDF
         try {
             UserDto updatedUserDto = umsService.getUserById(lastUpdatedBy.orElseThrow(NoDataFoundException::new));
-            consent.setSavedPdf(consentPdfGenerator.generateConsentPdf(consent, patientDto, CONSENT_SIGNED, new Date(), consentAttestationTerm.getText(), Optional.ofNullable(updatedUserDto), updatedByPatient));
+            consent.setSavedPdf(consentPdfGenerator.generateConsentPdf(consent, patientDto, new Date(), consentAttestationTerm.getText(), Optional.ofNullable(updatedUserDto), updatedByPatient));
         } catch (IOException e) {
             log.error(e.getMessage(), e);
             throw new ConsentPdfGenerateException(e);

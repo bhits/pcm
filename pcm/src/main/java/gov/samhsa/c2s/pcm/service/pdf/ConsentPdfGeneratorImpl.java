@@ -4,7 +4,9 @@ package gov.samhsa.c2s.pcm.service.pdf;
 import com.google.common.collect.ImmutableMap;
 import gov.samhsa.c2s.pcm.config.PdfProperties;
 import gov.samhsa.c2s.pcm.domain.Consent;
+import gov.samhsa.c2s.pcm.domain.valueobject.ConsentStage;
 import gov.samhsa.c2s.pcm.infrastructure.dto.PatientDto;
+import gov.samhsa.c2s.pcm.infrastructure.dto.TelecomDto;
 import gov.samhsa.c2s.pcm.infrastructure.dto.UserDto;
 import gov.samhsa.c2s.pcm.infrastructure.exception.InvalidContentException;
 import gov.samhsa.c2s.pcm.infrastructure.exception.PdfGenerateException;
@@ -13,6 +15,7 @@ import gov.samhsa.c2s.pcm.infrastructure.pdfbox.PdfBoxService;
 import gov.samhsa.c2s.pcm.infrastructure.pdfbox.TableAttribute;
 import gov.samhsa.c2s.pcm.infrastructure.pdfbox.util.PdfBoxHandler;
 import gov.samhsa.c2s.pcm.infrastructure.pdfbox.util.PdfBoxStyle;
+import gov.samhsa.c2s.pcm.service.exception.NoDataFoundException;
 import gov.samhsa.c2s.pcm.service.exception.PdfConfigMissingException;
 import gov.samhsa.c2s.pcm.service.util.UserInfoHelper;
 import lombok.extern.slf4j.Slf4j;
@@ -29,7 +32,10 @@ import org.springframework.util.Assert;
 import java.awt.*;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -39,6 +45,7 @@ import java.util.Optional;
 public class ConsentPdfGeneratorImpl implements ConsentPdfGenerator {
     private static final String DATE_FORMAT_PATTERN = "MMM dd, yyyy";
     private static final String CONSENT_PDF = "consent-pdf";
+    private static final String TELECOM_EMAIL = "EMAIL";
 
     private final PdfBoxService pdfBoxService;
     private final PdfProperties pdfProperties;
@@ -50,7 +57,7 @@ public class ConsentPdfGeneratorImpl implements ConsentPdfGenerator {
     }
 
     @Override
-    public byte[] generateConsentPdf(Consent consent, PatientDto patientProfile, boolean isSigned, Date attestedOn, String consentTerms, Optional<UserDto> attester, Optional<Boolean> operatedByPatient) throws IOException {
+    public byte[] generateConsentPdf(Consent consent, PatientDto patientProfile, Date operatedOnDateTime, String consentTerms, Optional<UserDto> operatedByUserDto, Optional<Boolean> operatedByPatient) throws IOException {
         Assert.notNull(consent, "Consent is required.");
 
         ByteArrayOutputStream pdfOutputStream = new ByteArrayOutputStream();
@@ -84,6 +91,9 @@ public class ConsentPdfGeneratorImpl implements ConsentPdfGenerator {
             addEffectiveAndExpirationDate(consent, contentStream);
 
             // Consent signing details
+            if (consent.getConsentStage().equals(ConsentStage.SIGNED)) {
+                addConsentSigningDetails(patientProfile, operatedByUserDto, operatedOnDateTime, operatedByPatient, defaultFont, contentStream);
+            }
 
             // Make sure that the content stream is closed
             contentStream.close();
@@ -211,7 +221,7 @@ public class ConsentPdfGeneratorImpl implements ConsentPdfGenerator {
         String col2 = "Expiration Date: ".concat(PdfBoxHandler.formatLocalDate(consent.getEndDate().toLocalDate(), DATE_FORMAT_PATTERN));
         List<String> firstRowContent = Arrays.asList(col1, col2);
 
-        List<List<String>> tableContent = Arrays.asList(firstRowContent);
+        List<List<String>> tableContent = Collections.singletonList(firstRowContent);
 
         // Config each column width
         Column column1 = new Column(180f);
@@ -220,13 +230,104 @@ public class ConsentPdfGeneratorImpl implements ConsentPdfGenerator {
         // Config Table attribute
         TableAttribute tableAttribute = TableAttribute.builder()
                 .xCoordinate(PdfBoxStyle.LR_MARGINS_OF_LETTER)
-                .yCoordinate(180f)
+                .yCoordinate(130f)
                 .rowHeight(20f)
                 .cellMargin(1f)
                 .contentFont(PDType1Font.TIMES_BOLD)
                 .contentFontSize(PdfBoxStyle.TEXT_SMALL_SIZE)
                 .borderColor(Color.WHITE)
                 .columns(Arrays.asList(column1, column2))
+                .build();
+
+        pdfBoxService.addTableContent(contentStream, tableAttribute, tableContent);
+    }
+
+    private void addConsentSigningDetails(PatientDto patient, Optional<UserDto> signedByUserDto, Date signedOnDateTime, Optional<Boolean> signedByPatient, PDFont defaultFont, PDPageContentStream contentStream) throws IOException {
+        // Consent signing details
+        if (signedByPatient.orElseThrow(NoDataFoundException::new)) {
+            // Consent is signed by Patient
+            addPatientSigningDetailsTable(patient, signedOnDateTime, contentStream);
+        } else {
+            // Consent is NOT signed by Patient
+            //Todo: Will identify different role once C2S support for multiple role.
+            String role = "Provider";
+            addNonPatientSigningDetailsTable(role, signedByUserDto, signedOnDateTime, defaultFont, contentStream);
+        }
+    }
+
+    private void addPatientSigningDetailsTable(PatientDto patient, Date signedOnDateTime, PDPageContentStream contentStream) throws IOException {
+        String patientName = UserInfoHelper.getFullName(patient.getFirstName(), patient.getMiddleName(), patient.getLastName());
+        String email = patient.getTelecoms().stream()
+                .filter(telecomDto -> telecomDto.getSystem().equalsIgnoreCase(TELECOM_EMAIL))
+                .findAny()
+                .map(TelecomDto::getValue)
+                .orElseThrow(NoDataFoundException::new);
+        LocalDate signedDate = signedOnDateTime.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+
+        // Prepare table content
+        // First row
+        String a1 = "Signed by: ".concat(patientName);
+        List<String> firstRowContent = Collections.singletonList(a1);
+
+        // Second row
+        String a2 = "Email: ".concat(email);
+        List<String> secondRowContent = Collections.singletonList(a2);
+        // Third row
+        String a3 = "Signed on: ".concat(PdfBoxHandler.formatLocalDate(signedDate, DATE_FORMAT_PATTERN));
+        List<String> thirdRowContent = Collections.singletonList(a3);
+
+        List<List<String>> tableContent = Arrays.asList(firstRowContent, secondRowContent, thirdRowContent);
+
+        List<Column> columns = Collections.singletonList(new Column(240f));
+        generateSigningDetailsTable(columns, tableContent, contentStream);
+    }
+
+    private void addNonPatientSigningDetailsTable(String role, Optional<UserDto> signedByUserDto, Date signedOnDateTime, PDFont font, PDPageContentStream contentStream) throws IOException {
+        UserDto signedUser = signedByUserDto.orElseThrow(NoDataFoundException::new);
+        String userFullName = UserInfoHelper.getUserFullName(signedUser);
+        String email = signedUser.getTelecoms().stream()
+                .filter(telecomDto -> telecomDto.getSystem().equalsIgnoreCase(TELECOM_EMAIL))
+                .findAny()
+                .map(TelecomDto::getValue)
+                .orElseThrow(NoDataFoundException::new);
+        LocalDate signedDate = signedOnDateTime.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+
+        // Prepare table content
+        // First row
+        String a1 = "Signed by ".concat(role.substring(0, 1).toUpperCase() + role.substring(1) + ": ").concat(userFullName);
+        String b1 = "Patient/Patient Representative:";
+        List<String> firstRowContent = Arrays.asList(a1, b1);
+
+        // Second row
+        String a2 = "Email: ".concat(email);
+        String b2 = "Signature: __________________________";
+        List<String> secondRowContent = Arrays.asList(a2, b2);
+
+        // Third row
+        String a3 = "Signed on: ".concat(PdfBoxHandler.formatLocalDate(signedDate, DATE_FORMAT_PATTERN));
+        String b3 = "Print Name: _________________________";
+        List<String> thirdRowContent = Arrays.asList(a3, b3);
+
+        // Forth row
+        String b4 = "Date: _______________________________";
+        List<String> forthRowContent = Collections.singletonList(b4);
+
+        List<List<String>> tableContent = Arrays.asList(firstRowContent, secondRowContent, thirdRowContent, forthRowContent);
+
+        List<Column> columns = Arrays.asList(new Column(286f), new Column(286f));
+        generateSigningDetailsTable(columns, tableContent, contentStream);
+    }
+
+    private void generateSigningDetailsTable(List<Column> columns, List<List<String>> tableContent, PDPageContentStream contentStream) throws IOException {
+        TableAttribute tableAttribute = TableAttribute.builder()
+                .xCoordinate(PdfBoxStyle.LR_MARGINS_OF_LETTER)
+                .yCoordinate(100f)
+                .rowHeight(20f)
+                .cellMargin(1f)
+                .contentFont(PDType1Font.TIMES_BOLD)
+                .contentFontSize(PdfBoxStyle.TEXT_SMALL_SIZE)
+                .borderColor(Color.WHITE)
+                .columns(columns)
                 .build();
 
         pdfBoxService.addTableContent(contentStream, tableAttribute, tableContent);
