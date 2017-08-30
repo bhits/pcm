@@ -8,7 +8,6 @@ import lombok.NoArgsConstructor;
 import lombok.ToString;
 import org.hibernate.envers.Audited;
 import org.hibernate.envers.NotAudited;
-import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import javax.persistence.Basic;
@@ -45,7 +44,6 @@ public class ConsentAttestation {
     @NotNull
     private Consent consent;
 
-    @CreatedDate
     private Date attestedDate;
 
     private String attestedBy;

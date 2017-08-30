@@ -50,7 +50,7 @@ public class ConsentPdfGeneratorImpl implements ConsentPdfGenerator {
     }
 
     @Override
-    public byte[] generateConsentPdf(Consent consent, PatientDto patientProfile, boolean isSigned, Date attestedOn, String consentTerms, Optional<UserDto> attester) throws IOException {
+    public byte[] generateConsentPdf(Consent consent, PatientDto patientProfile, boolean isSigned, Date attestedOn, String consentTerms, Optional<UserDto> attester, Optional<Boolean> operatedByPatient) throws IOException {
         Assert.notNull(consent, "Consent is required.");
 
         ByteArrayOutputStream pdfOutputStream = new ByteArrayOutputStream();
@@ -77,18 +77,18 @@ public class ConsentPdfGeneratorImpl implements ConsentPdfGenerator {
             addAuthorizationToDisclose(consent, page, contentStream);
             // Health information to be disclosed section
 
-            //Consent terms section
+            // Consent terms section
             addConsentTerms(consentTerms, patientProfile, defaultFont, page, contentStream);
 
             // Consent effective and expiration date
             addEffectiveAndExpirationDate(consent, contentStream);
 
-            //Signing details
+            // Consent signing details
 
             // Make sure that the content stream is closed
             contentStream.close();
 
-            //Save the document to an output stream
+            // Save the document to an output stream
             document.save(pdfOutputStream);
 
             return pdfOutputStream.toByteArray();

@@ -11,5 +11,5 @@ import java.util.Optional;
 
 public interface ConsentPdfGenerator {
 
-    byte[] generateConsentPdf(Consent consent, PatientDto patientDto, boolean isSigned, Date attestedOn, String consentTerms, Optional<UserDto> attester) throws IOException;
+    byte[] generateConsentPdf(Consent consent, PatientDto patientDto, boolean isSigned, Date attestedOn, String consentTerms, Optional<UserDto> attester, Optional<Boolean> operatedByPatient) throws IOException;
 }
