@@ -82,7 +82,9 @@ public class ConsentPdfGeneratorImpl implements ConsentPdfGenerator {
 
             // Authorization to disclose section
             addAuthorizationToDisclose(consent, page, contentStream);
+
             // Health information to be disclosed section
+            addHealthInformationToBeDisclose(consent, page, contentStream);
 
             // Consent terms section
             addConsentTerms(consentTerms, patientProfile, defaultFont, page, contentStream);
@@ -195,6 +197,48 @@ public class ConsentPdfGeneratorImpl implements ConsentPdfGenerator {
     }
 
     private void createProviderPermittedToDiscloseTable(Consent consent, PDPageContentStream contentStream) {
+    }
+
+    private void addHealthInformationToBeDisclose(Consent consent, PDPage page, PDPageContentStream contentStream) throws IOException {
+        float cardXCoordinate = PdfBoxStyle.LR_MARGINS_OF_LETTER;
+        float cardYCoordinate = 440f;
+        String title = "HEALTH INFORMATION TO BE DISCLOSED";
+        drawSectionHeader(title, cardXCoordinate, cardYCoordinate, page, contentStream);
+
+        // Medical Information
+        addMedicalInformation(consent, page, contentStream);
+
+        // Purposes of use
+        addPurposeOfUse(consent, page, contentStream);
+    }
+
+    private void addMedicalInformation(Consent consent, PDPage page, PDPageContentStream contentStream) {
+    }
+
+    private void addPurposeOfUse(Consent consent, PDPage page, PDPageContentStream contentStream) throws IOException {
+        // Prepare table content
+        // First row
+        String a1 = "To SHARE for the following purpose(s):";
+        List<String> firstRowContent = Collections.singletonList(a1);
+
+        // Second row
+        String a2 = "- Treatment";
+        List<String> secondRowContent = Collections.singletonList(a2);
+
+        List<List<String>> tableContent = Arrays.asList(firstRowContent, secondRowContent);
+
+        TableAttribute tableAttribute = TableAttribute.builder()
+                .xCoordinate(PdfBoxStyle.LR_MARGINS_OF_LETTER)
+                .yCoordinate(100f)
+                .rowHeight(20f)
+                .cellMargin(1f)
+                .contentFont(PDType1Font.TIMES_ROMAN)
+                .contentFontSize(PdfBoxStyle.TEXT_SMALL_SIZE)
+                .borderColor(Color.WHITE)
+                .columns(Collections.singletonList(new Column(286f)))
+                .build();
+
+        pdfBoxService.addTableContent(contentStream, tableAttribute, tableContent);
     }
 
     private void addConsentTerms(String consentTerms, PatientDto patientProfile, PDFont font, PDPage page, PDPageContentStream contentStream) throws IOException {
