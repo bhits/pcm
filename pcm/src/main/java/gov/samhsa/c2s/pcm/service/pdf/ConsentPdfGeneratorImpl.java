@@ -4,6 +4,8 @@ package gov.samhsa.c2s.pcm.service.pdf;
 import com.google.common.collect.ImmutableMap;
 import gov.samhsa.c2s.pcm.config.PdfProperties;
 import gov.samhsa.c2s.pcm.domain.Consent;
+import gov.samhsa.c2s.pcm.domain.Purpose;
+import gov.samhsa.c2s.pcm.domain.SensitivityCategory;
 import gov.samhsa.c2s.pcm.domain.valueobject.ConsentStage;
 import gov.samhsa.c2s.pcm.infrastructure.dto.PatientDto;
 import gov.samhsa.c2s.pcm.infrastructure.dto.TelecomDto;
@@ -39,6 +41,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -84,7 +87,7 @@ public class ConsentPdfGeneratorImpl implements ConsentPdfGenerator {
             addAuthorizationToDisclose(consent, page, contentStream);
 
             // Health information to be disclosed section
-            addHealthInformationToBeDisclose(consent, page, contentStream);
+            addHealthInformationToBeDisclose(consent, defaultFont, page, contentStream);
 
             // Consent terms section
             addConsentTerms(consentTerms, patientProfile, defaultFont, page, contentStream);
@@ -129,6 +132,10 @@ public class ConsentPdfGeneratorImpl implements ConsentPdfGenerator {
     }
 
     private void addConsentReferenceNumberAndPatientInfo(Consent consent, PatientDto patientProfile, PDPageContentStream contentStream) throws IOException {
+        final float tableYCoordinate = 700f;
+        final float rowHeight = 20f;
+        final float cellMargin = 1f;
+
         String consentReferenceNumber = consent.getConsentReferenceId();
         String patientFullName = UserInfoHelper.getFullName(patientProfile.getFirstName(), patientProfile.getMiddleName(), patientProfile.getLastName());
         String patientBirthDate = PdfBoxHandler.formatLocalDate(patientProfile.getBirthDate(), DATE_FORMAT_PATTERN);
@@ -152,9 +159,9 @@ public class ConsentPdfGeneratorImpl implements ConsentPdfGenerator {
         // Config Table attribute
         TableAttribute tableAttribute = TableAttribute.builder()
                 .xCoordinate(PdfBoxStyle.LR_MARGINS_OF_LETTER)
-                .yCoordinate(700f)
-                .rowHeight(20f)
-                .cellMargin(1f)
+                .yCoordinate(tableYCoordinate)
+                .rowHeight(rowHeight)
+                .cellMargin(cellMargin)
                 .contentFont(PDType1Font.TIMES_ROMAN)
                 .contentFontSize(PdfBoxStyle.TEXT_SMALL_SIZE)
                 .borderColor(Color.WHITE)
@@ -179,72 +186,64 @@ public class ConsentPdfGeneratorImpl implements ConsentPdfGenerator {
 
     }
 
-    private void drawSectionHeader(String title, float cardXCoordinate, float cardYCoordinate, PDPage page, PDPageContentStream contentStream) throws IOException {
-        // Set background color
-        Color color = new Color(73, 89, 105);
-        float colorBoxWidth = page.getMediaBox().getWidth() - 2 * PdfBoxStyle.LR_MARGINS_OF_LETTER;
-        float colorBoxHeight = 20f;
-        PDFont titleFont = PDType1Font.TIMES_BOLD;
-        float titleFontSize = PdfBoxStyle.TEXT_MEDIUM_SIZE;
-        Color titleColor = Color.WHITE;
-
-        pdfBoxService.addColorBox(color, cardXCoordinate, cardYCoordinate, colorBoxWidth, colorBoxHeight, page, contentStream);
-
-        float titleYCoordinate = cardYCoordinate + (colorBoxHeight / 2)
-                - ((titleFont.getFontDescriptor().getFontBoundingBox().getHeight() / 1000 * titleFontSize) / 4);
-
-        pdfBoxService.addTextAtOffset(title, titleFont, titleFontSize, titleColor, cardXCoordinate + 4f, titleYCoordinate, contentStream);
-    }
-
     private void createProviderPermittedToDiscloseTable(Consent consent, PDPageContentStream contentStream) {
     }
 
-    private void addHealthInformationToBeDisclose(Consent consent, PDPage page, PDPageContentStream contentStream) throws IOException {
+    private void addHealthInformationToBeDisclose(Consent consent, PDFont font, PDPage page, PDPageContentStream contentStream) throws IOException {
         float cardXCoordinate = PdfBoxStyle.LR_MARGINS_OF_LETTER;
         float cardYCoordinate = 440f;
+        float labelYCoordinate = 430f;
+
         String title = "HEALTH INFORMATION TO BE DISCLOSED";
         drawSectionHeader(title, cardXCoordinate, cardYCoordinate, page, contentStream);
 
         // Medical Information
-        addMedicalInformation(consent, page, contentStream);
+        addMedicalInformation(consent, labelYCoordinate, font, contentStream);
 
         // Purposes of use
-        addPurposeOfUse(consent, page, contentStream);
+        addPurposeOfUse(consent, labelYCoordinate, font, contentStream);
     }
 
-    private void addMedicalInformation(Consent consent, PDPage page, PDPageContentStream contentStream) {
+    private void addMedicalInformation(Consent consent, float labelYCoordinate, PDFont font, PDPageContentStream contentStream) throws IOException {
+        final float xCoordinate = PdfBoxStyle.LR_MARGINS_OF_LETTER;
+        final float listWidth = 286f;
+        final String itemMarkerSymbol = "-";
+        float subLabelYCoordinate = labelYCoordinate - 15f;
+        float listYCoordinate = labelYCoordinate - 20f;
+        String label = "To SHARE the following medical information:";
+        String subLabel = "Sensitivity Categories:";
+
+        pdfBoxService.addTextAtOffset(label, PDType1Font.TIMES_BOLD, PdfBoxStyle.TEXT_SMALL_SIZE, Color.BLACK, xCoordinate, labelYCoordinate, contentStream);
+        pdfBoxService.addTextAtOffset(subLabel, font, PdfBoxStyle.TEXT_SMALL_SIZE, Color.BLACK, xCoordinate, subLabelYCoordinate, contentStream);
+
+        List<String> sensitivityCategories = consent.getShareSensitivityCategories().stream()
+                .map(SensitivityCategory::getDisplay)
+                .collect(Collectors.toList());
+
+        pdfBoxService.addUnorderedListContent(sensitivityCategories, itemMarkerSymbol, xCoordinate, listYCoordinate, listWidth, font, PdfBoxStyle.TEXT_SMALL_SIZE, contentStream);
     }
 
-    private void addPurposeOfUse(Consent consent, PDPage page, PDPageContentStream contentStream) throws IOException {
-        // Prepare table content
-        // First row
-        String a1 = "To SHARE for the following purpose(s):";
-        List<String> firstRowContent = Collections.singletonList(a1);
+    private void addPurposeOfUse(Consent consent, float labelYCoordinate, PDFont font, PDPageContentStream contentStream) throws IOException {
+        final float xCoordinate = 326f;
+        final float listWidth = 280f;
+        final String itemMarkerSymbol = "-";
+        float listYCoordinate = labelYCoordinate - 5f;
+        String label = "To SHARE for the following purpose(s):";
 
-        // Second row
-        String a2 = "- Treatment";
-        List<String> secondRowContent = Collections.singletonList(a2);
+        pdfBoxService.addTextAtOffset(label, PDType1Font.TIMES_BOLD, PdfBoxStyle.TEXT_SMALL_SIZE, Color.BLACK, xCoordinate, labelYCoordinate, contentStream);
+        List<String> purposes = consent.getSharePurposes().stream()
+                .map(Purpose::getDisplay)
+                .collect(Collectors.toList());
 
-        List<List<String>> tableContent = Arrays.asList(firstRowContent, secondRowContent);
-
-        TableAttribute tableAttribute = TableAttribute.builder()
-                .xCoordinate(PdfBoxStyle.LR_MARGINS_OF_LETTER)
-                .yCoordinate(100f)
-                .rowHeight(20f)
-                .cellMargin(1f)
-                .contentFont(PDType1Font.TIMES_ROMAN)
-                .contentFontSize(PdfBoxStyle.TEXT_SMALL_SIZE)
-                .borderColor(Color.WHITE)
-                .columns(Collections.singletonList(new Column(286f)))
-                .build();
-
-        pdfBoxService.addTableContent(contentStream, tableAttribute, tableContent);
+        pdfBoxService.addUnorderedListContent(purposes, itemMarkerSymbol, xCoordinate, listYCoordinate, listWidth, font, PdfBoxStyle.TEXT_SMALL_SIZE, contentStream);
     }
 
     private void addConsentTerms(String consentTerms, PatientDto patientProfile, PDFont font, PDPage page, PDPageContentStream contentStream) throws IOException {
         float cardXCoordinate = PdfBoxStyle.LR_MARGINS_OF_LETTER;
-        float cardYCoordinate = 270f;
+        final float cardYCoordinate = 270f;
+        final float paragraphYCoordinate = 250f;
         final String title = "CONSENT TERMS";
+
         drawSectionHeader(title, cardXCoordinate, cardYCoordinate, page, contentStream);
 
         final String userNameKey = "ATTESTER_FULL_NAME";
@@ -252,7 +251,7 @@ public class ConsentPdfGeneratorImpl implements ConsentPdfGenerator {
                 ImmutableMap.of(userNameKey, UserInfoHelper.getFullName(patientProfile.getFirstName(), patientProfile.getMiddleName(), patientProfile.getLastName())));
 
         try {
-            pdfBoxService.addAutoWrapParagraphByPageWidth(termsWithAttestedName, font, PdfBoxStyle.TEXT_SMALL_SIZE, Color.BLACK, 250f, PdfBoxStyle.LR_MARGINS_OF_LETTER, page, contentStream);
+            pdfBoxService.addAutoWrapParagraphByPageWidth(termsWithAttestedName, font, PdfBoxStyle.TEXT_SMALL_SIZE, Color.BLACK, paragraphYCoordinate, PdfBoxStyle.LR_MARGINS_OF_LETTER, page, contentStream);
         } catch (Exception e) {
             log.error("Invalid character for cast specification", e);
             throw new InvalidContentException(e);
@@ -260,6 +259,11 @@ public class ConsentPdfGeneratorImpl implements ConsentPdfGenerator {
     }
 
     private void addEffectiveAndExpirationDate(Consent consent, PDPageContentStream contentStream) throws IOException {
+        final float columnWidth = 180f;
+        final float tableYCoordinate = 130f;
+        final float rowHeight = 20f;
+        final float cellMargin = 1f;
+
         // Prepare table content
         String col1 = "Effective Date: ".concat(PdfBoxHandler.formatLocalDate(consent.getStartDate().toLocalDate(), DATE_FORMAT_PATTERN));
         String col2 = "Expiration Date: ".concat(PdfBoxHandler.formatLocalDate(consent.getEndDate().toLocalDate(), DATE_FORMAT_PATTERN));
@@ -268,15 +272,15 @@ public class ConsentPdfGeneratorImpl implements ConsentPdfGenerator {
         List<List<String>> tableContent = Collections.singletonList(firstRowContent);
 
         // Config each column width
-        Column column1 = new Column(180f);
-        Column column2 = new Column(180f);
+        Column column1 = new Column(columnWidth);
+        Column column2 = new Column(columnWidth);
 
         // Config Table attribute
         TableAttribute tableAttribute = TableAttribute.builder()
                 .xCoordinate(PdfBoxStyle.LR_MARGINS_OF_LETTER)
-                .yCoordinate(130f)
-                .rowHeight(20f)
-                .cellMargin(1f)
+                .yCoordinate(tableYCoordinate)
+                .rowHeight(rowHeight)
+                .cellMargin(cellMargin)
                 .contentFont(PDType1Font.TIMES_BOLD)
                 .contentFontSize(PdfBoxStyle.TEXT_SMALL_SIZE)
                 .borderColor(Color.WHITE)
@@ -300,6 +304,8 @@ public class ConsentPdfGeneratorImpl implements ConsentPdfGenerator {
     }
 
     private void addPatientSigningDetailsTable(PatientDto patient, Date signedOnDateTime, PDPageContentStream contentStream) throws IOException {
+        final float columnWidth = 240f;
+
         String patientName = UserInfoHelper.getFullName(patient.getFirstName(), patient.getMiddleName(), patient.getLastName());
         String email = patient.getTelecoms().stream()
                 .filter(telecomDto -> telecomDto.getSystem().equalsIgnoreCase(TELECOM_EMAIL))
@@ -322,11 +328,13 @@ public class ConsentPdfGeneratorImpl implements ConsentPdfGenerator {
 
         List<List<String>> tableContent = Arrays.asList(firstRowContent, secondRowContent, thirdRowContent);
 
-        List<Column> columns = Collections.singletonList(new Column(240f));
+        List<Column> columns = Collections.singletonList(new Column(columnWidth));
         generateSigningDetailsTable(columns, tableContent, contentStream);
     }
 
     private void addNonPatientSigningDetailsTable(String role, Optional<UserDto> signedByUserDto, Date signedOnDateTime, PDFont font, PDPageContentStream contentStream) throws IOException {
+        final float columnWidth = 286f;
+
         UserDto signedUser = signedByUserDto.orElseThrow(NoDataFoundException::new);
         String userFullName = UserInfoHelper.getUserFullName(signedUser);
         String email = signedUser.getTelecoms().stream()
@@ -358,16 +366,20 @@ public class ConsentPdfGeneratorImpl implements ConsentPdfGenerator {
 
         List<List<String>> tableContent = Arrays.asList(firstRowContent, secondRowContent, thirdRowContent, forthRowContent);
 
-        List<Column> columns = Arrays.asList(new Column(286f), new Column(286f));
+        List<Column> columns = Arrays.asList(new Column(columnWidth), new Column(columnWidth));
         generateSigningDetailsTable(columns, tableContent, contentStream);
     }
 
     private void generateSigningDetailsTable(List<Column> columns, List<List<String>> tableContent, PDPageContentStream contentStream) throws IOException {
+        final float tableYCoordinate = 100f;
+        final float rowHeight = 20f;
+        final float cellMargin = 1f;
+
         TableAttribute tableAttribute = TableAttribute.builder()
                 .xCoordinate(PdfBoxStyle.LR_MARGINS_OF_LETTER)
-                .yCoordinate(100f)
-                .rowHeight(20f)
-                .cellMargin(1f)
+                .yCoordinate(tableYCoordinate)
+                .rowHeight(rowHeight)
+                .cellMargin(cellMargin)
                 .contentFont(PDType1Font.TIMES_BOLD)
                 .contentFontSize(PdfBoxStyle.TEXT_SMALL_SIZE)
                 .borderColor(Color.WHITE)
@@ -375,5 +387,22 @@ public class ConsentPdfGeneratorImpl implements ConsentPdfGenerator {
                 .build();
 
         pdfBoxService.addTableContent(contentStream, tableAttribute, tableContent);
+    }
+
+    private void drawSectionHeader(String title, float cardXCoordinate, float cardYCoordinate, PDPage page, PDPageContentStream contentStream) throws IOException {
+        // Set background color
+        Color color = new Color(73, 89, 105);
+        float colorBoxWidth = page.getMediaBox().getWidth() - 2 * PdfBoxStyle.LR_MARGINS_OF_LETTER;
+        float colorBoxHeight = 20f;
+        PDFont titleFont = PDType1Font.TIMES_BOLD;
+        float titleFontSize = PdfBoxStyle.TEXT_MEDIUM_SIZE;
+        Color titleColor = Color.WHITE;
+
+        pdfBoxService.addColorBox(color, cardXCoordinate, cardYCoordinate, colorBoxWidth, colorBoxHeight, page, contentStream);
+
+        float titleYCoordinate = cardYCoordinate + (colorBoxHeight / 2)
+                - ((titleFont.getFontDescriptor().getFontBoundingBox().getHeight() / 1000 * titleFontSize) / 4);
+
+        pdfBoxService.addTextAtOffset(title, titleFont, titleFontSize, titleColor, cardXCoordinate + 4f, titleYCoordinate, contentStream);
     }
 }
