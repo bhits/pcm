@@ -27,6 +27,8 @@ public interface PdfBoxService {
     void addTableContent(PDPageContentStream contentStream, TableAttribute tableAttribute,
                          List<List<String>> content) throws IOException;
 
+    void addUnorderedListContent(List<String> content, String itemMarkerSymbol, float xCoordinate, float yCoordinate, float cellWidth, PDFont font, float fontSize, PDPageContentStream contentStream) throws IOException;
+
     PDFont getConfiguredPdfFont(String typeOfPdf);
 
     PDRectangle getConfiguredPdfPageSize(String typeOfPdf);

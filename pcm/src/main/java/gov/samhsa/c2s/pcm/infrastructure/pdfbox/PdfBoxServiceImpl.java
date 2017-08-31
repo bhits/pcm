@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 import java.awt.*;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -50,6 +51,9 @@ public class PdfBoxServiceImpl implements PdfBoxService {
         contentStream.newLineAtOffset(xCoordinate, yCoordinate);
         contentStream.showText(text);
         contentStream.endText();
+
+        // Reset changed color
+        resetChangedColorToDefault(contentStream);
     }
 
     @Override
@@ -81,6 +85,9 @@ public class PdfBoxServiceImpl implements PdfBoxService {
             contentStream.newLineAtOffset(0, -lineSpacing);
         }
         contentStream.endText();
+
+        // Reset changed color
+        resetChangedColorToDefault(contentStream);
     }
 
     @Override
@@ -88,6 +95,9 @@ public class PdfBoxServiceImpl implements PdfBoxService {
         contents.setNonStrokingColor(color);
         contents.addRect(page.getMediaBox().getLowerLeftX() + xCoordinate, page.getMediaBox().getLowerLeftY() + yCoordinate, width, height);
         contents.fill();
+
+        // Reset changed color
+        resetChangedColorToDefault(contents);
     }
 
     @Override
@@ -101,6 +111,30 @@ public class PdfBoxServiceImpl implements PdfBoxService {
 
         // Fill the content to table
         fillTextToTable(contentStream, tableAttribute, tableContent);
+    }
+
+    @Override
+    public void addUnorderedListContent(List<String> content, String itemMarkerSymbol, float xCoordinate, float yCoordinate, float cellWidth, PDFont font, float fontSize, PDPageContentStream contentStream) throws IOException {
+        final float rowHeight = 20f;
+        final float cellMargin = 1f;
+        List<List<String>> tableContent = new ArrayList<>();
+
+        for (String itemText : content) {
+            tableContent.add(Collections.singletonList(itemMarkerSymbol.concat(" " + itemText)));
+        }
+
+        TableAttribute tableAttribute = TableAttribute.builder()
+                .xCoordinate(xCoordinate)
+                .yCoordinate(yCoordinate)
+                .rowHeight(rowHeight)
+                .cellMargin(cellMargin)
+                .contentFont(font)
+                .contentFontSize(fontSize)
+                .borderColor(Color.WHITE)
+                .columns(Collections.singletonList(new Column(cellWidth)))
+                .build();
+
+        addTableContent(contentStream, tableAttribute, tableContent);
     }
 
     /**
@@ -242,6 +276,10 @@ public class PdfBoxServiceImpl implements PdfBoxService {
             }
         }
         return lines;
+    }
+
+    private void resetChangedColorToDefault(PDPageContentStream contentStream) throws IOException {
+        contentStream.setNonStrokingColor(Color.BLACK);
     }
 
     //TODO: Verify TableAttribute Valid
