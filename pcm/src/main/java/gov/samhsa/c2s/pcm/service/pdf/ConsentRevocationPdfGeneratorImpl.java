@@ -11,7 +11,7 @@ import gov.samhsa.c2s.pcm.infrastructure.pdfbox.Column;
 import gov.samhsa.c2s.pcm.infrastructure.pdfbox.PdfBoxService;
 import gov.samhsa.c2s.pcm.infrastructure.pdfbox.TableAttribute;
 import gov.samhsa.c2s.pcm.infrastructure.pdfbox.util.PdfBoxHandler;
-import gov.samhsa.c2s.pcm.infrastructure.pdfbox.util.PdfBoxStyle;
+import gov.samhsa.c2s.pcm.infrastructure.pdfbox.PdfBoxStyle;
 import gov.samhsa.c2s.pcm.service.exception.NoDataFoundException;
 import gov.samhsa.c2s.pcm.service.exception.PdfConfigMissingException;
 import gov.samhsa.c2s.pcm.service.util.UserInfoHelper;
@@ -225,7 +225,7 @@ public class ConsentRevocationPdfGeneratorImpl implements ConsentRevocationPdfGe
         TableAttribute tableAttribute = TableAttribute.builder()
                 .xCoordinate(PdfBoxStyle.LR_MARGINS_OF_LETTER)
                 .yCoordinate(290f)
-                .rowHeight(20f)
+                .rowHeight(PdfBoxStyle.DEFAULT_TABLE_ROW_HEIGHT)
                 .cellMargin(1f)
                 .contentFont(PDType1Font.TIMES_BOLD)
                 .contentFontSize(PdfBoxStyle.TEXT_SMALL_SIZE)
@@ -259,7 +259,7 @@ public class ConsentRevocationPdfGeneratorImpl implements ConsentRevocationPdfGe
         TableAttribute tableAttribute = TableAttribute.builder()
                 .xCoordinate(PdfBoxStyle.LR_MARGINS_OF_LETTER)
                 .yCoordinate(195f)
-                .rowHeight(20f)
+                .rowHeight(PdfBoxStyle.DEFAULT_TABLE_ROW_HEIGHT)
                 .cellMargin(1f)
                 .contentFont(font)
                 .contentFontSize(PdfBoxStyle.TEXT_SMALL_SIZE)

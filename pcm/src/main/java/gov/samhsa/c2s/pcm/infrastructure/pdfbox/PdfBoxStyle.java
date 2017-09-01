@@ -1,4 +1,4 @@
-package gov.samhsa.c2s.pcm.infrastructure.pdfbox.util;
+package gov.samhsa.c2s.pcm.infrastructure.pdfbox;
 
 public class PdfBoxStyle {
     public static final float LR_MARGINS_OF_LETTER = 40f;
@@ -7,4 +7,8 @@ public class PdfBoxStyle {
     public static final float TEXT_SMALL_SIZE = 12f;
     public static final float TEXT_MEDIUM_SIZE = 14f;
     public static final float TEXT_LARGE_SIZE = 16f;
+    public static final float SMALL_LINE_SPACE = 5f;
+    public static final float MEDIUM_LINE_SPACE = 10f;
+    public static final float LARGE_LINE_SPACE = 15f;
+    public static final float XLARGE_LINE_SPACE = 20f;
 }

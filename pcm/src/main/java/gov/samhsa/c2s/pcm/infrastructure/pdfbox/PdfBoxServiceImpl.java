@@ -3,7 +3,6 @@ package gov.samhsa.c2s.pcm.infrastructure.pdfbox;
 import gov.samhsa.c2s.pcm.config.PdfProperties;
 import gov.samhsa.c2s.pcm.infrastructure.exception.InvalidTableAttributeException;
 import gov.samhsa.c2s.pcm.infrastructure.pdfbox.util.PdfBoxHandler;
-import gov.samhsa.c2s.pcm.infrastructure.pdfbox.util.PdfBoxStyle;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
