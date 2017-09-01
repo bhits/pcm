@@ -84,7 +84,7 @@ public class ConsentPdfGeneratorImpl implements ConsentPdfGenerator {
             final float healthInformationSectionStartYCoordinate = 455f;
             final float consentTermsSectionStartYCoordinate = 270f;
             final float consentEffectiveDateSectionStartYCoordinate = 130f;
-            final float consentConsentSigningSectionStartYCoordinate = 100f;
+            final float consentSigningSectionStartYCoordinate = 100f;
 
             // Title
             addConsentTitle(titleSectionStartYCoordinate, page, contentStream);
@@ -106,7 +106,7 @@ public class ConsentPdfGeneratorImpl implements ConsentPdfGenerator {
 
             // Consent signing details
             if (consent.getConsentStage().equals(ConsentStage.SIGNED)) {
-                addConsentSigningDetails(patientProfile, operatedByUserDto, operatedOnDateTime, operatedByPatient, consentConsentSigningSectionStartYCoordinate, defaultFont, contentStream);
+                addConsentSigningDetails(patientProfile, operatedByUserDto, operatedOnDateTime, operatedByPatient, consentSigningSectionStartYCoordinate, defaultFont, contentStream);
             }
 
             // Make sure that the content stream is closed
