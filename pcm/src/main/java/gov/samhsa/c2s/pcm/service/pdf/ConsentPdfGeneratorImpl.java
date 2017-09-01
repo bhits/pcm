@@ -84,7 +84,7 @@ public class ConsentPdfGeneratorImpl implements ConsentPdfGenerator {
             addConsentReferenceNumberAndPatientInfo(consent, patientProfile, contentStream);
 
             // Authorization to disclose section
-            addAuthorizationToDisclose(consent, page, contentStream);
+            addAuthorizationToDisclose(consent, defaultFont, page, contentStream);
 
             // Health information to be disclosed section
             addHealthInformationToBeDisclose(consent, defaultFont, page, contentStream);
@@ -132,7 +132,7 @@ public class ConsentPdfGeneratorImpl implements ConsentPdfGenerator {
     }
 
     private void addConsentReferenceNumberAndPatientInfo(Consent consent, PatientDto patientProfile, PDPageContentStream contentStream) throws IOException {
-        final float tableYCoordinate = 700f;
+        final float tableYCoordinate = 710f;
         final float rowHeight = 20f;
         final float cellMargin = 1f;
 
@@ -171,28 +171,72 @@ public class ConsentPdfGeneratorImpl implements ConsentPdfGenerator {
         pdfBoxService.addTableContent(contentStream, tableAttribute, tableContent);
     }
 
-    private void addAuthorizationToDisclose(Consent consent, PDPage page, PDPageContentStream contentStream) throws IOException {
-        float cardXCoordinate = PdfBoxStyle.LR_MARGINS_OF_LETTER;
-        float cardYCoordinate = 630f;
+    private void addAuthorizationToDisclose(Consent consent, PDFont font, PDPage page, PDPageContentStream contentStream) throws IOException {
+        final float cardXCoordinate = PdfBoxStyle.LR_MARGINS_OF_LETTER;
+        final float cardYCoordinate = 640f;
+        final float colAWidth = 180f;
+        final float colBWidth = 100f;
+        final float colCWidth = 180f;
+        final float colDWidth = 100f;
         String title = "AUTHORIZATION TO DISCLOSE";
         drawSectionHeader(title, cardXCoordinate, cardYCoordinate, page, contentStream);
 
-        // Authorizes label
-        pdfBoxService.addTextAtOffset("Authorizes:", PDType1Font.TIMES_ROMAN, PdfBoxStyle.TEXT_MEDIUM_SIZE, Color.BLACK, PdfBoxStyle.LR_MARGINS_OF_LETTER, 610f, contentStream);
-        // From providers table
-        createProviderPermittedToDiscloseTable(consent, contentStream);
-        // Disclose label
-        pdfBoxService.addTextAtOffset("To disclose to:", PDType1Font.TIMES_ROMAN, PdfBoxStyle.TEXT_MEDIUM_SIZE, Color.BLACK, PdfBoxStyle.LR_MARGINS_OF_LETTER, 530f, contentStream);
+        List<Column> tableColumns = Arrays.asList(new Column(colAWidth), new Column(colBWidth), new Column(colCWidth), new Column(colDWidth));
 
+        // Provider permitted to disclose
+        addProviderPermittedToDisclose(consent, tableColumns, font, contentStream);
+
+        // Provider disclosure is made to
+        addProviderDisclosureIsMadeTo(consent, tableColumns, font, contentStream);
     }
 
-    private void createProviderPermittedToDiscloseTable(Consent consent, PDPageContentStream contentStream) {
+    private void addProviderPermittedToDisclose(Consent consent, List<Column> tableColumns, PDFont font, PDPageContentStream contentStream) throws IOException {
+        final float xCoordinate = PdfBoxStyle.LR_MARGINS_OF_LETTER;
+        final float labelYCoordinate = 620f;
+        final float headerYCoordinate = 610f;
+        String label = "Authorizes:";
+        pdfBoxService.addTextAtOffset(label, PDType1Font.TIMES_BOLD, PdfBoxStyle.TEXT_MEDIUM_SIZE, Color.BLACK, xCoordinate, labelYCoordinate, contentStream);
+        addAuthorizationTableHeader(headerYCoordinate, tableColumns, font, contentStream);
+    }
+
+    private void addProviderDisclosureIsMadeTo(Consent consent, List<Column> tableColumns, PDFont font, PDPageContentStream contentStream) throws IOException {
+        final float xCoordinate = PdfBoxStyle.LR_MARGINS_OF_LETTER;
+        final float labelYCoordinate = 540f;
+        final float headerYCoordinate = 530f;
+        String label = "To disclose to:";
+        pdfBoxService.addTextAtOffset(label, PDType1Font.TIMES_BOLD, PdfBoxStyle.TEXT_MEDIUM_SIZE, Color.BLACK, xCoordinate, labelYCoordinate, contentStream);
+        addAuthorizationTableHeader(headerYCoordinate, tableColumns, font, contentStream);
+    }
+
+    private void addAuthorizationTableHeader(float headerYCoordinate, List<Column> columnsWidth, PDFont font, PDPageContentStream contentStream) throws IOException {
+        final float rowHeight = 15f;
+        final float cellMargin = 1f;
+        // Provider table header
+        String a1 = "Provider Name";
+        String b1 = "NPI Number";
+        String c1 = "Address";
+        String d1 = "Phone";
+        List<String> tableHeader = Arrays.asList(a1, b1, c1, d1);
+        List<List<String>> header = Collections.singletonList(tableHeader);
+
+        TableAttribute tableAttribute = TableAttribute.builder()
+                .xCoordinate(PdfBoxStyle.LR_MARGINS_OF_LETTER)
+                .yCoordinate(headerYCoordinate)
+                .rowHeight(rowHeight)
+                .cellMargin(cellMargin)
+                .contentFont(font)
+                .contentFontSize(PdfBoxStyle.TEXT_SMALL_SIZE)
+                .borderColor(Color.WHITE)
+                .columns(columnsWidth)
+                .build();
+
+        pdfBoxService.addTableContent(contentStream, tableAttribute, header);
     }
 
     private void addHealthInformationToBeDisclose(Consent consent, PDFont font, PDPage page, PDPageContentStream contentStream) throws IOException {
         float cardXCoordinate = PdfBoxStyle.LR_MARGINS_OF_LETTER;
-        float cardYCoordinate = 440f;
-        float labelYCoordinate = 430f;
+        float cardYCoordinate = 455f;
+        float labelYCoordinate = 435f;
 
         String title = "HEALTH INFORMATION TO BE DISCLOSED";
         drawSectionHeader(title, cardXCoordinate, cardYCoordinate, page, contentStream);
