@@ -4,6 +4,9 @@ package gov.samhsa.c2s.pcm.service.pdf;
 import com.google.common.collect.ImmutableMap;
 import gov.samhsa.c2s.pcm.config.PdfProperties;
 import gov.samhsa.c2s.pcm.domain.Consent;
+import gov.samhsa.c2s.pcm.domain.ConsentAttestation;
+import gov.samhsa.c2s.pcm.domain.Organization;
+import gov.samhsa.c2s.pcm.domain.Practitioner;
 import gov.samhsa.c2s.pcm.domain.Purpose;
 import gov.samhsa.c2s.pcm.domain.SensitivityCategory;
 import gov.samhsa.c2s.pcm.domain.valueobject.ConsentStage;
@@ -204,6 +207,22 @@ public class ConsentPdfGeneratorImpl implements ConsentPdfGenerator {
         String label = "Authorizes:";
         pdfBoxService.addTextAtOffset(label, PDType1Font.TIMES_BOLD, PdfBoxStyle.TEXT_MEDIUM_SIZE, Color.BLACK, xCoordinate, startYCoordinate, contentStream);
         addAuthorizationTableHeader(headerYCoordinate, tableColumns, font, contentStream);
+
+        // From providers details
+        Optional.ofNullable(consent.getConsentAttestation());
+    }
+
+    private void addFromProvidersDetails(ConsentAttestation consentAttestation,float startYCoordinate, PDFont font) {
+        List<Practitioner> fromPractitioners = consentAttestation.getFromPractitioners();
+        List<Organization> fromOrganizations = consentAttestation.getFromOrganizations();
+
+        for (Practitioner fromPractitioner : fromPractitioners) {
+        }
+    }
+
+    private void drawProviderDetails(String providerInfo, float startYCoordinate, PDFont font) {
+        final float fontSize = PdfBoxStyle.TEXT_SMALL_SIZE;
+        final Color fontColor = Color.BLACK;
     }
 
     private void addProviderDisclosureIsMadeTo(Consent consent, List<Column> tableColumns, float startYCoordinate, PDFont font, PDPageContentStream contentStream) throws IOException {
@@ -212,6 +231,8 @@ public class ConsentPdfGeneratorImpl implements ConsentPdfGenerator {
         String label = "To disclose to:";
         pdfBoxService.addTextAtOffset(label, PDType1Font.TIMES_BOLD, PdfBoxStyle.TEXT_MEDIUM_SIZE, Color.BLACK, xCoordinate, startYCoordinate, contentStream);
         addAuthorizationTableHeader(headerYCoordinate, tableColumns, font, contentStream);
+
+        // From providers details
     }
 
     private void addAuthorizationTableHeader(float headerYCoordinate, List<Column> columnsWidth, PDFont font, PDPageContentStream contentStream) throws IOException {

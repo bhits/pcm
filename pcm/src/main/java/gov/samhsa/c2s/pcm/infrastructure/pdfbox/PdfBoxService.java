@@ -19,6 +19,9 @@ public interface PdfBoxService {
     void addCenteredTextAtOffset(String text, PDFont font, float fontSize, Color textColor, float yCoordinate,
                                  PDPage page, PDPageContentStream contentStream) throws IOException;
 
+    void addWrappedParagraph(String text, PDFont font, float fontSize, Color textColor, TextAlignment align, float xCoordinate, float topYCoordinate,
+                             float width, PDPage page, PDPageContentStream contentStream) throws IOException;
+
     void addAutoWrapParagraphByPageWidth(String content, PDFont font, float fontSize, Color textColor, float yCoordinate, float leftRightMargin,
                                          PDPage page, PDPageContentStream contentStream) throws IOException;
 

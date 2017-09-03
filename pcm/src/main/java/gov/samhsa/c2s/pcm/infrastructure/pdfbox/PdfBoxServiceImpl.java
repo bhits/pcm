@@ -67,6 +67,32 @@ public class PdfBoxServiceImpl implements PdfBoxService {
     }
 
     @Override
+    public void addWrappedParagraph(String text, PDFont font, float fontSize, Color textColor, TextAlignment align, float xCoordinate, float topYCoordinate,
+                                    float width, PDPage page, PDPageContentStream contentStream) throws IOException {
+        Paragraph paragraph = new Paragraph(text, width, font, fontSize);
+
+        final float lineSpacing = 1.2f * fontSize;
+        PDRectangle region = page.getMediaBox();
+
+        contentStream.beginText();
+        contentStream.setFont(font, fontSize);
+        contentStream.setNonStrokingColor(textColor);
+        for (String line : paragraph.getLines()) {
+            if (align == TextAlignment.CENTER) {
+                float stringWidth = PdfBoxHandler.targetedStringWidth(line, font, fontSize);
+                float centerXPos = (region.getWidth() - stringWidth) / 2f;
+                contentStream.setTextTranslation(centerXPos, region.getHeight() - topYCoordinate);
+            } else {
+                contentStream.setTextTranslation(xCoordinate, region.getHeight() - topYCoordinate);
+            }
+            contentStream.showText(line);
+            topYCoordinate += lineSpacing;
+        }
+        contentStream.endText();
+        resetChangedColorToDefault(contentStream);
+    }
+
+    @Override
     public void addAutoWrapParagraphByPageWidth(String content, PDFont font, float fontSize, Color textColor, float yCoordinate, float leftRightMargin,
                                                 PDPage page, PDPageContentStream contentStream) throws IOException {
         final float lineSpacing = 1.4f * fontSize;
