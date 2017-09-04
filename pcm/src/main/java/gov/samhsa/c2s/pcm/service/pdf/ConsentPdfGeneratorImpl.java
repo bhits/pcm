@@ -4,12 +4,15 @@ package gov.samhsa.c2s.pcm.service.pdf;
 import com.google.common.collect.ImmutableMap;
 import gov.samhsa.c2s.pcm.config.PdfProperties;
 import gov.samhsa.c2s.pcm.domain.Consent;
-import gov.samhsa.c2s.pcm.domain.ConsentAttestation;
 import gov.samhsa.c2s.pcm.domain.Organization;
 import gov.samhsa.c2s.pcm.domain.Practitioner;
+import gov.samhsa.c2s.pcm.domain.Provider;
 import gov.samhsa.c2s.pcm.domain.Purpose;
 import gov.samhsa.c2s.pcm.domain.SensitivityCategory;
+import gov.samhsa.c2s.pcm.domain.valueobject.Address;
 import gov.samhsa.c2s.pcm.domain.valueobject.ConsentStage;
+import gov.samhsa.c2s.pcm.infrastructure.PlsService;
+import gov.samhsa.c2s.pcm.infrastructure.dto.FlattenedSmallProviderDto;
 import gov.samhsa.c2s.pcm.infrastructure.dto.PatientDto;
 import gov.samhsa.c2s.pcm.infrastructure.dto.TelecomDto;
 import gov.samhsa.c2s.pcm.infrastructure.dto.UserDto;
@@ -19,7 +22,9 @@ import gov.samhsa.c2s.pcm.infrastructure.pdfbox.Column;
 import gov.samhsa.c2s.pcm.infrastructure.pdfbox.PdfBoxService;
 import gov.samhsa.c2s.pcm.infrastructure.pdfbox.PdfBoxStyle;
 import gov.samhsa.c2s.pcm.infrastructure.pdfbox.TableAttribute;
+import gov.samhsa.c2s.pcm.infrastructure.pdfbox.TextAlignment;
 import gov.samhsa.c2s.pcm.infrastructure.pdfbox.util.PdfBoxHandler;
+import gov.samhsa.c2s.pcm.service.dto.AbstractProviderDto;
 import gov.samhsa.c2s.pcm.service.exception.NoDataFoundException;
 import gov.samhsa.c2s.pcm.service.exception.PdfConfigMissingException;
 import gov.samhsa.c2s.pcm.service.util.UserInfoHelper;
@@ -55,11 +60,13 @@ public class ConsentPdfGeneratorImpl implements ConsentPdfGenerator {
 
     private final PdfBoxService pdfBoxService;
     private final PdfProperties pdfProperties;
+    private final PlsService plsService;
 
     @Autowired
-    public ConsentPdfGeneratorImpl(PdfBoxService pdfBoxService, PdfProperties pdfProperties) {
+    public ConsentPdfGeneratorImpl(PdfBoxService pdfBoxService, PdfProperties pdfProperties, PlsService plsService) {
         this.pdfBoxService = pdfBoxService;
         this.pdfProperties = pdfProperties;
+        this.plsService = plsService;
     }
 
     @Override
@@ -184,9 +191,9 @@ public class ConsentPdfGeneratorImpl implements ConsentPdfGenerator {
     private void addAuthorizationToDisclose(Consent consent, float startYCoordinate, PDFont font, PDPage page, PDPageContentStream contentStream) throws IOException {
         final float cardXCoordinate = PdfBoxStyle.LR_MARGINS_OF_LETTER;
         final float colAWidth = 180f;
-        final float colBWidth = 100f;
-        final float colCWidth = 180f;
-        final float colDWidth = 100f;
+        final float colBWidth = 90f;
+        final float colCWidth = 200f;
+        final float colDWidth = 90f;
         String title = "AUTHORIZATION TO DISCLOSE";
         drawSectionHeader(title, cardXCoordinate, startYCoordinate, page, contentStream);
 
@@ -194,48 +201,126 @@ public class ConsentPdfGeneratorImpl implements ConsentPdfGenerator {
 
         // Provider permitted to disclose
         float providerPermittedStartYCoordinate = startYCoordinate - PdfBoxStyle.XLARGE_LINE_SPACE;
-        addProviderPermittedToDisclose(consent, tableColumns, providerPermittedStartYCoordinate, font, contentStream);
+        addProviderPermittedToDisclose(consent, tableColumns, providerPermittedStartYCoordinate, font, page, contentStream);
 
         // Provider disclosure is made to
-        float providerDisclosureIsMadeToStartYCoordinate = 540f;
-        addProviderDisclosureIsMadeTo(consent, tableColumns, providerDisclosureIsMadeToStartYCoordinate, font, contentStream);
+        float providerDisclosureIsMadeToStartYCoordinate = 535f;
+        addProviderDisclosureIsMadeTo(consent, tableColumns, providerDisclosureIsMadeToStartYCoordinate, font, page, contentStream);
     }
 
-    private void addProviderPermittedToDisclose(Consent consent, List<Column> tableColumns, float startYCoordinate, PDFont font, PDPageContentStream contentStream) throws IOException {
-        final float xCoordinate = PdfBoxStyle.LR_MARGINS_OF_LETTER;
-        final float headerYCoordinate = startYCoordinate - PdfBoxStyle.MEDIUM_LINE_SPACE;
+    private void addProviderPermittedToDisclose(Consent consent, List<Column> tableColumns, float startYCoordinate, PDFont font, PDPage page, PDPageContentStream contentStream) throws IOException {
         String label = "Authorizes:";
-        pdfBoxService.addTextAtOffset(label, PDType1Font.TIMES_BOLD, PdfBoxStyle.TEXT_MEDIUM_SIZE, Color.BLACK, xCoordinate, startYCoordinate, contentStream);
-        addAuthorizationTableHeader(headerYCoordinate, tableColumns, font, contentStream);
+        addAuthorizationTableHeader(label, startYCoordinate, tableColumns, font, contentStream);
 
         // From providers details
-        Optional.ofNullable(consent.getConsentAttestation());
-    }
-
-    private void addFromProvidersDetails(ConsentAttestation consentAttestation,float startYCoordinate, PDFont font) {
-        List<Practitioner> fromPractitioners = consentAttestation.getFromPractitioners();
-        List<Organization> fromOrganizations = consentAttestation.getFromOrganizations();
-
-        for (Practitioner fromPractitioner : fromPractitioners) {
+        final float fromProviderDetailsYCoordinate = 207f;
+        if (consent.getConsentStage().equals(ConsentStage.SIGNED)) {
+//            addSignedConsentProvidersDetails(fromProviders, tableColumns, fromProviderDetailsYCoordinate, page, contentStream);
+        } else {
+            List<Provider> fromProviders = consent.getFromProviders();
+            addSavedConsentProvidersDetails(fromProviders, tableColumns, fromProviderDetailsYCoordinate, page, contentStream);
         }
     }
 
-    private void drawProviderDetails(String providerInfo, float startYCoordinate, PDFont font) {
-        final float fontSize = PdfBoxStyle.TEXT_SMALL_SIZE;
-        final Color fontColor = Color.BLACK;
-    }
-
-    private void addProviderDisclosureIsMadeTo(Consent consent, List<Column> tableColumns, float startYCoordinate, PDFont font, PDPageContentStream contentStream) throws IOException {
-        final float xCoordinate = PdfBoxStyle.LR_MARGINS_OF_LETTER;
-        final float headerYCoordinate = startYCoordinate - PdfBoxStyle.MEDIUM_LINE_SPACE;
+    private void addProviderDisclosureIsMadeTo(Consent consent, List<Column> tableColumns, float startYCoordinate, PDFont font, PDPage page, PDPageContentStream contentStream) throws IOException {
         String label = "To disclose to:";
-        pdfBoxService.addTextAtOffset(label, PDType1Font.TIMES_BOLD, PdfBoxStyle.TEXT_MEDIUM_SIZE, Color.BLACK, xCoordinate, startYCoordinate, contentStream);
-        addAuthorizationTableHeader(headerYCoordinate, tableColumns, font, contentStream);
+        addAuthorizationTableHeader(label, startYCoordinate, tableColumns, font, contentStream);
 
-        // From providers details
+        // To providers details
+        final float toProviderDetailsYCoordinate = 292f;
+        if (consent.getConsentStage().equals(ConsentStage.SIGNED)) {
+//            addSignedConsentProvidersDetails(toProviders, tableColumns, toProviderDetailsYCoordinate, page, contentStream);
+        } else {
+            List<Provider> toProviders = consent.getToProviders();
+            addSavedConsentProvidersDetails(toProviders, tableColumns, toProviderDetailsYCoordinate, page, contentStream);
+        }
     }
 
-    private void addAuthorizationTableHeader(float headerYCoordinate, List<Column> columnsWidth, PDFont font, PDPageContentStream contentStream) throws IOException {
+    private void addSavedConsentProvidersDetails(List<Provider> providers, List<Column> columns, float providerDetailsYCoordinate, PDPage page, PDPageContentStream contentStream) throws IOException {
+        List<FlattenedSmallProviderDto> fromProviders = providers.stream()
+                .map(provider -> plsService.getFlattenedSmallProvider(provider.getIdentifier().getValue(), PlsService.Projection.FLATTEN_SMALL_PROVIDER))
+                .collect(Collectors.toList());
+
+        float providerNameColWidth = columns.get(0).getCellWidth();
+        float providerNPIColWidth = columns.get(1).getCellWidth();
+        float providerAddressColWidth = columns.get(2).getCellWidth();
+        float providerPhoneColWidth = columns.get(3).getCellWidth();
+
+        for (FlattenedSmallProviderDto fromProvider : fromProviders) {
+            // Provider Name
+            drawProviderDetails(determineProviderName(fromProvider), PdfBoxStyle.LR_MARGINS_OF_LETTER,
+                    providerDetailsYCoordinate, providerNameColWidth, page, contentStream);
+            // Provider NPI Number
+            drawProviderDetails(fromProvider.getNpi(), PdfBoxStyle.LR_MARGINS_OF_LETTER + providerNameColWidth,
+                    providerDetailsYCoordinate, providerNPIColWidth, page, contentStream);
+            // Provider Address
+            drawProviderDetails(composeAddress(fromProvider), PdfBoxStyle.LR_MARGINS_OF_LETTER + providerNameColWidth + providerNPIColWidth,
+                    providerDetailsYCoordinate, providerAddressColWidth, page, contentStream);
+            // Provider Phone
+            drawProviderDetails(fromProvider.getPracticeLocationAddressTelephoneNumber(), PdfBoxStyle.LR_MARGINS_OF_LETTER + providerNameColWidth + providerNPIColWidth + providerAddressColWidth,
+                    providerDetailsYCoordinate, providerPhoneColWidth, page, contentStream);
+        }
+    }
+
+    private void addSignedConsentProvidersDetails(List<AbstractProviderDto> fromProviders, List<Column> columns, float startYCoordinate, PDPage page, PDPageContentStream contentStream) throws IOException {
+        List<Practitioner> fromPractitioners = fromProviders.stream()
+                .filter(providerDto -> providerDto.getProviderType().equals(AbstractProviderDto.ProviderType.PRACTITIONER))
+                .map(Practitioner.class::cast)
+                .collect(Collectors.toList());
+        List<Organization> fromOrganizations = fromProviders.stream()
+                .filter(providerDto -> providerDto.getProviderType().equals(AbstractProviderDto.ProviderType.ORGANIZATION))
+                .map(Organization.class::cast)
+                .collect(Collectors.toList());
+
+        float providerNameColWidth = columns.get(0).getCellWidth();
+        float providerNPIColWidth = columns.get(1).getCellWidth();
+        float providerAddressColWidth = columns.get(2).getCellWidth();
+        float providerPhoneColWidth = columns.get(3).getCellWidth();
+
+        for (Practitioner fromPractitioner : fromPractitioners) {
+            // Provider Name
+            drawProviderDetails(UserInfoHelper.getFullName(fromPractitioner.getFirstName(),
+                    fromPractitioner.getMiddleName(), fromPractitioner.getLastName()), PdfBoxStyle.LR_MARGINS_OF_LETTER,
+                    startYCoordinate, providerNameColWidth, page, contentStream);
+            // Provider NPI Number
+            drawProviderDetails(fromPractitioner.getProvider().getIdentifier().getValue(), PdfBoxStyle.LR_MARGINS_OF_LETTER + providerNameColWidth,
+                    startYCoordinate, providerNPIColWidth, page, contentStream);
+            // Provider Address
+            drawProviderDetails(composeAddress(fromPractitioner.getAddress()), PdfBoxStyle.LR_MARGINS_OF_LETTER + providerNameColWidth + providerNPIColWidth,
+                    startYCoordinate, providerAddressColWidth, page, contentStream);
+            // Provider Phone
+            drawProviderDetails(fromPractitioner.getPhoneNumber(), PdfBoxStyle.LR_MARGINS_OF_LETTER + providerNameColWidth + providerNPIColWidth + providerAddressColWidth,
+                    startYCoordinate, providerPhoneColWidth, page, contentStream);
+        }
+
+        for (Organization fromOrganization : fromOrganizations) {
+            // Provider Name
+            drawProviderDetails(fromOrganization.getName(), PdfBoxStyle.LR_MARGINS_OF_LETTER,
+                    startYCoordinate, providerNameColWidth, page, contentStream);
+            // Provider NPI Number
+            drawProviderDetails(fromOrganization.getProvider().getIdentifier().getValue(), PdfBoxStyle.LR_MARGINS_OF_LETTER + providerNameColWidth,
+                    startYCoordinate, providerNPIColWidth, page, contentStream);
+            // Provider Address
+            drawProviderDetails(composeAddress(fromOrganization.getAddress()), PdfBoxStyle.LR_MARGINS_OF_LETTER + providerNameColWidth + providerNPIColWidth,
+                    startYCoordinate, providerAddressColWidth, page, contentStream);
+            // Provider Phone
+            drawProviderDetails(fromOrganization.getPhoneNumber(), PdfBoxStyle.LR_MARGINS_OF_LETTER + providerNameColWidth + providerNPIColWidth + providerAddressColWidth,
+                    startYCoordinate, providerPhoneColWidth, page, contentStream);
+        }
+    }
+
+    private void drawProviderDetails(String providerInfo, float startXCoordinate, float startYCoordinate, float width, PDPage page, PDPageContentStream contentStream) throws IOException {
+        final PDFont font = PDType1Font.TIMES_BOLD;
+        final float fontSize = PdfBoxStyle.TEXT_SMALL_SIZE;
+        final Color textColor = Color.BLACK;
+        pdfBoxService.addWrappedParagraph(providerInfo, font, fontSize, textColor, TextAlignment.LEFT, startXCoordinate, startYCoordinate, width, page, contentStream);
+    }
+
+    private void addAuthorizationTableHeader(String label, float labelYCoordinate, List<Column> columnsWidth, PDFont font, PDPageContentStream contentStream) throws IOException {
+        final float xCoordinate = PdfBoxStyle.LR_MARGINS_OF_LETTER;
+        final float headerYCoordinate = labelYCoordinate - PdfBoxStyle.SMALL_LINE_SPACE;
+        pdfBoxService.addTextAtOffset(label, PDType1Font.TIMES_BOLD, PdfBoxStyle.TEXT_MEDIUM_SIZE, Color.BLACK, xCoordinate, labelYCoordinate, contentStream);
+
         final float rowHeight = 15f;
         final float cellMargin = 1f;
         // Provider table header
@@ -471,5 +556,40 @@ public class ConsentPdfGeneratorImpl implements ConsentPdfGenerator {
                 - ((titleFont.getFontDescriptor().getFontBoundingBox().getHeight() / 1000 * titleFontSize) / 4);
 
         pdfBoxService.addTextAtOffset(title, titleFont, titleFontSize, titleColor, cardXCoordinate + 4f, titleYCoordinate, contentStream);
+    }
+
+    private String determineProviderName(FlattenedSmallProviderDto providerDto) {
+        if (providerDto.getEntityTypeDisplayName().equalsIgnoreCase(PlsService.ProviderType.INDIVIDUAL)) {
+            return UserInfoHelper.getFullName(providerDto.getFirstName(), providerDto.getMiddleName(), providerDto.getLastName());
+        } else {
+            return providerDto.getOrganizationName();
+        }
+    }
+
+    private String composeAddress(Address address) {
+        return address.getLine1()
+                .concat(filterNullAddressValue(address.getLine2()))
+                .concat(filterNullAddressValue(address.getCity()))
+                .concat(filterNullAddressValue(address.getState()))
+                .concat(filterNullAddressValue(address.getPostalCode()))
+                .concat(filterNullAddressValue(address.getCountry()));
+    }
+
+    private String composeAddress(FlattenedSmallProviderDto flattenedSmallProviderDto) {
+        return flattenedSmallProviderDto.getFirstLinePracticeLocationAddress()
+                .concat(filterNullAddressValue(flattenedSmallProviderDto.getSecondLinePracticeLocationAddress()))
+                .concat(filterNullAddressValue(flattenedSmallProviderDto.getPracticeLocationAddressCityName()))
+                .concat(filterNullAddressValue(flattenedSmallProviderDto.getPracticeLocationAddressStateName()))
+                .concat(filterNullAddressValue(flattenedSmallProviderDto.getPracticeLocationAddressPostalCode()))
+                .concat(filterNullAddressValue(flattenedSmallProviderDto.getPracticeLocationAddressCountryCode()));
+    }
+
+    private static String filterNullAddressValue(String value) {
+        final String commaPattern = ", ";
+        if (value == null) {
+            return "";
+        } else {
+            return commaPattern.concat(value);
+        }
     }
 }
