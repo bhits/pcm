@@ -24,7 +24,6 @@ import gov.samhsa.c2s.pcm.infrastructure.pdfbox.PdfBoxStyle;
 import gov.samhsa.c2s.pcm.infrastructure.pdfbox.TableAttribute;
 import gov.samhsa.c2s.pcm.infrastructure.pdfbox.TextAlignment;
 import gov.samhsa.c2s.pcm.infrastructure.pdfbox.util.PdfBoxHandler;
-import gov.samhsa.c2s.pcm.service.dto.AbstractProviderDto;
 import gov.samhsa.c2s.pcm.service.exception.NoDataFoundException;
 import gov.samhsa.c2s.pcm.service.exception.PdfConfigMissingException;
 import gov.samhsa.c2s.pcm.service.util.UserInfoHelper;
@@ -215,7 +214,9 @@ public class ConsentPdfGeneratorImpl implements ConsentPdfGenerator {
         // From providers details
         final float fromProviderDetailsYCoordinate = 207f;
         if (consent.getConsentStage().equals(ConsentStage.SIGNED)) {
-//            addSignedConsentProvidersDetails(fromProviders, tableColumns, fromProviderDetailsYCoordinate, page, contentStream);
+            List<Organization> fromOrganizations = consent.getConsentAttestation().getFromOrganizations();
+            List<Practitioner> fromPractitioners = consent.getConsentAttestation().getFromPractitioners();
+            addSignedConsentProvidersDetails(fromOrganizations, fromPractitioners, tableColumns, fromProviderDetailsYCoordinate, page, contentStream);
         } else {
             List<Provider> fromProviders = consent.getFromProviders();
             addSavedConsentProvidersDetails(fromProviders, tableColumns, fromProviderDetailsYCoordinate, page, contentStream);
@@ -229,7 +230,9 @@ public class ConsentPdfGeneratorImpl implements ConsentPdfGenerator {
         // To providers details
         final float toProviderDetailsYCoordinate = 292f;
         if (consent.getConsentStage().equals(ConsentStage.SIGNED)) {
-//            addSignedConsentProvidersDetails(toProviders, tableColumns, toProviderDetailsYCoordinate, page, contentStream);
+            List<Organization> toOrganizations = consent.getConsentAttestation().getToOrganizations();
+            List<Practitioner> toPractitioners = consent.getConsentAttestation().getToPractitioners();
+            addSignedConsentProvidersDetails(toOrganizations, toPractitioners, tableColumns, toProviderDetailsYCoordinate, page, contentStream);
         } else {
             List<Provider> toProviders = consent.getToProviders();
             addSavedConsentProvidersDetails(toProviders, tableColumns, toProviderDetailsYCoordinate, page, contentStream);
@@ -262,49 +265,40 @@ public class ConsentPdfGeneratorImpl implements ConsentPdfGenerator {
         }
     }
 
-    private void addSignedConsentProvidersDetails(List<AbstractProviderDto> fromProviders, List<Column> columns, float startYCoordinate, PDPage page, PDPageContentStream contentStream) throws IOException {
-        List<Practitioner> fromPractitioners = fromProviders.stream()
-                .filter(providerDto -> providerDto.getProviderType().equals(AbstractProviderDto.ProviderType.PRACTITIONER))
-                .map(Practitioner.class::cast)
-                .collect(Collectors.toList());
-        List<Organization> fromOrganizations = fromProviders.stream()
-                .filter(providerDto -> providerDto.getProviderType().equals(AbstractProviderDto.ProviderType.ORGANIZATION))
-                .map(Organization.class::cast)
-                .collect(Collectors.toList());
-
+    private void addSignedConsentProvidersDetails(List<Organization> organizations, List<Practitioner> practitioners, List<Column> columns, float startYCoordinate, PDPage page, PDPageContentStream contentStream) throws IOException {
         float providerNameColWidth = columns.get(0).getCellWidth();
         float providerNPIColWidth = columns.get(1).getCellWidth();
         float providerAddressColWidth = columns.get(2).getCellWidth();
         float providerPhoneColWidth = columns.get(3).getCellWidth();
 
-        for (Practitioner fromPractitioner : fromPractitioners) {
+        for (Practitioner practitioner : practitioners) {
             // Provider Name
-            drawProviderDetails(UserInfoHelper.getFullName(fromPractitioner.getFirstName(),
-                    fromPractitioner.getMiddleName(), fromPractitioner.getLastName()), PdfBoxStyle.LR_MARGINS_OF_LETTER,
+            drawProviderDetails(UserInfoHelper.getFullName(practitioner.getFirstName(),
+                    practitioner.getMiddleName(), practitioner.getLastName()), PdfBoxStyle.LR_MARGINS_OF_LETTER,
                     startYCoordinate, providerNameColWidth, page, contentStream);
             // Provider NPI Number
-            drawProviderDetails(fromPractitioner.getProvider().getIdentifier().getValue(), PdfBoxStyle.LR_MARGINS_OF_LETTER + providerNameColWidth,
+            drawProviderDetails(practitioner.getProvider().getIdentifier().getValue(), PdfBoxStyle.LR_MARGINS_OF_LETTER + providerNameColWidth,
                     startYCoordinate, providerNPIColWidth, page, contentStream);
             // Provider Address
-            drawProviderDetails(composeAddress(fromPractitioner.getAddress()), PdfBoxStyle.LR_MARGINS_OF_LETTER + providerNameColWidth + providerNPIColWidth,
+            drawProviderDetails(composeAddress(practitioner.getAddress()), PdfBoxStyle.LR_MARGINS_OF_LETTER + providerNameColWidth + providerNPIColWidth,
                     startYCoordinate, providerAddressColWidth, page, contentStream);
             // Provider Phone
-            drawProviderDetails(fromPractitioner.getPhoneNumber(), PdfBoxStyle.LR_MARGINS_OF_LETTER + providerNameColWidth + providerNPIColWidth + providerAddressColWidth,
+            drawProviderDetails(practitioner.getPhoneNumber(), PdfBoxStyle.LR_MARGINS_OF_LETTER + providerNameColWidth + providerNPIColWidth + providerAddressColWidth,
                     startYCoordinate, providerPhoneColWidth, page, contentStream);
         }
 
-        for (Organization fromOrganization : fromOrganizations) {
+        for (Organization organization : organizations) {
             // Provider Name
-            drawProviderDetails(fromOrganization.getName(), PdfBoxStyle.LR_MARGINS_OF_LETTER,
+            drawProviderDetails(organization.getName(), PdfBoxStyle.LR_MARGINS_OF_LETTER,
                     startYCoordinate, providerNameColWidth, page, contentStream);
             // Provider NPI Number
-            drawProviderDetails(fromOrganization.getProvider().getIdentifier().getValue(), PdfBoxStyle.LR_MARGINS_OF_LETTER + providerNameColWidth,
+            drawProviderDetails(organization.getProvider().getIdentifier().getValue(), PdfBoxStyle.LR_MARGINS_OF_LETTER + providerNameColWidth,
                     startYCoordinate, providerNPIColWidth, page, contentStream);
             // Provider Address
-            drawProviderDetails(composeAddress(fromOrganization.getAddress()), PdfBoxStyle.LR_MARGINS_OF_LETTER + providerNameColWidth + providerNPIColWidth,
+            drawProviderDetails(composeAddress(organization.getAddress()), PdfBoxStyle.LR_MARGINS_OF_LETTER + providerNameColWidth + providerNPIColWidth,
                     startYCoordinate, providerAddressColWidth, page, contentStream);
             // Provider Phone
-            drawProviderDetails(fromOrganization.getPhoneNumber(), PdfBoxStyle.LR_MARGINS_OF_LETTER + providerNameColWidth + providerNPIColWidth + providerAddressColWidth,
+            drawProviderDetails(organization.getPhoneNumber(), PdfBoxStyle.LR_MARGINS_OF_LETTER + providerNameColWidth + providerNPIColWidth + providerAddressColWidth,
                     startYCoordinate, providerPhoneColWidth, page, contentStream);
         }
     }
