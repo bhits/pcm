@@ -106,7 +106,7 @@ public class PdfBoxServiceImpl implements PdfBoxService {
         contentStream.setNonStrokingColor(textColor);
         contentStream.newLineAtOffset(startX, yCoordinate);
         for (String line : lines) {
-            contentStream.showText(line);
+            contentStream.showText(line.replaceAll(PdfBoxHandler.TAB_REGEX, PdfBoxHandler.SPACE_STRING));
             contentStream.newLineAtOffset(0, -lineSpacing);
         }
         contentStream.endText();

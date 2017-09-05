@@ -85,6 +85,7 @@ public class ConsentPdfGeneratorImpl implements ConsentPdfGenerator {
         log.debug("Configured font is: " + defaultFont);
 
         try (PDPageContentStream contentStream = new PDPageContentStream(document, page)) {
+            //TODO: Enable to support relative layout
 
             // Configure each drawing section yCoordinate in order to centralized adjust layout
             final float titleSectionStartYCoordinate = page.getMediaBox().getHeight() - PdfBoxStyle.TB_MARGINS_OF_LETTER;
@@ -509,7 +510,7 @@ public class ConsentPdfGeneratorImpl implements ConsentPdfGenerator {
 
         // Forth row
         String b4 = "Date: _______________________________";
-        List<String> forthRowContent = Collections.singletonList(b4);
+        List<String> forthRowContent = Arrays.asList(null, b4);
 
         List<List<String>> tableContent = Arrays.asList(firstRowContent, secondRowContent, thirdRowContent, forthRowContent);
 

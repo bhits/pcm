@@ -16,6 +16,8 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class PdfBoxHandler {
+    public static final String TAB_REGEX = "\\t";
+    public static final String SPACE_STRING = " ";
 
     public static PDFont convertPdfBoxFontToPDFont(PdfBoxFont configuredFont) {
         return buildPDFontMap().get(configuredFont);
@@ -26,7 +28,7 @@ public class PdfBoxHandler {
     }
 
     public static float targetedStringWidth(String text, PDFont font, float fontSize) throws IOException {
-        return font.getStringWidth(text) * fontSize / 1000F;
+        return font.getStringWidth(text.replaceAll(TAB_REGEX, SPACE_STRING)) * fontSize / 1000F;
     }
 
     public static float targetedStringHeight(PDFont font, float fontSize) throws IOException {
