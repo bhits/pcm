@@ -150,42 +150,33 @@ public class ConsentPdfGeneratorImpl implements ConsentPdfGenerator {
     }
 
     private void addConsentReferenceNumberAndPatientInfo(Consent consent, PatientDto patientProfile, float startYCoordinate, PDPageContentStream contentStream) throws IOException {
-        final float rowHeight = PdfBoxStyle.DEFAULT_TABLE_ROW_HEIGHT;
-        final float cellMargin = 1f;
-
         String consentReferenceNumber = consent.getConsentReferenceId();
         String patientFullName = UserInfoHelper.getFullName(patientProfile.getFirstName(), patientProfile.getMiddleName(), patientProfile.getLastName());
         String patientBirthDate = PdfBoxHandler.formatLocalDate(patientProfile.getBirthDate(), DATE_FORMAT_PATTERN);
 
-        // Prepare table content
-        // First row
-        String r1 = "Consent Reference Number: ".concat(consentReferenceNumber);
-        List<String> firstRowContent = Arrays.asList(r1, null);
+        final Color textColor = Color.BLACK;
+        final float fontSize = PdfBoxStyle.TEXT_SMALL_SIZE;
+        final PDFont labelFont = PDType1Font.TIMES_ROMAN;
 
-        // Second row
-        String r3 = "Patient Name: ".concat(patientFullName);
-        String r4 = "Patient DOB: ".concat(patientBirthDate);
-        List<String> secondRowContent = Arrays.asList(r3, r4);
+        // Add Consent Reference Number
+        final String crnLabel = "Consent Reference Number: ";
+        pdfBoxService.addTextAtOffset(crnLabel, labelFont, fontSize, textColor, PdfBoxStyle.LR_MARGINS_OF_LETTER, startYCoordinate, contentStream);
+        final float crnXCoordinate = PdfBoxStyle.LR_MARGINS_OF_LETTER + PdfBoxHandler.targetedStringWidth(crnLabel, labelFont, fontSize);
+        pdfBoxService.addTextAtOffset(consentReferenceNumber, PDType1Font.TIMES_BOLD, fontSize, textColor, crnXCoordinate, startYCoordinate, contentStream);
 
-        List<List<String>> tableContent = Arrays.asList(firstRowContent, secondRowContent);
+        // Add patient name
+        final float nameYCoordinate = startYCoordinate - PdfBoxStyle.XLARGE_LINE_SPACE;
+        final String nameLabel = "Patient Name: ";
+        pdfBoxService.addTextAtOffset(nameLabel, labelFont, fontSize, textColor, PdfBoxStyle.LR_MARGINS_OF_LETTER, nameYCoordinate, contentStream);
+        final float nameXCoordinate = PdfBoxStyle.LR_MARGINS_OF_LETTER + PdfBoxHandler.targetedStringWidth(nameLabel, labelFont, fontSize);
+        pdfBoxService.addTextAtOffset(patientFullName, PDType1Font.TIMES_BOLD, fontSize, textColor, nameXCoordinate, nameYCoordinate, contentStream);
 
-        // Config each column width
-        Column column1 = new Column(240f);
-        Column column2 = new Column(220f);
-
-        // Config Table attribute
-        TableAttribute tableAttribute = TableAttribute.builder()
-                .xCoordinate(PdfBoxStyle.LR_MARGINS_OF_LETTER)
-                .yCoordinate(startYCoordinate)
-                .rowHeight(rowHeight)
-                .cellMargin(cellMargin)
-                .contentFont(PDType1Font.TIMES_ROMAN)
-                .contentFontSize(PdfBoxStyle.TEXT_SMALL_SIZE)
-                .borderColor(Color.WHITE)
-                .columns(Arrays.asList(column1, column2))
-                .build();
-
-        pdfBoxService.addTableContent(contentStream, tableAttribute, tableContent);
+        // Add patient DOB
+        final String dobLabel = "Patient DOB: ";
+        final float dobLabelXCoordinate = 300f;
+        pdfBoxService.addTextAtOffset(dobLabel, labelFont, fontSize, textColor, dobLabelXCoordinate, nameYCoordinate, contentStream);
+        final float dobXCoordinate = dobLabelXCoordinate + PdfBoxHandler.targetedStringWidth(dobLabel, labelFont, fontSize);
+        pdfBoxService.addTextAtOffset(patientBirthDate, PDType1Font.TIMES_BOLD, fontSize, textColor, dobXCoordinate, nameYCoordinate, contentStream);
     }
 
     private void addAuthorizationToDisclose(Consent consent, float startYCoordinate, PDFont font, PDPage page, PDPageContentStream contentStream) throws IOException {
