@@ -93,8 +93,8 @@ public class ConsentPdfGeneratorImpl implements ConsentPdfGenerator {
             final float authorizationSectionStartYCoordinate = 640f;
             final float healthInformationSectionStartYCoordinate = 455f;
             final float consentTermsSectionStartYCoordinate = 270f;
-            final float consentEffectiveDateSectionStartYCoordinate = 125f;
-            final float consentSigningSectionStartYCoordinate = 90f;
+            final float consentEffectiveDateSectionStartYCoordinate = 120f;
+            final float consentSigningSectionStartYCoordinate = 75f;
 
             // Title
             addConsentTitle(CONSENT_PDF, titleSectionStartYCoordinate, page, contentStream);
