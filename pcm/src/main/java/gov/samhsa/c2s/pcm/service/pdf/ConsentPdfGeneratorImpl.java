@@ -97,7 +97,7 @@ public class ConsentPdfGeneratorImpl implements ConsentPdfGenerator {
             final float consentSigningSectionStartYCoordinate = 100f;
 
             // Title
-            addConsentTitle(titleSectionStartYCoordinate, page, contentStream);
+            addConsentTitle(CONSENT_PDF, titleSectionStartYCoordinate, page, contentStream);
 
             // Consent Reference Number and Patient information
             addConsentReferenceNumberAndPatientInfo(consent, patientProfile, consentReferenceNumberSectionStartYCoordinate, contentStream);
@@ -136,9 +136,10 @@ public class ConsentPdfGeneratorImpl implements ConsentPdfGenerator {
         }
     }
 
-    private void addConsentTitle(float startYCoordinate, PDPage page, PDPageContentStream contentStream) throws IOException {
+    @Override
+    public void addConsentTitle(String pdfType, float startYCoordinate, PDPage page, PDPageContentStream contentStream) throws IOException {
         String consentTitle = pdfProperties.getPdfConfigs().stream()
-                .filter(pdfConfig -> pdfConfig.type.equalsIgnoreCase(CONSENT_PDF))
+                .filter(pdfConfig -> pdfConfig.type.equalsIgnoreCase(pdfType))
                 .map(PdfProperties.PdfConfig::getTitle)
                 .findAny()
                 .orElseThrow(PdfConfigMissingException::new);
@@ -149,7 +150,8 @@ public class ConsentPdfGeneratorImpl implements ConsentPdfGenerator {
         pdfBoxService.addCenteredTextAtOffset(consentTitle, titleFont, titleFontSize, titleColor, startYCoordinate, page, contentStream);
     }
 
-    private void addConsentReferenceNumberAndPatientInfo(Consent consent, PatientDto patientProfile, float startYCoordinate, PDPageContentStream contentStream) throws IOException {
+    @Override
+    public void addConsentReferenceNumberAndPatientInfo(Consent consent, PatientDto patientProfile, float startYCoordinate, PDPageContentStream contentStream) throws IOException {
         String consentReferenceNumber = consent.getConsentReferenceId();
         String patientFullName = UserInfoHelper.getFullName(patientProfile.getFirstName(), patientProfile.getMiddleName(), patientProfile.getLastName());
         String patientBirthDate = PdfBoxHandler.formatLocalDate(patientProfile.getBirthDate(), DATE_FORMAT_PATTERN);

@@ -1,6 +1,5 @@
 package gov.samhsa.c2s.pcm.service.pdf;
 
-import gov.samhsa.c2s.pcm.config.PdfProperties;
 import gov.samhsa.c2s.pcm.domain.Consent;
 import gov.samhsa.c2s.pcm.infrastructure.dto.PatientDto;
 import gov.samhsa.c2s.pcm.infrastructure.dto.TelecomDto;
@@ -13,7 +12,6 @@ import gov.samhsa.c2s.pcm.infrastructure.pdfbox.PdfBoxStyle;
 import gov.samhsa.c2s.pcm.infrastructure.pdfbox.TableAttribute;
 import gov.samhsa.c2s.pcm.infrastructure.pdfbox.util.PdfBoxHandler;
 import gov.samhsa.c2s.pcm.service.exception.NoDataFoundException;
-import gov.samhsa.c2s.pcm.service.exception.PdfConfigMissingException;
 import gov.samhsa.c2s.pcm.service.util.UserInfoHelper;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.pdfbox.pdmodel.PDDocument;
@@ -44,12 +42,12 @@ public class ConsentRevocationPdfGeneratorImpl implements ConsentRevocationPdfGe
     private static final String DATE_FORMAT_PATTERN = "MMM dd, yyyy";
 
     private final PdfBoxService pdfBoxService;
-    private final PdfProperties pdfProperties;
+    private final ConsentPdfGenerator consentPdfGenerator;
 
     @Autowired
-    public ConsentRevocationPdfGeneratorImpl(PdfBoxService pdfBoxService, PdfProperties pdfProperties) {
+    public ConsentRevocationPdfGeneratorImpl(PdfBoxService pdfBoxService, ConsentPdfGenerator consentPdfGenerator) {
         this.pdfBoxService = pdfBoxService;
-        this.pdfProperties = pdfProperties;
+        this.consentPdfGenerator = consentPdfGenerator;
     }
 
     @Override
@@ -72,14 +70,14 @@ public class ConsentRevocationPdfGeneratorImpl implements ConsentRevocationPdfGe
             // Configure each drawing section yCoordinate in order to centralized adjust layout
             final float titleSectionStartYCoordinate = page.getMediaBox().getHeight() - PdfBoxStyle.TB_MARGINS_OF_LETTER;
             final float consentReferenceNumberSectionStartYCoordinate = 670f;
-            final float consentRevocationTermsSectionStartYCoordinate = 580f;
+            final float consentRevocationTermsSectionStartYCoordinate = 600f;
             final float consentRevocationSigningSectionStartYCoordinate = 290f;
 
             // Title
-            addConsentRevocationTitle(titleSectionStartYCoordinate, page, contentStream);
+            consentPdfGenerator.addConsentTitle(CONSENT_REVOCATION_PDF, titleSectionStartYCoordinate, page, contentStream);
 
             // Consent Reference Number and Patient information
-            addConsentReferenceNumberAndPatientInfo(consent, patient, consentReferenceNumberSectionStartYCoordinate, contentStream);
+            consentPdfGenerator.addConsentReferenceNumberAndPatientInfo(consent, patient, consentReferenceNumberSectionStartYCoordinate, contentStream);
 
             // Consent revocation terms
             addConsentRevocationTerms(consentRevocationTerm, consentRevocationTermsSectionStartYCoordinate, defaultFont, page, contentStream);
@@ -110,60 +108,6 @@ public class ConsentRevocationPdfGeneratorImpl implements ConsentRevocationPdfGe
             // finally make sure that the document is properly closed
             document.close();
         }
-    }
-
-    private void addConsentRevocationTitle(float startYCoordinate, PDPage page, PDPageContentStream contentStream) throws IOException {
-        String consentRevocationTitle = pdfProperties.getPdfConfigs().stream()
-                .filter(pdfConfig -> pdfConfig.type.equalsIgnoreCase(CONSENT_REVOCATION_PDF))
-                .map(PdfProperties.PdfConfig::getTitle)
-                .findAny()
-                .orElseThrow(PdfConfigMissingException::new);
-
-        float titleFontSize = 20f;
-        PDFont titleFont = PDType1Font.TIMES_BOLD;
-        Color titleColor = Color.BLACK;
-        pdfBoxService.addCenteredTextAtOffset(consentRevocationTitle, titleFont, titleFontSize, titleColor, startYCoordinate, page, contentStream);
-    }
-
-    private void addConsentReferenceNumberAndPatientInfo(Consent consent, PatientDto patient, float startYCoordinate, PDPageContentStream contentStream) throws IOException {
-        final float rowHeight = 30f;
-        final float cellMargin = 1f;
-        final float colAWidth = 240f;
-        final float colBWidth = 220f;
-
-        String consentReferenceNumber = consent.getConsentReferenceId();
-        String patientFullName = UserInfoHelper.getFullName(patient.getFirstName(), patient.getMiddleName(), patient.getLastName());
-        String patientBirthDate = PdfBoxHandler.formatLocalDate(patient.getBirthDate(), DATE_FORMAT_PATTERN);
-
-        // Prepare table content
-        // First row
-        String a1 = "Consent Reference Number: ".concat(consentReferenceNumber);
-        List<String> firstRowContent = Arrays.asList(a1, null);
-
-        // Second row
-        String a2 = "Patient Name: ".concat(patientFullName);
-        String b2 = "Patient DOB: ".concat(patientBirthDate);
-        List<String> secondRowContent = Arrays.asList(a2, b2);
-
-        List<List<String>> tableContent = Arrays.asList(firstRowContent, secondRowContent);
-
-        // Config each column width
-        Column column1 = new Column(colAWidth);
-        Column column2 = new Column(colBWidth);
-
-        // Config Table attribute
-        TableAttribute tableAttribute = TableAttribute.builder()
-                .xCoordinate(PdfBoxStyle.LR_MARGINS_OF_LETTER)
-                .yCoordinate(startYCoordinate)
-                .rowHeight(rowHeight)
-                .cellMargin(cellMargin)
-                .contentFont(PDType1Font.TIMES_ROMAN)
-                .contentFontSize(PdfBoxStyle.TEXT_SMALL_SIZE)
-                .borderColor(Color.WHITE)
-                .columns(Arrays.asList(column1, column2))
-                .build();
-
-        pdfBoxService.addTableContent(contentStream, tableAttribute, tableContent);
     }
 
     private void addConsentRevocationTerms(String consentRevocationTerm, float startYCoordinate, PDFont defaultFont, PDPage page, PDPageContentStream contentStream) {
