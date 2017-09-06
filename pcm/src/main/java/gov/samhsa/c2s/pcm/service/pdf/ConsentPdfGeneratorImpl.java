@@ -17,7 +17,7 @@ import gov.samhsa.c2s.pcm.infrastructure.dto.PatientDto;
 import gov.samhsa.c2s.pcm.infrastructure.dto.TelecomDto;
 import gov.samhsa.c2s.pcm.infrastructure.dto.UserDto;
 import gov.samhsa.c2s.pcm.infrastructure.exception.InvalidContentException;
-import gov.samhsa.c2s.pcm.infrastructure.exception.PdfGenerateException;
+import gov.samhsa.c2s.pcm.infrastructure.exception.PdfGenerationException;
 import gov.samhsa.c2s.pcm.infrastructure.pdfbox.Column;
 import gov.samhsa.c2s.pcm.infrastructure.pdfbox.PdfBoxService;
 import gov.samhsa.c2s.pcm.infrastructure.pdfbox.PdfBoxStyle;
@@ -128,7 +128,7 @@ public class ConsentPdfGeneratorImpl implements ConsentPdfGenerator {
             return pdfOutputStream.toByteArray();
         } catch (Exception e) {
             log.error(e.getMessage(), e);
-            throw new PdfGenerateException(e);
+            throw new PdfGenerationException(e);
         } finally {
             pdfOutputStream.close();
             // finally make sure that the document is properly closed
