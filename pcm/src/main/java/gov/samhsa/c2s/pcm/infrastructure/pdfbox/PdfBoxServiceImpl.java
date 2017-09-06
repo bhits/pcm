@@ -307,7 +307,6 @@ public class PdfBoxServiceImpl implements PdfBoxService {
         contentStream.setNonStrokingColor(Color.BLACK);
     }
 
-    //TODO: Verify TableAttribute Valid
     private void assertValidTableAttribute(TableAttribute tableAttribute) {
         if (tableAttribute.getColumns() == null || tableAttribute.getColumns().isEmpty()) {
             throw new InvalidTableAttributeException("The columns in the table must be configured.");

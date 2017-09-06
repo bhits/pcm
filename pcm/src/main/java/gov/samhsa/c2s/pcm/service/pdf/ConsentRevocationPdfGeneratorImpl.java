@@ -68,7 +68,7 @@ public class ConsentRevocationPdfGeneratorImpl implements ConsentRevocationPdfGe
         try (PDPageContentStream contentStream = new PDPageContentStream(document, page)) {
 
             // Configure each drawing section yCoordinate in order to centralized adjust layout
-            final float titleSectionStartYCoordinate = page.getMediaBox().getHeight() - PdfBoxStyle.TB_MARGINS_OF_LETTER;
+            final float titleSectionStartYCoordinate = page.getMediaBox().getHeight() - PdfBoxStyle.TOP_BOTTOM_MARGINS_OF_LETTER;
             final float consentReferenceNumberSectionStartYCoordinate = 670f;
             final float consentRevocationTermsSectionStartYCoordinate = 600f;
             final float consentRevocationSigningSectionStartYCoordinate = 290f;
@@ -77,7 +77,7 @@ public class ConsentRevocationPdfGeneratorImpl implements ConsentRevocationPdfGe
             consentPdfGenerator.addConsentTitle(CONSENT_REVOCATION_PDF, titleSectionStartYCoordinate, page, contentStream);
 
             // Consent Reference Number and Patient information
-            consentPdfGenerator.addConsentReferenceNumberAndPatientInfo(consent, patient, consentReferenceNumberSectionStartYCoordinate, contentStream);
+            consentPdfGenerator.addConsentReferenceNumberAndPatientInfo(consent, patient, consentReferenceNumberSectionStartYCoordinate, defaultFont, contentStream);
 
             // Consent revocation terms
             addConsentRevocationTerms(consentRevocationTerm, consentRevocationTermsSectionStartYCoordinate, defaultFont, page, contentStream);
@@ -112,7 +112,7 @@ public class ConsentRevocationPdfGeneratorImpl implements ConsentRevocationPdfGe
 
     private void addConsentRevocationTerms(String consentRevocationTerm, float startYCoordinate, PDFont defaultFont, PDPage page, PDPageContentStream contentStream) {
         try {
-            pdfBoxService.addAutoWrapParagraphByPageWidth(consentRevocationTerm, defaultFont, PdfBoxStyle.TEXT_SMALL_SIZE, Color.BLACK, startYCoordinate, PdfBoxStyle.LR_MARGINS_OF_LETTER, page, contentStream);
+            pdfBoxService.addAutoWrapParagraphByPageWidth(consentRevocationTerm, defaultFont, PdfBoxStyle.TEXT_SMALL_SIZE, Color.BLACK, startYCoordinate, PdfBoxStyle.LEFT_RIGHT_MARGINS_OF_LETTER, page, contentStream);
         } catch (Exception e) {
             log.error("Invalid character for cast specification", e);
             throw new InvalidContentException(e);
@@ -181,7 +181,7 @@ public class ConsentRevocationPdfGeneratorImpl implements ConsentRevocationPdfGe
 
         Column column = new Column(columnWidth);
         TableAttribute tableAttribute = TableAttribute.builder()
-                .xCoordinate(PdfBoxStyle.LR_MARGINS_OF_LETTER)
+                .xCoordinate(PdfBoxStyle.LEFT_RIGHT_MARGINS_OF_LETTER)
                 .yCoordinate(startYCoordinate)
                 .rowHeight(PdfBoxStyle.DEFAULT_TABLE_ROW_HEIGHT)
                 .cellMargin(cellMargin)
@@ -201,7 +201,7 @@ public class ConsentRevocationPdfGeneratorImpl implements ConsentRevocationPdfGe
 
         String label = "Patient/Patient Representative:";
         pdfBoxService.addTextAtOffset(label, PDType1Font.TIMES_BOLD, PdfBoxStyle.TEXT_SMALL_SIZE, Color.BLACK,
-                PdfBoxStyle.LR_MARGINS_OF_LETTER, startYCoordinate, contentStream);
+                PdfBoxStyle.LEFT_RIGHT_MARGINS_OF_LETTER, startYCoordinate, contentStream);
 
         // Prepare table content
         // First row
@@ -219,7 +219,7 @@ public class ConsentRevocationPdfGeneratorImpl implements ConsentRevocationPdfGe
 
         Column column = new Column(columnWidth);
         TableAttribute tableAttribute = TableAttribute.builder()
-                .xCoordinate(PdfBoxStyle.LR_MARGINS_OF_LETTER)
+                .xCoordinate(PdfBoxStyle.LEFT_RIGHT_MARGINS_OF_LETTER)
                 .yCoordinate(tableStartYCoordinate)
                 .rowHeight(PdfBoxStyle.DEFAULT_TABLE_ROW_HEIGHT)
                 .cellMargin(cellMargin)
