@@ -407,7 +407,7 @@ public class ConsentPdfGeneratorImpl implements ConsentPdfGenerator {
                 ImmutableMap.of(userNameKey, UserInfoHelper.getFullName(patientProfile.getFirstName(), patientProfile.getMiddleName(), patientProfile.getLastName())));
 
         try {
-            pdfBoxService.addAutoWrapParagraphByPageWidth(termsWithAttestedName, font, PdfBoxStyle.TEXT_SMALL_SIZE, Color.BLACK, paragraphYCoordinate, PdfBoxStyle.LEFT_RIGHT_MARGINS_OF_LETTER, page, contentStream);
+            pdfBoxService.addWrappedParagraphByLineBreaks(termsWithAttestedName, font, PdfBoxStyle.TEXT_SMALL_SIZE, Color.BLACK, paragraphYCoordinate, PdfBoxStyle.LEFT_RIGHT_MARGINS_OF_LETTER, page, contentStream);
         } catch (Exception e) {
             log.error("Invalid character for cast specification", e);
             throw new InvalidContentException(e);
@@ -501,26 +501,26 @@ public class ConsentPdfGeneratorImpl implements ConsentPdfGenerator {
     }
 
     private void generateConsentSigningDetails(String signedByLabel, String signedBy, String emailLabel, String email, String signedOnLabel, String signedOn, float startYCoordinate, PDFont defaultFont, PDPageContentStream contentStream) throws IOException {
-        final PDFont labelFont = PDType1Font.TIMES_BOLD;
+        final PDFont contentFont = PDType1Font.TIMES_BOLD;
         final Color textColor = Color.BLACK;
         final float fontSize = PdfBoxStyle.TEXT_SMALL_SIZE;
 
         // Add Signed by
-        pdfBoxService.addTextAtOffset(signedByLabel, labelFont, fontSize, textColor, PdfBoxStyle.LEFT_RIGHT_MARGINS_OF_LETTER, startYCoordinate, contentStream);
-        final float crnXCoordinate = PdfBoxStyle.LEFT_RIGHT_MARGINS_OF_LETTER + PdfBoxHandler.targetedStringWidth(signedByLabel, labelFont, fontSize);
-        pdfBoxService.addTextAtOffset(signedBy, defaultFont, fontSize, textColor, crnXCoordinate, startYCoordinate, contentStream);
+        pdfBoxService.addTextAtOffset(signedByLabel, defaultFont, fontSize, textColor, PdfBoxStyle.LEFT_RIGHT_MARGINS_OF_LETTER, startYCoordinate, contentStream);
+        final float crnXCoordinate = PdfBoxStyle.LEFT_RIGHT_MARGINS_OF_LETTER + PdfBoxHandler.targetedStringWidth(signedByLabel, defaultFont, fontSize);
+        pdfBoxService.addTextAtOffset(signedBy, contentFont, fontSize, textColor, crnXCoordinate, startYCoordinate, contentStream);
 
         // Add Email
         final float emailYCoordinate = startYCoordinate - PdfBoxStyle.XLARGE_LINE_SPACE;
-        pdfBoxService.addTextAtOffset(emailLabel, labelFont, fontSize, textColor, PdfBoxStyle.LEFT_RIGHT_MARGINS_OF_LETTER, emailYCoordinate, contentStream);
-        final float nameXCoordinate = PdfBoxStyle.LEFT_RIGHT_MARGINS_OF_LETTER + PdfBoxHandler.targetedStringWidth(emailLabel, labelFont, fontSize);
-        pdfBoxService.addTextAtOffset(email, defaultFont, fontSize, textColor, nameXCoordinate, emailYCoordinate, contentStream);
+        pdfBoxService.addTextAtOffset(emailLabel, defaultFont, fontSize, textColor, PdfBoxStyle.LEFT_RIGHT_MARGINS_OF_LETTER, emailYCoordinate, contentStream);
+        final float nameXCoordinate = PdfBoxStyle.LEFT_RIGHT_MARGINS_OF_LETTER + PdfBoxHandler.targetedStringWidth(emailLabel, defaultFont, fontSize);
+        pdfBoxService.addTextAtOffset(email, contentFont, fontSize, textColor, nameXCoordinate, emailYCoordinate, contentStream);
 
         // Add Signed on
         final float signedOnYCoordinate = emailYCoordinate - PdfBoxStyle.XLARGE_LINE_SPACE;
-        pdfBoxService.addTextAtOffset(signedOnLabel, labelFont, fontSize, textColor, PdfBoxStyle.LEFT_RIGHT_MARGINS_OF_LETTER, signedOnYCoordinate, contentStream);
-        final float dobXCoordinate = PdfBoxStyle.LEFT_RIGHT_MARGINS_OF_LETTER + PdfBoxHandler.targetedStringWidth(signedOnLabel, labelFont, fontSize);
-        pdfBoxService.addTextAtOffset(signedOn, defaultFont, fontSize, textColor, dobXCoordinate, signedOnYCoordinate, contentStream);
+        pdfBoxService.addTextAtOffset(signedOnLabel, defaultFont, fontSize, textColor, PdfBoxStyle.LEFT_RIGHT_MARGINS_OF_LETTER, signedOnYCoordinate, contentStream);
+        final float dobXCoordinate = PdfBoxStyle.LEFT_RIGHT_MARGINS_OF_LETTER + PdfBoxHandler.targetedStringWidth(signedOnLabel, defaultFont, fontSize);
+        pdfBoxService.addTextAtOffset(signedOn, contentFont, fontSize, textColor, dobXCoordinate, signedOnYCoordinate, contentStream);
     }
 
     private void drawSectionHeader(String title, float cardXCoordinate, float cardYCoordinate, PDPage page, PDPageContentStream contentStream) throws IOException {

@@ -93,7 +93,7 @@ public class PdfBoxServiceImpl implements PdfBoxService {
     }
 
     @Override
-    public void addAutoWrapParagraphByPageWidth(String content, PDFont font, float fontSize, Color textColor, float yCoordinate, float leftRightMargin,
+    public void addWrappedParagraphByLineBreaks(String content, PDFont font, float fontSize, Color textColor, float yCoordinate, float leftRightMargin,
                                                 PDPage page, PDPageContentStream contentStream) throws IOException {
         final float lineSpacing = 1.4f * fontSize;
         float width = page.getMediaBox().getWidth() - 2 * leftRightMargin;
@@ -268,6 +268,11 @@ public class PdfBoxServiceImpl implements PdfBoxService {
     }
 
     private List<String> calculateLinesToWrap(String content, PDFont font, float fontSize, float width) throws IOException {
+        final String multipleLineBreaks = "\n\n";
+        final String multipleLineBreaksWithSpace = "\n \n ";
+        if (content.contains(multipleLineBreaks)) {
+            content = content.replaceAll(multipleLineBreaks, multipleLineBreaksWithSpace);
+        }
         final String spacePattern = " ";
         final String emptyString = "";
         final String lineBreak = "\n";

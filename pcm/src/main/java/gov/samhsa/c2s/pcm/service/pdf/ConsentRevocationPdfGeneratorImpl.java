@@ -90,7 +90,7 @@ public class ConsentRevocationPdfGeneratorImpl implements ConsentRevocationPdfGe
 
     private void addConsentRevocationTerms(String consentRevocationTerm, float startYCoordinate, PDFont defaultFont, PDPage page, PDPageContentStream contentStream) {
         try {
-            pdfBoxService.addAutoWrapParagraphByPageWidth(consentRevocationTerm, defaultFont, PdfBoxStyle.TEXT_SMALL_SIZE, Color.BLACK, startYCoordinate, PdfBoxStyle.LEFT_RIGHT_MARGINS_OF_LETTER, page, contentStream);
+            pdfBoxService.addWrappedParagraphByLineBreaks(consentRevocationTerm, defaultFont, PdfBoxStyle.TEXT_SMALL_SIZE, Color.BLACK, startYCoordinate, PdfBoxStyle.LEFT_RIGHT_MARGINS_OF_LETTER, page, contentStream);
         } catch (Exception e) {
             log.error("Invalid character for cast specification", e);
             throw new InvalidContentException(e);

@@ -22,7 +22,7 @@ public interface PdfBoxService {
     void addWrappedParagraph(String text, PDFont font, float fontSize, Color textColor, TextAlignment align, float xCoordinate, float topYCoordinate,
                              float width, PDPage page, PDPageContentStream contentStream) throws IOException;
 
-    void addAutoWrapParagraphByPageWidth(String content, PDFont font, float fontSize, Color textColor, float yCoordinate, float leftRightMargin,
+    void addWrappedParagraphByLineBreaks(String content, PDFont font, float fontSize, Color textColor, float yCoordinate, float leftRightMargin,
                                          PDPage page, PDPageContentStream contentStream) throws IOException;
 
     void addColorBox(Color color, float xCoordinate, float yCoordinate, float width, float height, PDPage page, PDPageContentStream contents) throws IOException;
