@@ -57,6 +57,15 @@ c2s:
           property: last_updated_date
         sql:
           file-path: activity/consent-activity.sql
+    pdfConfigs:
+      - type: consent-pdf
+        title: Consent to Share My Health Information
+        pdFont: TIMES_ROMAN
+        pdfPageSize: LETTER
+      - type: consent-revocation-pdf
+        title: Revocation of Consent to Share My Health Information
+        pdFont: TIMES_ROMAN
+        pdfPageSize: LETTER
 ---
 spring.profiles: standalone-ssl
 spring:

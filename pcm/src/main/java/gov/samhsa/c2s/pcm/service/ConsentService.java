@@ -11,7 +11,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Locale;
 import java.util.Optional;
 
 public interface ConsentService {
@@ -52,5 +51,5 @@ public interface ConsentService {
     List<SensitivityCategoryDto> getSharedSensitivityCategories(String patientId, Long consentId);
 
     @Transactional(readOnly = true)
-    public DetailedConsentDto searchConsent(XacmlRequestDto xacmlRequestDto);
+    DetailedConsentDto searchConsent(XacmlRequestDto xacmlRequestDto);
 }

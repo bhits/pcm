@@ -27,8 +27,6 @@ import gov.samhsa.c2s.pcm.infrastructure.UmsService;
 import gov.samhsa.c2s.pcm.infrastructure.dto.FlattenedSmallProviderDto;
 import gov.samhsa.c2s.pcm.infrastructure.dto.PatientDto;
 import gov.samhsa.c2s.pcm.infrastructure.dto.UserDto;
-import gov.samhsa.c2s.pcm.infrastructure.pdf.ConsentPdfGenerator;
-import gov.samhsa.c2s.pcm.infrastructure.pdf.ConsentRevocationPdfGenerator;
 import gov.samhsa.c2s.pcm.service.dto.AbstractProviderDto;
 import gov.samhsa.c2s.pcm.service.dto.ConsentAttestationDto;
 import gov.samhsa.c2s.pcm.service.dto.ConsentDto;
@@ -46,13 +44,18 @@ import gov.samhsa.c2s.pcm.service.dto.XacmlRequestDto;
 import gov.samhsa.c2s.pcm.service.exception.BadRequestException;
 import gov.samhsa.c2s.pcm.service.exception.ConsentAttestationTermNotFound;
 import gov.samhsa.c2s.pcm.service.exception.ConsentNotFoundException;
+import gov.samhsa.c2s.pcm.service.exception.ConsentPdfGenerationException;
+import gov.samhsa.c2s.pcm.service.exception.ConsentRevocationPdfGenerationException;
 import gov.samhsa.c2s.pcm.service.exception.ConsentRevocationTermNotFound;
 import gov.samhsa.c2s.pcm.service.exception.DuplicateConsentException;
 import gov.samhsa.c2s.pcm.service.exception.InvalidProviderException;
 import gov.samhsa.c2s.pcm.service.exception.InvalidProviderTypeException;
 import gov.samhsa.c2s.pcm.service.exception.InvalidPurposeException;
+import gov.samhsa.c2s.pcm.service.exception.NoDataFoundException;
 import gov.samhsa.c2s.pcm.service.exception.PatientOrSavedConsentNotFoundException;
 import gov.samhsa.c2s.pcm.service.fhir.FhirConsentService;
+import gov.samhsa.c2s.pcm.service.pdf.ConsentPdfGenerator;
+import gov.samhsa.c2s.pcm.service.pdf.ConsentRevocationPdfGenerator;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.modelmapper.ModelMapper;
@@ -64,6 +67,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 
+import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -160,7 +164,6 @@ public class ConsentServiceImpl implements ConsentService {
     @Transactional
     public void saveConsent(String patientId, ConsentDto consentDto, Optional<String> createdBy, Optional<Boolean> createdByPatient) {
         final Patient patient = patientRepository.saveAndGet(patientId);
-        final boolean CONSENT_SIGNED = false;
 
         final List<Provider> fromProviders = consentDto.getFromProviders().getIdentifiers().stream()
                 .map(toProvider(patient))
@@ -225,12 +228,15 @@ public class ConsentServiceImpl implements ConsentService {
         //Generate SAVED PDF
         PatientDto patientDto = umsService.getPatientProfile(patientId);
 
-        if (actionPerformedByPatient(createdByPatient)) {
-            //Do not send user info if saved by Patient
-            consent.setSavedPdf(consentPdfGenerator.generate42CfrPart2Pdf(consent, patientDto, CONSENT_SIGNED, null, consentAttestationTermRepository.findOne(pcmProperties.getConsent().getAttestationTermIdWhenPatientSigns()).getText(), Optional.empty()));
-        } else {
-            UserDto consentCreatorUserDto = umsService.getUserById(createdBy.get());
-            consent.setSavedPdf(consentPdfGenerator.generate42CfrPart2Pdf(consent, patientDto, CONSENT_SIGNED, null, consentAttestationTermRepository.findOne(pcmProperties.getConsent().getAttestationTermIdWhenProviderSigns()).getText(), Optional.ofNullable(consentCreatorUserDto)));
+        //Set the right consent terms
+        ConsentAttestationTerm consentAttestationTerm = determineConsentAttestationTerm(createdByPatient);
+
+        try {
+            UserDto consentCreatorUserDto = umsService.getUserById(createdBy.orElseThrow(NoClassDefFoundError::new));
+            consent.setSavedPdf(consentPdfGenerator.generateConsentPdf(consent, patientDto, null, consentAttestationTerm.getText(), Optional.ofNullable(consentCreatorUserDto), createdByPatient));
+        } catch (IOException e) {
+            log.error(e.getMessage(), e);
+            throw new ConsentPdfGenerationException(e);
         }
 
         consentRepository.save(consent);
@@ -270,8 +276,6 @@ public class ConsentServiceImpl implements ConsentService {
         if (signTime.isAfter(consentStartDate)) {
             throw new BadRequestException();
         }
-
-        final boolean CONSENT_SIGNED = true;
 
         if (consentAttestationDto.isAcceptTerms()) {
             //get getFromProviders
@@ -313,15 +317,13 @@ public class ConsentServiceImpl implements ConsentService {
                     .collect(toList());
 
             //Set the right attestation terms
-            ConsentAttestationTerm consentAttestationTerm;
-            if (actionPerformedByPatient(attestedByPatient)) {
-                consentAttestationTerm = consentAttestationTermRepository.findOne(pcmProperties.getConsent().getAttestationTermIdWhenPatientSigns());
-            } else {
-                consentAttestationTerm = consentAttestationTermRepository.findOne(pcmProperties.getConsent().getAttestationTermIdWhenProviderSigns());
-            }
-
+            ConsentAttestationTerm consentAttestationTerm = determineConsentAttestationTerm(attestedByPatient);
 
             //build attestation consent
+
+            // Keep attested date time is the same as printing in generated pdf
+            Date attestedDate = new Date();
+
             final ConsentAttestation consentAttestation = ConsentAttestation.builder()
                     .fromOrganizations(fromOrganizations)
                     .fromPractitioners(fromPractitioners)
@@ -329,6 +331,7 @@ public class ConsentServiceImpl implements ConsentService {
                     .toPractitioners(toPractitioners)
                     .consentAttestationTerm(consentAttestationTerm)
                     .consent(consent)
+                    .attestedDate(attestedDate)
                     .attestedBy(attestedBy.orElse(null))
                     .attestedByPatient(attestedByPatient.orElse(null))
                     .build();
@@ -345,12 +348,12 @@ public class ConsentServiceImpl implements ConsentService {
             PatientDto patientDto = umsService.getPatientProfile(patientId);
 
             //Generate SIGNED PDF
-            if (actionPerformedByPatient(attestedByPatient)) {
-                //Do not send user Info if signed by Patient
-                consentAttestation.setConsentAttestationPdf(consentPdfGenerator.generate42CfrPart2Pdf(consent, patientDto, CONSENT_SIGNED, new Date(), consentAttestationTerm.getText(), Optional.empty()));
-            } else {
-                UserDto attesterUserDto = umsService.getUserById(attestedBy.get());
-                consentAttestation.setConsentAttestationPdf(consentPdfGenerator.generate42CfrPart2Pdf(consent, patientDto, CONSENT_SIGNED, new Date(), consentAttestationTerm.getText(), Optional.ofNullable(attesterUserDto)));
+            try {
+                UserDto attesterUserDto = umsService.getUserById(attestedBy.orElseThrow(NoDataFoundException::new));
+                consentAttestation.setConsentAttestationPdf(consentPdfGenerator.generateConsentPdf(consent, patientDto, attestedDate, consentAttestationTerm.getText(), Optional.ofNullable(attesterUserDto), attestedByPatient));
+            } catch (IOException e) {
+                log.error(e.getMessage(), e);
+                throw new ConsentPdfGenerationException(e);
             }
 
             // generate FHIR Consent and publish consent to FHIR server if enabled
@@ -366,7 +369,6 @@ public class ConsentServiceImpl implements ConsentService {
     @Transactional
     public void updateConsent(String patientId, Long consentId, ConsentDto consentDto, Optional<String> lastUpdatedBy, Optional<Boolean> updatedByPatient) {
         final Patient patient = patientRepository.saveAndGet(patientId);
-        final boolean CONSENT_SIGNED = false;
 
         Consent consent = consentRepository.findOneByIdAndPatientIdAndConsentAttestationIsNullAndConsentRevocationIsNull(consentId, patientId).orElseThrow(ConsentNotFoundException::new);
 
@@ -393,11 +395,16 @@ public class ConsentServiceImpl implements ConsentService {
 
         PatientDto patientDto = umsService.getPatientProfile(patientId);
 
+        //Set the right attestation terms
+        ConsentAttestationTerm consentAttestationTerm = determineConsentAttestationTerm(updatedByPatient);
+
         //Update SAVED PDF
-        if (actionPerformedByPatient(updatedByPatient)) {
-            consent.setSavedPdf(consentPdfGenerator.generate42CfrPart2Pdf(consent, patientDto, CONSENT_SIGNED, new Date(), consentAttestationTermRepository.findOne(pcmProperties.getConsent().getAttestationTermIdWhenPatientSigns()).getText(), Optional.empty()));
-        } else {
-            consent.setSavedPdf(consentPdfGenerator.generate42CfrPart2Pdf(consent, patientDto, CONSENT_SIGNED, new Date(), consentAttestationTermRepository.findOne(pcmProperties.getConsent().getAttestationTermIdWhenProviderSigns()).getText(), Optional.empty()));
+        try {
+            UserDto updatedUserDto = umsService.getUserById(lastUpdatedBy.orElseThrow(NoDataFoundException::new));
+            consent.setSavedPdf(consentPdfGenerator.generateConsentPdf(consent, patientDto, new Date(), consentAttestationTerm.getText(), Optional.ofNullable(updatedUserDto), updatedByPatient));
+        } catch (IOException e) {
+            log.error(e.getMessage(), e);
+            throw new ConsentPdfGenerationException(e);
         }
         consentRepository.save(consent);
     }
@@ -406,9 +413,11 @@ public class ConsentServiceImpl implements ConsentService {
     @Transactional
     public void revokeConsent(String patientId, Long consentId, ConsentRevocationDto consentRevocationDto, Optional<String> revokedBy, Optional<Boolean> revokedByPatient) {
         Consent consent = consentRepository.findOneByIdAndPatientIdAndConsentAttestationIsNotNullAndConsentRevocationIsNull(consentId, patientId).orElseThrow(ConsentNotFoundException::new);
+        // Keep revoked date time is the same as printing in generated pdf
+        Date revokedDate = new Date();
 
         ConsentRevocationTerm consentRevocationTerm;
-        if (actionPerformedByPatient(revokedByPatient)) {
+        if (revokedByPatient.orElseThrow(NoDataFoundException::new)) {
             consentRevocationTerm = consentRevocationTermRepository.findOne(pcmProperties.getConsent().getRevocationTermIdWhenPatientRevokes());
         } else {
             consentRevocationTerm = consentRevocationTermRepository.findOne(pcmProperties.getConsent().getRevocationTermIdWhenProviderRevokes());
@@ -420,6 +429,7 @@ public class ConsentServiceImpl implements ConsentService {
             final ConsentRevocation consentRevocation = ConsentRevocation.builder()
                     .consentRevocationTerm(consentRevocationTerm)
                     .consent(consent)
+                    .revokedDate(revokedDate)
                     .revokedBy(revokedBy.orElse(null))
                     .revokedByPatient(revokedByPatient.orElse(null))
                     .build();
@@ -430,14 +440,13 @@ public class ConsentServiceImpl implements ConsentService {
             PatientDto patientDto = umsService.getPatientProfile(patientId);
 
             //Generate REVOKED PDF
-            if (actionPerformedByPatient(revokedByPatient)) {
-                //Do not send user Info if revoked by Patient
-                consentRevocation.setConsentRevocationPdf(consentRevocationPdfGenerator.generateConsentRevocationPdf(consent, patientDto, new Date(), consentRevocationTerm.getText(), Optional.empty()));
-            } else {
-                UserDto consentRevokerUserDto = umsService.getUserById(revokedBy.get());
-                consentRevocation.setConsentRevocationPdf(consentRevocationPdfGenerator.generateConsentRevocationPdf(consent, patientDto, new Date(), consentRevocationTerm.getText(), Optional.ofNullable(consentRevokerUserDto)));
+            try {
+                UserDto consentRevokerUserDto = umsService.getUserById(revokedBy.orElseThrow(NoDataFoundException::new));
+                consentRevocation.setConsentRevocationPdf(consentRevocationPdfGenerator.generateConsentRevocationPdf(consent, patientDto, revokedDate, consentRevocationTerm.getText(), Optional.ofNullable(consentRevokerUserDto), revokedByPatient));
+            } catch (IOException e) {
+                log.error(e.getMessage(), e);
+                throw new ConsentRevocationPdfGenerationException(e);
             }
-
 
             consent.setConsentRevocation(consentRevocation);
 
@@ -729,10 +738,11 @@ public class ConsentServiceImpl implements ConsentService {
                 .build();
     }
 
-    private boolean actionPerformedByPatient(Optional<Boolean> byPatient) {
-        if ((byPatient == null) || !byPatient.isPresent() || byPatient.get()) {
-            return true;
-        } else return false;
+    private ConsentAttestationTerm determineConsentAttestationTerm(Optional<Boolean> createdByPatient) {
+        if (createdByPatient.orElseThrow(NoDataFoundException::new)) {
+            return consentAttestationTermRepository.findOne(pcmProperties.getConsent().getAttestationTermIdWhenPatientSigns());
+        } else {
+            return consentAttestationTermRepository.findOne(pcmProperties.getConsent().getAttestationTermIdWhenProviderSigns());
+        }
     }
-
 }
