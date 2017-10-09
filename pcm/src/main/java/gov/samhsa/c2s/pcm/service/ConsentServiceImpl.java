@@ -276,6 +276,7 @@ public class ConsentServiceImpl implements ConsentService {
         LocalDate consentStartDate = consent.getStartDate().toLocalDate();
         LocalDate signTime = LocalDate.now();
         if (signTime.isAfter(consentStartDate)) {
+            //Consent start date is in the past
             throw new BadRequestException();
         }
 
