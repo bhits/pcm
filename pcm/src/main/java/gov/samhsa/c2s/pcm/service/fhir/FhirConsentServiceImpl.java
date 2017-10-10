@@ -153,7 +153,6 @@ public class FhirConsentServiceImpl implements FhirConsentService {
 
         // Specify Authors, the providers authorizes to disclose
         // Author :: Organizational Provider
-        // Organization sourceOrganizatiOrganizationalProviderPermittedToDiscloseonResource = null;
         Organization sourceOrganizationResource = null;
         if (c2sConsent.getConsentAttestation().getFromOrganizations().size() > 0) {
             sourceOrganizationResource = setOrganizationProvider(
