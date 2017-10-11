@@ -361,7 +361,7 @@ public class ConsentServiceImpl implements ConsentService {
 
             // generate FHIR Consent and publish consent to FHIR server if enabled
             if (pcmProperties.getConsent().getPublish().isEnabled()) {
-                consentAttestation.setFhirConsent(fhirConsentService.getAttestedFhirConsent(consent, patientDto));
+                consentAttestation.setFhirConsent(fhirConsentService.publishAndGetAttestedFhirConsent(consent, patientDto));
             }
             consentRepository.save(consent);
 
@@ -455,7 +455,7 @@ public class ConsentServiceImpl implements ConsentService {
 
             //revoke consent on FHIR server if enabled
             if (pcmProperties.getConsent().getPublish().isEnabled()) {
-                consent.getConsentAttestation().setFhirConsent(fhirConsentService.getRevokedFhirConsent(consent, patientDto));
+                consent.getConsentAttestation().setFhirConsent(fhirConsentService.revokeAndGetRevokedFhirConsent(consent, patientDto));
             }
             consentRepository.save(consent);
         } else throw new BadRequestException();

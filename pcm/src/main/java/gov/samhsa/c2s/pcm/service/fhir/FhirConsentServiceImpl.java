@@ -61,16 +61,9 @@ public class FhirConsentServiceImpl implements FhirConsentService {
 
 
     @Override
-    public byte[] getAttestedFhirConsent(gov.samhsa.c2s.pcm.domain.Consent c2sConsent, PatientDto patientDto) {
-        /*
-        Use the client to store a new consent resource instance
-        Invoke the server create method (and send pretty-printed JSON
-        encoding to the server
-        instead of the default which is non-pretty printed XML)
-        invoke Consent service
-        */
-
+    public byte[] publishAndGetAttestedFhirConsent(gov.samhsa.c2s.pcm.domain.Consent c2sConsent, PatientDto patientDto) {
         Consent fhirConsent = createFhirConsent(c2sConsent, patientDto);
+
         // Validate the resource
         ValidationResult validationResult = fhirValidator.validateWithResult(fhirConsent);
 
@@ -88,8 +81,10 @@ public class FhirConsentServiceImpl implements FhirConsentService {
     }
 
     @Override
-    public byte[] getRevokedFhirConsent(gov.samhsa.c2s.pcm.domain.Consent c2sConsent, PatientDto patientDto) {
+    public byte[] revokeAndGetRevokedFhirConsent(gov.samhsa.c2s.pcm.domain.Consent c2sConsent, PatientDto patientDto) {
+
         // Consent by identifier on FHIR server
+        //TODO: Get consent from server and then update the status instead
         Consent fhirConsent = createFhirConsent(c2sConsent, patientDto);
         fhirConsent.setStatus(Consent.ConsentState.INACTIVE);
 
