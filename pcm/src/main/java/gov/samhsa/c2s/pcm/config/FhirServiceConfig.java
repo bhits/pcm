@@ -2,7 +2,7 @@ package gov.samhsa.c2s.pcm.config;
 
 import ca.uhn.fhir.context.FhirContext;
 import ca.uhn.fhir.parser.IParser;
-import ca.uhn.fhir.rest.client.IGenericClient;
+import ca.uhn.fhir.rest.client.api.IGenericClient;
 import ca.uhn.fhir.validation.FhirValidator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -23,7 +23,6 @@ public class FhirServiceConfig {
 
     @Bean
     public IGenericClient fhirClient() {
-        // Create a client
         return fhirContext().newRestfulGenericClient(pcmProperties.getConsent().getPublish().getServerUrl());
     }
 
