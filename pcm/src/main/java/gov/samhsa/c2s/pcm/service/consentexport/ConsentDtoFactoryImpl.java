@@ -16,11 +16,10 @@ public class ConsentDtoFactoryImpl implements ConsentDtoFactory {
     private final ConsentExportMapper consentExportMapper;
 
     public ConsentDtoFactoryImpl(ConsentService consentService, UmsService umsService, ConsentExportMapper
-            consentExportMapper, ConsentService consentService1, UmsService umsService1, ConsentExportMapper
-            consentExportMapper1) {
-        this.consentService = consentService1;
-        this.umsService = umsService1;
-        this.consentExportMapper = consentExportMapper1;
+            consentExportMapper) {
+        this.consentService = consentService;
+        this.umsService = umsService;
+        this.consentExportMapper = consentExportMapper;
     }
 
 
