@@ -11,7 +11,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
-public class ConsentgenConfig {
+public class ConsentGenConfig {
 
     @Value("${c2s.pcm.fhir.mrn.oid}")
     private String pcmOrg;
