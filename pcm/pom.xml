@@ -23,14 +23,14 @@
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <java.version>1.8</java.version>
         <spring.cloud.version>Dalston.SR3</spring.cloud.version>
-        <hapi.fhir.version>2.2</hapi.fhir.version>
+        <hapi.fhir.version>3.0.0</hapi.fhir.version>
         <apache.pdfbox.version>2.0.4</apache.pdfbox.version>
         <modelmapper.version>1.0.0</modelmapper.version>
         <docker.maven.version>0.4.13</docker.maven.version>
         <saxon-he.version>9.8.0-1</saxon-he.version>
         <messagesource.version>0.7.1</messagesource.version>
         <maven-enforcer-plugin.version>3.0.0-M1</maven-enforcer-plugin.version>
-        <c2s.consent-gen.version>1.16.0</c2s.consent-gen.version>
+        <c2s.consent-gen.version>1.17.0-SNAPSHOT</c2s.consent-gen.version>
         <c2s.validator-extension.version>1.16.0</c2s.validator-extension.version>
         <c2s.i18n-jpa-support.version>1.16.0</c2s.i18n-jpa-support.version>
         <logstash-logback-encoder.version>4.11</logstash-logback-encoder.version>
@@ -105,6 +105,18 @@
             <artifactId>hapi-fhir-structures-dstu3</artifactId>
             <version>${hapi.fhir.version}</version>
         </dependency>
+        <dependency>
+            <groupId>ca.uhn.hapi.fhir</groupId>
+            <artifactId>hapi-fhir-structures-r4</artifactId>
+            <version>${hapi.fhir.version}</version>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/ca.uhn.hapi.fhir/hapi-fhir-client -->
+        <dependency>
+            <groupId>ca.uhn.hapi.fhir</groupId>
+            <artifactId>hapi-fhir-client</artifactId>
+            <version>${hapi.fhir.version}</version>
+        </dependency>
+
 
         <!-- Database -->
         <dependency>
