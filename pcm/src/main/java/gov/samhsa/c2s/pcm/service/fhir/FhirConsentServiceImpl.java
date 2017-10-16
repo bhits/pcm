@@ -21,7 +21,7 @@ import org.hl7.fhir.dstu3.model.Patient;
 import org.hl7.fhir.dstu3.model.Practitioner;
 import org.hl7.fhir.dstu3.model.Reference;
 import org.hl7.fhir.r4.model.codesystems.V3ActCode;
-import org.hl7.fhir.r4.model.codesystems.V3RoleClass;
+import org.hl7.fhir.r4.model.codesystems.V3ParticipationType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -173,7 +173,7 @@ public class FhirConsentServiceImpl implements FhirConsentService {
             if (sourceOrganizationList != null && sourceOrganizationList.size() > 0) {
                 sourceOrganizationList.stream().forEach((org) -> {
                     fhirConsent.getContained().add(org);
-                     fhirConsent.getOrganization().add(new Reference().setReference("#" + org.getId()));
+                    fhirConsent.getActor().add(getAuthorizedToShareActorComponent(org.getId()));
                 });
             }
         }
@@ -186,12 +186,12 @@ public class FhirConsentServiceImpl implements FhirConsentService {
             if (sourcePractitionerList != null && sourcePractitionerList.size() > 0) {
                 sourcePractitionerList.stream().forEach((individualProvider) -> {
                     fhirConsent.getContained().add(individualProvider);
-                    fhirConsent.getOrganization().add(new Reference().setReference("#" + individualProvider.getId()));
+                    fhirConsent.getActor().add(getAuthorizedToShareActorComponent(individualProvider.getId()));
                 });
             }
         }
 
-        // Check "To" Organizations and set them as Actor
+        // Check "To" Organizations
         List<Organization> recipientOrganizationList = null;
         if (c2sConsent.getConsentAttestation().getToOrganizations().size() > 0) {
             recipientOrganizationList = getFHIROrganizationProviderList(
@@ -200,12 +200,12 @@ public class FhirConsentServiceImpl implements FhirConsentService {
             if (recipientOrganizationList != null && recipientOrganizationList.size() > 0) {
                 recipientOrganizationList.stream().forEach((org) -> {
                     fhirConsent.getContained().add(org);
-                    fhirConsent.getActor().add(getActorComponentFromProviderId(org.getId()));
+                    fhirConsent.getActor().add(getSharingWithActorComponent(org.getId()));
                 });
             }
         }
 
-        // Check "To" Individual Providers and set them as Actor
+        // Check "To" Individual Providers
         List<Practitioner> recipientPractitionerList = null;
         if (c2sConsent.getConsentAttestation().getToPractitioners().size() > 0) {
             recipientPractitionerList = getFHIRIndividualProviderList(
@@ -214,7 +214,7 @@ public class FhirConsentServiceImpl implements FhirConsentService {
             if (recipientPractitionerList != null && recipientPractitionerList.size() > 0) {
                 recipientPractitionerList.stream().forEach((individualProvider) -> {
                     fhirConsent.getContained().add(individualProvider);
-                    fhirConsent.getActor().add(getActorComponentFromProviderId(individualProvider.getId()));
+                    fhirConsent.getActor().add(getSharingWithActorComponent(individualProvider.getId()));
                 });
             }
         }
@@ -322,12 +322,23 @@ public class FhirConsentServiceImpl implements FhirConsentService {
         return fhirPractitionerList;
     }
 
-    private Consent.ConsentActorComponent getActorComponentFromProviderId(String orgOrIndividualProviderId){
+    private Consent.ConsentActorComponent getAuthorizedToShareActorComponent(String orgOrIndividualProviderId){
+        //"From" providers(Role = INF)
         Consent.ConsentActorComponent actor = new Consent.ConsentActorComponent();
         actor.setReference(new Reference().setReference("#" + orgOrIndividualProviderId));
-        actor.setRole(new CodeableConcept().addCoding(new Coding(V3RoleClass.PROV.getSystem(),
-                V3RoleClass.PROV.toCode(),
-                V3RoleClass.PROV.getDisplay())));
+        actor.setRole(new CodeableConcept().addCoding(new Coding(V3ParticipationType.INF.getSystem(),
+                V3ParticipationType.INF.toCode(),
+                V3ParticipationType.INF.getDisplay())));
+        return actor;
+    }
+
+    private Consent.ConsentActorComponent getSharingWithActorComponent(String orgOrIndividualProviderId){
+        //"To" providers(Role = IRCP)
+        Consent.ConsentActorComponent actor = new Consent.ConsentActorComponent();
+        actor.setReference(new Reference().setReference("#" + orgOrIndividualProviderId));
+        actor.setRole(new CodeableConcept().addCoding(new Coding(V3ParticipationType.IRCP.getSystem(),
+                V3ParticipationType.IRCP.toCode(),
+                V3ParticipationType.IRCP.getDisplay())));
         return actor;
     }
 
