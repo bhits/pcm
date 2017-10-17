@@ -1,5 +1,6 @@
 package gov.samhsa.c2s.pcm.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -37,6 +38,7 @@ public class ConsentRevocation {
 
     @OneToOne
     @NotNull
+    @JsonIgnore
     private Consent consent;
 
     private Date revokedDate;
