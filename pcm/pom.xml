@@ -18,6 +18,7 @@
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
 
+
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
@@ -144,6 +145,13 @@
             <artifactId>pdfbox</artifactId>
             <version>${apache.pdfbox.version}</version>
         </dependency>
+
+        <dependency>
+            <groupId>com.github.ralfstuckert.pdfbox-layout</groupId>
+            <artifactId>pdfbox2-layout</artifactId>
+            <version>1.0.0</version>
+        </dependency>
+
         <dependency>
             <groupId>org.synyx</groupId>
             <artifactId>messagesource</artifactId>

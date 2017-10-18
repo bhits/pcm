@@ -17,7 +17,6 @@ import gov.samhsa.c2s.pcm.infrastructure.dto.PatientDto;
 import gov.samhsa.c2s.pcm.infrastructure.dto.TelecomDto;
 import gov.samhsa.c2s.pcm.infrastructure.dto.UserDto;
 import gov.samhsa.c2s.pcm.infrastructure.exception.InvalidContentException;
-import gov.samhsa.c2s.pcm.infrastructure.exception.PdfGenerationException;
 import gov.samhsa.c2s.pcm.infrastructure.pdfbox.Column;
 import gov.samhsa.c2s.pcm.infrastructure.pdfbox.PdfBoxService;
 import gov.samhsa.c2s.pcm.infrastructure.pdfbox.PdfBoxStyle;
@@ -26,10 +25,11 @@ import gov.samhsa.c2s.pcm.infrastructure.pdfbox.TextAlignment;
 import gov.samhsa.c2s.pcm.infrastructure.pdfbox.util.PdfBoxHandler;
 import gov.samhsa.c2s.pcm.service.exception.NoDataFoundException;
 import gov.samhsa.c2s.pcm.service.exception.PdfConfigMissingException;
+import gov.samhsa.c2s.pcm.service.pdf.hexPdf.Footer;
+import gov.samhsa.c2s.pcm.service.pdf.hexPdf.HexPDF;
 import gov.samhsa.c2s.pcm.service.util.UserInfoHelper;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.text.StrSubstitutor;
-import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.PDPageContentStream;
 import org.apache.pdfbox.pdmodel.font.PDFont;
@@ -39,7 +39,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
 import java.awt.*;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.ZoneId;
@@ -72,69 +71,275 @@ public class ConsentPdfGeneratorImpl implements ConsentPdfGenerator {
     public byte[] generateConsentPdf(Consent consent, PatientDto patientProfile, Date operatedOnDateTime, String consentTerms, Optional<UserDto> operatedByUserDto, Optional<Boolean> operatedByPatient) throws IOException {
         Assert.notNull(consent, "Consent is required.");
 
-        ByteArrayOutputStream pdfOutputStream = new ByteArrayOutputStream();
-        // Create a new empty document
-        PDDocument document = new PDDocument();
+        return generateConsentPdf(consent, patientProfile, consentTerms);
 
-        // Create a new blank page with configured page size and add it to the document
-        PDPage page = pdfBoxService.generatePage(CONSENT_PDF, document);
-        log.debug("Configured page size is: " + pdfBoxService.getConfiguredPdfFont(CONSENT_PDF));
-
-        // Set configured font
-        PDFont defaultFont = pdfBoxService.getConfiguredPdfFont(CONSENT_PDF);
-        log.debug("Configured font is: " + defaultFont);
-
-        try (PDPageContentStream contentStream = new PDPageContentStream(document, page)) {
-            //TODO: Enable to support relative layout
-
-            // Configure each drawing section yCoordinate in order to centralized adjust layout
-            final float titleSectionStartYCoordinate = page.getMediaBox().getHeight() - PdfBoxStyle.TOP_BOTTOM_MARGINS_OF_LETTER;
-            final float consentReferenceNumberSectionStartYCoordinate = 690f;
-            final float authorizationSectionStartYCoordinate = 640f;
-            final float healthInformationSectionStartYCoordinate = 455f;
-            final float consentTermsSectionStartYCoordinate = 270f;
-            final float consentEffectiveDateSectionStartYCoordinate = 120f;
-            final float consentSigningSectionStartYCoordinate = 75f;
-
-            // Title
-            addConsentTitle(CONSENT_PDF, titleSectionStartYCoordinate, page, contentStream);
-
-            // Consent Reference Number and Patient information
-            addConsentReferenceNumberAndPatientInfo(consent, patientProfile, consentReferenceNumberSectionStartYCoordinate, defaultFont, contentStream);
-
-            // Authorization to disclose section
-            addAuthorizationToDisclose(consent, authorizationSectionStartYCoordinate, defaultFont, page, contentStream);
-
-            // Health information to be disclosed section
-            addHealthInformationToBeDisclose(consent, healthInformationSectionStartYCoordinate, defaultFont, page, contentStream);
-
-            // Consent terms section
-            addConsentTerms(consentTerms, patientProfile, consentTermsSectionStartYCoordinate, defaultFont, page, contentStream);
-
-            // Consent effective and expiration date
-            addEffectiveAndExpirationDate(consent, consentEffectiveDateSectionStartYCoordinate, contentStream);
-
-            // Consent signing details
-            if (consent.getConsentStage().equals(ConsentStage.SIGNED)) {
-                addConsentSigningDetails(patientProfile, operatedByUserDto, operatedOnDateTime, operatedByPatient, consentSigningSectionStartYCoordinate, defaultFont, contentStream);
-            }
-
-            // Make sure that the content stream is closed
-            contentStream.close();
-
-            // Save the document to an output stream
-            document.save(pdfOutputStream);
-
-            return pdfOutputStream.toByteArray();
-        } catch (Exception e) {
-            log.error(e.getMessage(), e);
-            throw new PdfGenerationException(e);
-        } finally {
-            pdfOutputStream.close();
-            // finally make sure that the document is properly closed
-            document.close();
-        }
+//        ByteArrayOutputStream pdfOutputStream = new ByteArrayOutputStream();
+//        // Create a new empty document
+//        PDDocument document = new PDDocument();
+//
+//        // Create a new blank page with configured page size and add it to the document
+//        PDPage page = pdfBoxService.generatePage(CONSENT_PDF, document);
+//        log.debug("Configured page size is: " + pdfBoxService.getConfiguredPdfFont(CONSENT_PDF));
+//
+//        // Set configured font
+//        PDFont defaultFont = pdfBoxService.getConfiguredPdfFont(CONSENT_PDF);
+//        log.debug("Configured font is: " + defaultFont);
+//
+//        try (PDPageContentStream contentStream = new PDPageContentStream(document, page)) {
+//            //TODO: Enable to support relative layout
+//
+//            // Configure each drawing section yCoordinate in order to centralized adjust layout
+//            final float titleSectionStartYCoordinate = page.getMediaBox().getHeight() - PdfBoxStyle.TOP_BOTTOM_MARGINS_OF_LETTER;
+//            final float consentReferenceNumberSectionStartYCoordinate = 690f;
+//            final float authorizationSectionStartYCoordinate = 640f;
+//            final float healthInformationSectionStartYCoordinate = 455f;
+//            final float consentTermsSectionStartYCoordinate = 270f;
+//            final float consentEffectiveDateSectionStartYCoordinate = 120f;
+//            final float consentSigningSectionStartYCoordinate = 75f;
+//
+//            // Title
+//            addConsentTitle(CONSENT_PDF, titleSectionStartYCoordinate, page, contentStream);
+//
+//            // Consent Reference Number and Patient information
+//            addConsentReferenceNumberAndPatientInfo(consent, patientProfile, consentReferenceNumberSectionStartYCoordinate, defaultFont, contentStream);
+//
+//            // Authorization to disclose section
+//            addAuthorizationToDisclose(consent, authorizationSectionStartYCoordinate, defaultFont, page, contentStream);
+//
+//            // Health information to be disclosed section
+//            addHealthInformationToBeDisclose(consent, healthInformationSectionStartYCoordinate, defaultFont, page, contentStream);
+//
+//            // Consent terms section
+//            addConsentTerms(consentTerms, patientProfile, consentTermsSectionStartYCoordinate, defaultFont, page, contentStream);
+//
+//            // Consent effective and expiration date
+//            addEffectiveAndExpirationDate(consent, consentEffectiveDateSectionStartYCoordinate, contentStream);
+//
+//            // Consent signing details
+//            if (consent.getConsentStage().equals(ConsentStage.SIGNED)) {
+//                addConsentSigningDetails(patientProfile, operatedByUserDto, operatedOnDateTime, operatedByPatient, consentSigningSectionStartYCoordinate, defaultFont, contentStream);
+//            }
+//
+//            // Make sure that the content stream is closed
+//            contentStream.close();
+//
+//            // Save the document to an output stream
+//            document.save(pdfOutputStream);
+//
+//            return pdfOutputStream.toByteArray();
+//        } catch (Exception e) {
+//            log.error(e.getMessage(), e);
+//            throw new PdfGenerationException(e);
+//        } finally {
+//            pdfOutputStream.close();
+//            // finally make sure that the document is properly closed
+//            document.close();
+//        }
     }
+
+    public String getConsentTitle(String pdfType){
+        return  pdfProperties.getPdfConfigs().stream()
+                .filter(pdfConfig -> pdfConfig.type.equalsIgnoreCase(pdfType))
+                .map(PdfProperties.PdfConfig::getTitle)
+                .findAny()
+                .orElseThrow(PdfConfigMissingException::new);
+    }
+
+    private byte[] generateConsentPdf(Consent consent, PatientDto patientProfile, String consentTerms){
+        // Create a new document and include a default footer
+        HexPDF document = new HexPDF();
+
+        String consentTitle = getConsentTitle(CONSENT_PDF);
+
+        setPageFooter(document, consentTitle);
+
+        // Create the first page
+        document.newPage();
+
+        // Set document title
+        setDocumentTitle(document, consentTitle);
+
+        // Typeset everything else in boring black
+        document.setTextColor(Color.black);
+
+        document.normalStyle();
+
+        drawPatientInformationSection(document, consent, patientProfile);
+
+        drawAuthorizeToDiscloseSectionTitle(document, consent);
+
+        drawHealthInformationToBeDisclosedSection(document, consent);
+
+        drawConsentTermsSection(document, consentTerms, patientProfile);
+
+        drawEffectiveAndExspireDateSection(document, consent);
+
+        // Get the document
+        return document.getDocumentAsBytArray();
+    }
+
+    private void setDocumentTitle(HexPDF document, String consentTitle){
+        // Add a main title, centered in shiny colours
+        document.title1Style();
+//        doc.setTextColor(new Color(0x2020ff));
+        document.drawText( consentTitle + "\n", HexPDF.CENTER);
+    }
+
+    private void setPageFooter(HexPDF document, String consentTitle){
+        document.setFooter(Footer.defaultFooter);
+        // Change center text in footer
+        document.getFooter().setCenterText(consentTitle);
+        // Use footer also on first page
+        document.getFooter().setOMIT_FIRSTPAGE(false);
+    }
+
+    private void drawPatientInformationSection(HexPDF document, Consent consent, PatientDto patientProfile){
+        String patientFullName = UserInfoHelper.getFullName(patientProfile.getFirstName(), patientProfile.getMiddleName(), patientProfile.getLastName());
+        String patientBirthDate = PdfBoxHandler.formatLocalDate(patientProfile.getBirthDate(), DATE_FORMAT_PATTERN);
+
+        Object[][] patientInfo = {
+                {"Consent Reference Number: " + consent.getConsentReferenceId() , null},
+                {"Patient Name: " + patientFullName, "Patient DOB: "+ patientBirthDate}
+        };
+
+        document.drawTable(patientInfo,
+                new float[]{240,240},
+                new int[]{HexPDF.LEFT, HexPDF.LEFT},
+                HexPDF.LEFT);
+
+    }
+
+    private void drawAuthorizeToDiscloseSectionTitle(HexPDF document, Consent consent){
+        Object[][] title = {
+                {"AUTHORIZATION TO DISCLOSE" }
+        };
+        document.drawTable(title,
+                new float[]{480},
+                new int[]{HexPDF.LEFT},
+                HexPDF.LEFT);
+        drawAuthorizationSubSectionHeader(document,"\nAuthorizes:\n" );
+
+        drawProvidersTable(document, consent.getFromProviders());
+
+        drawAuthorizationSubSectionHeader(document,"\nTo disclose to:\n" );
+
+        drawProvidersTable(document, consent.getToProviders());
+    }
+
+    private void drawHealthInformationToBeDisclosedSection(HexPDF document, Consent consent) {
+        document.drawText(  "\n");
+
+        Object[][] title = {
+                {"HEALTH INFORMATION TO BE DISCLOSED" }
+        };
+        document.drawTable(title,
+                new float[]{480},
+                new int[]{HexPDF.LEFT},
+                HexPDF.LEFT);
+
+        String sensitivityCategoriesLabel = "To SHARE the following medical information:";
+        String subLabel = "Sensitivity Categories:";
+        String listPrifix = "\n- ";
+        String sensitivityCategories = consent.getShareSensitivityCategories().stream()
+                .map(SensitivityCategory::getDisplay)
+                .collect(Collectors.joining("\n- "));
+
+        String sensitivityCategoriesStr = sensitivityCategoriesLabel
+                                            .concat("\n").concat(subLabel)
+                                            .concat("\n- ").concat(sensitivityCategories);
+
+        String purposeLabel = "To SHARE for the following purpose(s):";
+
+        String purposes = consent.getSharePurposes().stream()
+                .map(Purpose::getDisplay)
+                .collect(Collectors.joining("\n- "));
+        String purposeOfUseStr = purposeLabel.concat("\n- ").concat(purposes);
+
+        Object[][] healthInformationHeaders = {
+                {sensitivityCategoriesStr, purposeOfUseStr }
+        };
+
+        document.drawTable(healthInformationHeaders,
+                new float[]{240,240},
+                new int[]{HexPDF.LEFT, HexPDF.LEFT},
+                HexPDF.LEFT);
+    }
+
+    private String createListOfHealthInformation(List<String> entries){
+        String listOfEntries = "";
+        for(String entry : entries){
+            listOfEntries.concat("- ").concat(entry);
+        }
+        return listOfEntries;
+    }
+
+    private void drawConsentTermsSection(HexPDF document, String consentTerms, PatientDto patientProfile) {
+
+        Object[][] title = {
+                {"CONSENT TERMS" }
+        };
+        document.drawText(  "\n");
+
+        document.drawTable(title,
+                new float[]{480},
+                new int[]{HexPDF.LEFT},
+                HexPDF.LEFT);
+
+        final String userNameKey = "ATTESTER_FULL_NAME";
+        String termsWithAttestedName = StrSubstitutor.replace(consentTerms,
+                ImmutableMap.of(userNameKey, UserInfoHelper.getFullName(patientProfile.getFirstName(), patientProfile.getMiddleName(), patientProfile.getLastName())));
+
+
+        document.drawText(  termsWithAttestedName);
+    }
+
+
+    private void drawEffectiveAndExspireDateSection(HexPDF document, Consent consent) {
+        // Prepare table content
+        String effectiveDateContent = "Effective Date: ".concat(PdfBoxHandler.formatLocalDate(consent.getStartDate().toLocalDate(), DATE_FORMAT_PATTERN));
+        String expirationDateContent = "Expiration Date: ".concat(PdfBoxHandler.formatLocalDate(consent.getEndDate().toLocalDate(), DATE_FORMAT_PATTERN));
+
+        Object[][] title = {
+                {effectiveDateContent, expirationDateContent }
+        };
+        document.drawText(  "\n\n");
+
+        document.drawTable(title,
+                new float[]{240, 240},
+                new int[]{HexPDF.LEFT, HexPDF.LEFT},
+                HexPDF.LEFT);
+    }
+
+    private void drawAuthorizationSubSectionHeader(HexPDF document, String header){
+        document.title2Style();
+        document.drawText( header );
+        document.normalStyle();
+    }
+
+    private void drawProvidersTable(HexPDF document, List<Provider> providers){
+        Object[][] tableContents = new Object[providers.size()+1][4];
+        tableContents[0][0] =  "Provider Name";
+        tableContents[0][1] =  "NPI Number";
+        tableContents[0][2] =  "Address";
+        tableContents[0][3] =  "Phone" ;
+
+        List<FlattenedSmallProviderDto> flattenedSmallProvidersDto = providers.stream()
+                .map(provider -> plsService.getFlattenedSmallProvider(provider.getIdentifier().getValue(), PlsService.Projection.FLATTEN_SMALL_PROVIDER))
+                .collect(Collectors.toList());
+
+        for(int i = 0; i<flattenedSmallProvidersDto.size(); i++){
+            tableContents[i+1][0]= determineProviderName(flattenedSmallProvidersDto.get(i));
+            tableContents[i+1][1]= flattenedSmallProvidersDto.get(i).getNpi();
+            tableContents[i+1][2]= composeAddress(flattenedSmallProvidersDto.get(i)) ;
+            tableContents[i+1][3]= flattenedSmallProvidersDto.get(i).getPracticeLocationAddressTelephoneNumber();
+        }
+
+        document.drawTable(tableContents,
+                new float[]{160,80,160,80},
+                new int[]{HexPDF.LEFT, HexPDF.LEFT, HexPDF.LEFT, HexPDF.LEFT},
+                HexPDF.LEFT);
+    }
+
 
     @Override
     public void addConsentTitle(String pdfType, float startYCoordinate, PDPage page, PDPageContentStream contentStream) throws IOException {
