@@ -187,6 +187,8 @@ public class ConsentServiceImpl implements ConsentService {
                 .filter(consent -> !ConsentStage.DELETED.equals(consent.getConsentStage()))
                 // find any consent that is not in 'REVOKED' stage
                 .filter(consent -> !ConsentStage.REVOKED.equals(consent.getConsentStage()))
+                //filter any consent whose end date is in the past
+                .filter(consent -> !consent.getEndDate().toLocalDate().isBefore(LocalDate.now()))
                 .anyMatch(consent ->
                         // contains any of the from providers and
                         consent.getFromProviders().stream()
@@ -274,6 +276,7 @@ public class ConsentServiceImpl implements ConsentService {
         LocalDate consentStartDate = consent.getStartDate().toLocalDate();
         LocalDate signTime = LocalDate.now();
         if (signTime.isAfter(consentStartDate)) {
+            //Consent start date is in the past
             throw new BadRequestException();
         }
 
@@ -358,7 +361,7 @@ public class ConsentServiceImpl implements ConsentService {
 
             // generate FHIR Consent and publish consent to FHIR server if enabled
             if (pcmProperties.getConsent().getPublish().isEnabled()) {
-                consentAttestation.setFhirConsent(fhirConsentService.getAttestedFhirConsent(consent, patientDto));
+                consentAttestation.setFhirConsent(fhirConsentService.publishAndGetAttestedFhirConsent(consent, patientDto));
             }
             consentRepository.save(consent);
 
@@ -452,7 +455,7 @@ public class ConsentServiceImpl implements ConsentService {
 
             //revoke consent on FHIR server if enabled
             if (pcmProperties.getConsent().getPublish().isEnabled()) {
-                consent.getConsentAttestation().setFhirConsent(fhirConsentService.getRevokedFhirConsent(consent, patientDto));
+                consent.getConsentAttestation().setFhirConsent(fhirConsentService.revokeAndGetRevokedFhirConsent(consent, patientDto));
             }
             consentRepository.save(consent);
         } else throw new BadRequestException();

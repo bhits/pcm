@@ -1,7 +1,7 @@
 package gov.samhsa.c2s.pcm.service.fhir;
 
 
-import ca.uhn.fhir.rest.client.IGenericClient;
+import ca.uhn.fhir.rest.client.api.IGenericClient;
 import ca.uhn.fhir.rest.gclient.TokenClientParam;
 import gov.samhsa.c2s.pcm.config.FhirProperties;
 import gov.samhsa.c2s.pcm.infrastructure.dto.PatientDto;

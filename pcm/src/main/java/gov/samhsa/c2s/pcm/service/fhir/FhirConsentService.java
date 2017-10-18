@@ -6,7 +6,7 @@ import gov.samhsa.c2s.pcm.infrastructure.dto.PatientDto;
 
 
 public interface FhirConsentService {
-    public byte[] getAttestedFhirConsent(Consent consent, PatientDto patient);
+    byte[] publishAndGetAttestedFhirConsent(Consent consent, PatientDto patient);
 
-    public byte[] getRevokedFhirConsent(Consent consent, PatientDto patient);
+    byte[] revokeAndGetRevokedFhirConsent(Consent consent, PatientDto patient);
 }
