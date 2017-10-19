@@ -1,7 +1,5 @@
 package gov.samhsa.c2s.pcm.config;
 
-import gov.samhsa.c2s.pcm.infrastructure.pdfbox.PdfBoxFont;
-import gov.samhsa.c2s.pcm.infrastructure.pdfbox.PdfBoxPageSize;
 import lombok.Data;
 import org.hibernate.validator.constraints.NotBlank;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -30,10 +28,5 @@ public class PdfProperties {
         @NotBlank
         public String title;
 
-        //Not required
-        public PdfBoxFont pdFont;
-
-        //Not required
-        public PdfBoxPageSize pdfPageSize;
     }
 }
