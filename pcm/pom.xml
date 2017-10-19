@@ -5,7 +5,7 @@
 
     <groupId>gov.samhsa.c2s</groupId>
     <artifactId>pcm</artifactId>
-    <version>2.5.0-SNAPSHOT</version>
+    <version>2.6.0-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <name>pcm</name>
@@ -18,23 +18,20 @@
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
 
-
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <java.version>1.8</java.version>
         <spring.cloud.version>Dalston.SR3</spring.cloud.version>
-        <hapi.fhir.version>2.2</hapi.fhir.version>
+        <hapi.fhir.version>3.0.0</hapi.fhir.version>
         <apache.pdfbox.version>2.0.4</apache.pdfbox.version>
         <modelmapper.version>1.0.0</modelmapper.version>
         <docker.maven.version>0.4.13</docker.maven.version>
         <saxon-he.version>9.8.0-1</saxon-he.version>
         <messagesource.version>0.7.1</messagesource.version>
         <maven-enforcer-plugin.version>3.0.0-M1</maven-enforcer-plugin.version>
-        <c2s.consent-gen.version>1.16.0</c2s.consent-gen.version>
-        <c2s.validator-extension.version>1.16.0</c2s.validator-extension.version>
-        <c2s.i18n-jpa-support.version>1.16.0</c2s.i18n-jpa-support.version>
-        <c2s.pdfbox-enhance.version>1.17.0-SNAPSHOT</c2s.pdfbox-enhance.version>
+        <!-- TODO: upgrade common-libraries to 1.17.0 when it is released -->
+        <c2s.common-libraries.version>1.17.0-b141</c2s.common-libraries.version>
         <logstash-logback-encoder.version>4.11</logstash-logback-encoder.version>
     </properties>
 
@@ -107,6 +104,17 @@
             <artifactId>hapi-fhir-structures-dstu3</artifactId>
             <version>${hapi.fhir.version}</version>
         </dependency>
+        <dependency>
+            <groupId>ca.uhn.hapi.fhir</groupId>
+            <artifactId>hapi-fhir-structures-r4</artifactId>
+            <version>${hapi.fhir.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>ca.uhn.hapi.fhir</groupId>
+            <artifactId>hapi-fhir-client</artifactId>
+            <version>${hapi.fhir.version}</version>
+        </dependency>
+
 
         <!-- Database -->
         <dependency>
@@ -168,28 +176,40 @@
         <dependency>
             <groupId>gov.samhsa.c2s</groupId>
             <artifactId>validator-extension</artifactId>
-            <version>${c2s.validator-extension.version}</version>
+            <version>${c2s.common-libraries.version}</version>
         </dependency>
         <dependency>
             <groupId>gov.samhsa.c2s</groupId>
             <artifactId>i18n-jpa-support</artifactId>
-            <version>${c2s.i18n-jpa-support.version}</version>
+            <version>${c2s.common-libraries.version}</version>
         </dependency>
         <dependency>
             <groupId>gov.samhsa.c2s</groupId>
             <artifactId>consent-gen</artifactId>
-            <version>${c2s.consent-gen.version}</version>
+            <version>${c2s.common-libraries.version}</version>
         </dependency>
         <dependency>
             <groupId>gov.samhsa.c2s</groupId>
             <artifactId>pdfbox-enhance</artifactId>
-            <version>${c2s.pdfbox-enhance.version}</version>
+            <version>${${c2s.common-libraries.version}}</version>
         </dependency>
 
         <!-- Test -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>gov.samhsa.c2s</groupId>
+            <artifactId>document-accessor</artifactId>
+            <version>${c2s.common-libraries.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>gov.samhsa.c2s</groupId>
+            <artifactId>document-converter</artifactId>
+            <version>${c2s.common-libraries.version}</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
@@ -202,6 +222,11 @@
                 <version>${spring.cloud.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>net.sf.saxon</groupId>
+                <artifactId>Saxon-HE</artifactId>
+                <version>${saxon-he.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

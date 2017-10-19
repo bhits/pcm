@@ -27,9 +27,6 @@ c2s:
       revocation-term-id-when-provider-revokes: 1
       publish:
         enabled: false
-        # configure fhir server base url
-        serverUrl: http://bhitsdevhie01/hapi-fhir-jpaserver/baseStu3
-        clientSocketTimeoutInMs: 768000
     fhir:
       ssn:
         system: http://hl7.org/fhir/sid/us-ssn
@@ -78,9 +75,3 @@ spring:
   profiles: docker
   datasource:
     url: jdbc:mysql://${C2S_DB_HOST:pcm-db.c2s.com}:${C2S_DB_PORT:3306}/pcm?autoReconnect=true
-c2s:
-  pcm:
-    consent:
-      publish:
-        # configure fhir server base url
-        serverUrl: http://hapi-fhir.c2s.com:8080/hapi-fhir-jpaserver/baseStu3
