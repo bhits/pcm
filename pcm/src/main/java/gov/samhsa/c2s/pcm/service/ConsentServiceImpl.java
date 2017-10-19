@@ -22,9 +22,11 @@ import gov.samhsa.c2s.pcm.domain.SensitivityCategoryRepository;
 import gov.samhsa.c2s.pcm.domain.valueobject.Address;
 import gov.samhsa.c2s.pcm.domain.valueobject.ConsentStage;
 import gov.samhsa.c2s.pcm.domain.valueobject.Identifier;
+import gov.samhsa.c2s.pcm.infrastructure.FisClient;
 import gov.samhsa.c2s.pcm.infrastructure.PlsService;
 import gov.samhsa.c2s.pcm.infrastructure.UmsService;
 import gov.samhsa.c2s.pcm.infrastructure.dto.FlattenedSmallProviderDto;
+import gov.samhsa.c2s.pcm.infrastructure.dto.PatientConsentDto;
 import gov.samhsa.c2s.pcm.infrastructure.dto.PatientDto;
 import gov.samhsa.c2s.pcm.infrastructure.dto.UserDto;
 import gov.samhsa.c2s.pcm.service.dto.AbstractProviderDto;
@@ -53,7 +55,6 @@ import gov.samhsa.c2s.pcm.service.exception.InvalidProviderTypeException;
 import gov.samhsa.c2s.pcm.service.exception.InvalidPurposeException;
 import gov.samhsa.c2s.pcm.service.exception.NoDataFoundException;
 import gov.samhsa.c2s.pcm.service.exception.PatientOrSavedConsentNotFoundException;
-import gov.samhsa.c2s.pcm.service.fhir.FhirConsentService;
 import gov.samhsa.c2s.pcm.service.pdf.ConsentPdfGenerator;
 import gov.samhsa.c2s.pcm.service.pdf.ConsentRevocationPdfGenerator;
 import lombok.extern.slf4j.Slf4j;
@@ -98,12 +99,12 @@ public class ConsentServiceImpl implements ConsentService {
     private final PlsService plsService;
     private final PurposeRepository purposeRepository;
     private final SensitivityCategoryRepository sensitivityCategoryRepository;
-    private final FhirConsentService fhirConsentService;
+    private final FisClient fisClient;
     private final I18nService i18nService;
 
 
     @Autowired
-    public ConsentServiceImpl(ConsentAttestationTermRepository consentAttestationTermRepository, ConsentPdfGenerator consentPdfGenerator, ConsentRepository consentRepository, ConsentRevocationPdfGenerator consentRevocationPdfGenerator, ConsentRevocationTermRepository consentRevocationTermRepository, ModelMapper modelMapper, PatientRepository patientRepository, PcmProperties pcmProperties, UmsService umsService, PlsService plsService, PurposeRepository purposeRepository, SensitivityCategoryRepository sensitivityCategoryRepository, FhirConsentService fhirConsentService, I18nService i18nService) {
+    public ConsentServiceImpl(ConsentAttestationTermRepository consentAttestationTermRepository, ConsentPdfGenerator consentPdfGenerator, ConsentRepository consentRepository, ConsentRevocationPdfGenerator consentRevocationPdfGenerator, ConsentRevocationTermRepository consentRevocationTermRepository, ModelMapper modelMapper, PatientRepository patientRepository, PcmProperties pcmProperties, UmsService umsService, PlsService plsService, PurposeRepository purposeRepository, SensitivityCategoryRepository sensitivityCategoryRepository, FisClient fisClient, I18nService i18nService) {
         this.consentAttestationTermRepository = consentAttestationTermRepository;
         this.consentPdfGenerator = consentPdfGenerator;
         this.consentRepository = consentRepository;
@@ -116,7 +117,7 @@ public class ConsentServiceImpl implements ConsentService {
         this.plsService = plsService;
         this.purposeRepository = purposeRepository;
         this.sensitivityCategoryRepository = sensitivityCategoryRepository;
-        this.fhirConsentService = fhirConsentService;
+        this.fisClient = fisClient;
         this.i18nService = i18nService;
     }
 
@@ -361,7 +362,8 @@ public class ConsentServiceImpl implements ConsentService {
 
             // generate FHIR Consent and publish consent to FHIR server if enabled
             if (pcmProperties.getConsent().getPublish().isEnabled()) {
-                consentAttestation.setFhirConsent(fhirConsentService.publishAndGetAttestedFhirConsent(consent, patientDto));
+                byte[] fhirconsent=fisClient.publishAndGetAttestedFhirConsent(PatientConsentDto.builder().consent(consent).patient(patientDto).build()).getBytes();
+                consentAttestation.setFhirConsent(fhirconsent);
             }
             consentRepository.save(consent);
 
@@ -455,7 +457,7 @@ public class ConsentServiceImpl implements ConsentService {
 
             //revoke consent on FHIR server if enabled
             if (pcmProperties.getConsent().getPublish().isEnabled()) {
-                consent.getConsentAttestation().setFhirConsent(fhirConsentService.revokeAndGetRevokedFhirConsent(consent, patientDto));
+                consent.getConsentAttestation().setFhirConsent(fisClient.revokeAndGetRevokedFhirConsent(PatientConsentDto.builder().consent(consent).patient(patientDto).build()).getBytes());
             }
             consentRepository.save(consent);
         } else throw new BadRequestException();

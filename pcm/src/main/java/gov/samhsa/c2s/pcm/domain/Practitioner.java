@@ -1,5 +1,6 @@
 package gov.samhsa.c2s.pcm.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import gov.samhsa.c2s.pcm.domain.valueobject.Address;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -54,8 +55,10 @@ public class Practitioner {
     private String phoneNumber;
 
     @ManyToOne
+    @JsonIgnore
     private ConsentAttestation consentAttestationFrom;
 
     @ManyToOne
+    @JsonIgnore
     private ConsentAttestation consentAttestationTo;
 }

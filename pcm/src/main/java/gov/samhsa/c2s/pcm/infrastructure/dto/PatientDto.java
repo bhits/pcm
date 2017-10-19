@@ -39,7 +39,7 @@ public class PatientDto {
 
     private List<TelecomDto> telecoms;
 
-    private List<PatientIdentifierDto> patientIdentifiers;
+    private List<PatientIdentifierDto> identifiers;
     private String resourceIdentifier;
     private String mrn;
     private String enterpriseIdentifier;
