@@ -243,7 +243,7 @@ public class HexPDF extends PDDocument {
     private static final String TXT_NEWLINE = "@@NeWlInE@@";
 
     // Styling
-    private float normalFontSize = 10;
+    private float normalFontSize = 11;
     private float title1FontSize = 20;
     private float title2FontSize = 15;
 
@@ -1426,5 +1426,4 @@ public class HexPDF extends PDDocument {
     public void setPageSize(PDRectangle pageSize) {
         this.pageSize = pageSize;
     }
-
 }
