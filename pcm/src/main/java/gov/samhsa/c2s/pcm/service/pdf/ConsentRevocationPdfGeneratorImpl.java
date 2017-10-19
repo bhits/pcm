@@ -3,8 +3,7 @@ package gov.samhsa.c2s.pcm.service.pdf;
 import gov.samhsa.c2s.pcm.domain.Consent;
 import gov.samhsa.c2s.pcm.infrastructure.dto.PatientDto;
 import gov.samhsa.c2s.pcm.infrastructure.dto.UserDto;
-import gov.samhsa.c2s.pcm.infrastructure.pdfbox.PdfBoxService;
-import gov.samhsa.c2s.pcm.service.pdf.hexPdf.HexPDF;
+import gov.samhsa.c2s.common.pdfbox.enhance.HexPdf;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -19,15 +18,12 @@ import java.util.Optional;
 @Slf4j
 public class ConsentRevocationPdfGeneratorImpl implements ConsentRevocationPdfGenerator {
     private static final String CONSENT_REVOCATION_PDF = "consent-revocation-pdf";
-
-    private final PdfBoxService pdfBoxService;
     private final ConsentPdfGenerator consentPdfGenerator;
 
-    private HexPDF document;
+    private HexPdf document;
 
     @Autowired
-    public ConsentRevocationPdfGeneratorImpl(PdfBoxService pdfBoxService, ConsentPdfGenerator consentPdfGenerator) {
-        this.pdfBoxService = pdfBoxService;
+    public ConsentRevocationPdfGeneratorImpl(ConsentPdfGenerator consentPdfGenerator) {
         this.consentPdfGenerator = consentPdfGenerator;
     }
 
@@ -36,11 +32,12 @@ public class ConsentRevocationPdfGeneratorImpl implements ConsentRevocationPdfGe
 
         Assert.notNull(consent, "Consent is required.");
 
-        document = new HexPDF();
+        document = new HexPdf();
 
         String consentTitle = consentPdfGenerator.getConsentTitle(CONSENT_REVOCATION_PDF);
 
-        consentPdfGenerator.setPageFooter(document, consentTitle);
+        // TODO fix content in footer issue the set title: consentTitle
+        consentPdfGenerator.setPageFooter(document, "");
 
         // Create the first page
         document.newPage();

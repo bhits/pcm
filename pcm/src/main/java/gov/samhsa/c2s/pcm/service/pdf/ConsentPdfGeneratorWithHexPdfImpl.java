@@ -2,6 +2,9 @@ package gov.samhsa.c2s.pcm.service.pdf;
 
 
 import com.google.common.collect.ImmutableMap;
+import gov.samhsa.c2s.common.pdfbox.enhance.Footer;
+import gov.samhsa.c2s.common.pdfbox.enhance.HexPdf;
+import gov.samhsa.c2s.common.pdfbox.enhance.pdfbox.util.PdfBoxHandler;
 import gov.samhsa.c2s.pcm.config.PdfProperties;
 import gov.samhsa.c2s.pcm.domain.Consent;
 import gov.samhsa.c2s.pcm.domain.Provider;
@@ -13,11 +16,8 @@ import gov.samhsa.c2s.pcm.infrastructure.dto.FlattenedSmallProviderDto;
 import gov.samhsa.c2s.pcm.infrastructure.dto.PatientDto;
 import gov.samhsa.c2s.pcm.infrastructure.dto.TelecomDto;
 import gov.samhsa.c2s.pcm.infrastructure.dto.UserDto;
-import gov.samhsa.c2s.pcm.infrastructure.pdfbox.util.PdfBoxHandler;
 import gov.samhsa.c2s.pcm.service.exception.NoDataFoundException;
 import gov.samhsa.c2s.pcm.service.exception.PdfConfigMissingException;
-import gov.samhsa.c2s.pcm.service.pdf.hexPdf.Footer;
-import gov.samhsa.c2s.pcm.service.pdf.hexPdf.HexPDF;
 import gov.samhsa.c2s.pcm.service.util.UserInfoHelper;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.text.StrSubstitutor;
@@ -45,7 +45,7 @@ public class ConsentPdfGeneratorWithHexPdfImpl implements ConsentPdfGenerator {
 
     private final PdfProperties pdfProperties;
     private final PlsService plsService;
-    private HexPDF document;
+    private HexPdf document;
 
     @Autowired
     public ConsentPdfGeneratorWithHexPdfImpl(PdfProperties pdfProperties, PlsService plsService) {
@@ -59,9 +59,9 @@ public class ConsentPdfGeneratorWithHexPdfImpl implements ConsentPdfGenerator {
 
         String consentTitle = getConsentTitle(CONSENT_PDF);
 
-        document = new HexPDF();
-
-        setPageFooter(document, consentTitle);
+        document = new HexPdf();
+        // TODO fix content in footer issue the set title: consentTitle
+        setPageFooter(document, "");
 
         // Create the first page
         document.newPage();
@@ -102,33 +102,33 @@ public class ConsentPdfGeneratorWithHexPdfImpl implements ConsentPdfGenerator {
     }
 
 
-    public void drawConsentTitle(HexPDF document, String consentTitle){
+    public void drawConsentTitle(HexPdf document, String consentTitle){
         // Add a main title, centered in shiny colours
         document.title1Style();
-        document.drawText( consentTitle + "\n", HexPDF.CENTER);
+        document.drawText( consentTitle + "\n", HexPdf.CENTER);
     }
     @Override
-    public void setPageFooter(HexPDF document, String consentTitle){
-        document.setFooter(Footer.defaultFooter);
+    public void setPageFooter(HexPdf document, String consentTitle){
+        document.setFooter(Footer.noFooter);
         // Change center text in footer
         document.getFooter().setCenterText(consentTitle);
         // Use footer also on first page
         document.getFooter().setOMIT_FIRSTPAGE(false);
     }
     @Override
-    public void drawPatientInformationSection(HexPDF document, Consent consent, PatientDto patientProfile){
+    public void drawPatientInformationSection(HexPdf document, Consent consent, PatientDto patientProfile){
         String patientFullName = UserInfoHelper.getFullName(patientProfile.getFirstName(), patientProfile.getMiddleName(), patientProfile.getLastName());
         String patientBirthDate = PdfBoxHandler.formatLocalDate(patientProfile.getBirthDate(), DATE_FORMAT_PATTERN);
 
         Object[][] patientInfo = {
-                {"Consent Reference Number: " + consent.getConsentReferenceId() , null},
-                {"Patient Name: " + patientFullName, "Patient DOB: "+ patientBirthDate}
+                {"\nConsent Reference Number: " + consent.getConsentReferenceId() , null},
+                {"\nPatient Name: " + patientFullName, "\nPatient DOB: "+ patientBirthDate }
         };
 
         document.drawTable(patientInfo,
                 new float[]{240,240},
-                new int[]{HexPDF.LEFT, HexPDF.LEFT},
-                HexPDF.LEFT);
+                new int[]{HexPdf.LEFT, HexPdf.LEFT},
+                HexPdf.LEFT);
 
     }
 
@@ -138,8 +138,8 @@ public class ConsentPdfGeneratorWithHexPdfImpl implements ConsentPdfGenerator {
         };
         document.drawTable(title,
                 new float[]{480},
-                new int[]{HexPDF.LEFT},
-                HexPDF.LEFT);
+                new int[]{HexPdf.LEFT},
+                HexPdf.LEFT);
         drawAuthorizationSubSectionHeader(document,"\nAuthorizes:\n" );
 
         drawProvidersTable(document, consent.getFromProviders());
@@ -157,8 +157,8 @@ public class ConsentPdfGeneratorWithHexPdfImpl implements ConsentPdfGenerator {
         };
         document.drawTable(title,
                 new float[]{480},
-                new int[]{HexPDF.LEFT},
-                HexPDF.LEFT);
+                new int[]{HexPdf.LEFT},
+                HexPdf.LEFT);
 
         String sensitivityCategoriesLabel = "To SHARE the following medical information:";
         String subLabel = "Sensitivity Categories:";
@@ -184,8 +184,8 @@ public class ConsentPdfGeneratorWithHexPdfImpl implements ConsentPdfGenerator {
 
         document.drawTable(healthInformationHeaders,
                 new float[]{240,240},
-                new int[]{HexPDF.LEFT, HexPDF.LEFT},
-                HexPDF.LEFT);
+                new int[]{HexPdf.LEFT, HexPdf.LEFT},
+                HexPdf.LEFT);
     }
 
     private void drawConsentTermsSection(String consentTerms, PatientDto patientProfile) {
@@ -196,8 +196,8 @@ public class ConsentPdfGeneratorWithHexPdfImpl implements ConsentPdfGenerator {
 
         document.drawTable(title,
                 new float[]{480},
-                new int[]{HexPDF.LEFT},
-                HexPDF.LEFT);
+                new int[]{HexPdf.LEFT},
+                HexPdf.LEFT);
 
         final String userNameKey = "ATTESTER_FULL_NAME";
         String termsWithAttestedName = StrSubstitutor.replace(consentTerms,
@@ -220,17 +220,17 @@ public class ConsentPdfGeneratorWithHexPdfImpl implements ConsentPdfGenerator {
 
         document.drawTable(title,
                 new float[]{240, 240},
-                new int[]{HexPDF.LEFT, HexPDF.LEFT},
-                HexPDF.LEFT);
+                new int[]{HexPdf.LEFT, HexPdf.LEFT},
+                HexPdf.LEFT);
     }
 
-    private void drawAuthorizationSubSectionHeader(HexPDF document, String header){
+    private void drawAuthorizationSubSectionHeader(HexPdf document, String header){
         document.title2Style();
         document.drawText( header );
         document.normalStyle();
     }
 
-    private void drawProvidersTable(HexPDF document, List<Provider> providers){
+    private void drawProvidersTable(HexPdf document, List<Provider> providers){
         Object[][] tableContents = new Object[providers.size()+1][4];
         tableContents[0][0] =  "Provider Name";
         tableContents[0][1] =  "NPI Number";
@@ -250,12 +250,12 @@ public class ConsentPdfGeneratorWithHexPdfImpl implements ConsentPdfGenerator {
 
         document.drawTable(tableContents,
                 new float[]{160,80,160,80},
-                new int[]{HexPDF.LEFT, HexPDF.LEFT, HexPDF.LEFT, HexPDF.LEFT},
-                HexPDF.LEFT);
+                new int[]{HexPdf.LEFT, HexPdf.LEFT, HexPdf.LEFT, HexPdf.LEFT},
+                HexPdf.LEFT);
     }
 
     @Override
-    public void addConsentSigningDetails(HexPDF document, PatientDto patient, Optional<UserDto> signedByUserDto, Date signedOnDateTime, Optional<Boolean> signedByPatient) throws IOException {
+    public void addConsentSigningDetails(HexPdf document, PatientDto patient, Optional<UserDto> signedByUserDto, Date signedOnDateTime, Optional<Boolean> signedByPatient) throws IOException {
         if (signedByPatient.orElseThrow(NoDataFoundException::new)) {
             // Consent is signed by Patient
             addPatientSigningDetails(document, patient, signedOnDateTime);
@@ -263,18 +263,18 @@ public class ConsentPdfGeneratorWithHexPdfImpl implements ConsentPdfGenerator {
             // Consent is NOT signed by Patient
             //Todo: Will identify different role once C2S support for multiple role.
             String role = "Provider";
-            addNonPatientSigningDetails(role, signedByUserDto, signedOnDateTime);
+            addNonPatientSigningDetails(document, role, signedByUserDto, signedOnDateTime);
         }
     }
-    private void addPatientSigningDetails(HexPDF document, PatientDto patient, Date signedOnDateTime ) throws IOException {
+    private void addPatientSigningDetails(HexPdf document, PatientDto patient, Date signedOnDateTime ) throws IOException {
         Object[][] signedDetails = {
                 {createSignatureContent(patient, signedOnDateTime)}
         };
 
         document.drawTable(signedDetails,
                 new float[]{480},
-                new int[]{HexPDF.LEFT},
-                HexPDF.LEFT);
+                new int[]{HexPdf.LEFT},
+                HexPdf.LEFT);
     }
 
     private String createSignatureContent(PatientDto patient, Date signedOnDateTime){
@@ -309,7 +309,7 @@ public class ConsentPdfGeneratorWithHexPdfImpl implements ConsentPdfGenerator {
         return signedByContent.concat("\n").concat(signedByEmail).concat("\n").concat(signedOn);
     }
 
-    private void addNonPatientSigningDetails(String role, Optional<UserDto> signedByUserDto, Date signedOnDateTime) throws IOException {
+    private void addNonPatientSigningDetails(HexPdf document, String role, Optional<UserDto> signedByUserDto, Date signedOnDateTime) throws IOException {
         UserDto signedUser = signedByUserDto.orElseThrow(NoDataFoundException::new);
         String userFullName = UserInfoHelper.getUserFullName(signedUser);
         String email = signedUser.getTelecoms().stream()
@@ -319,16 +319,16 @@ public class ConsentPdfGeneratorWithHexPdfImpl implements ConsentPdfGenerator {
                 .orElseThrow(NoDataFoundException::new);
         LocalDate signedDate = signedOnDateTime.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
 
-        final String signedByContent = "Signed by ".concat(role.substring(0, 1).toUpperCase() + role.substring(1) + ": ");
+        final String signedByContent = "\nSigned by ".concat(role.substring(0, 1).toUpperCase() + role.substring(1) + ": ");
         final String signedByEmail = "Email: ".concat(email);
         final String signedOn = "Signed on: ".concat(PdfBoxHandler.formatLocalDate(signedDate, DATE_FORMAT_PATTERN));
         final String signedContent = signedByContent.concat("\n").concat(signedByEmail).concat("\n").concat(signedOn);
 
         // Add signature details
-        String title = "Patient/Patient Representative:";
+        String title = "\nPatient/Patient Representative:";
         String signatureLabel = "Signature: __________________________";
         String printNameLabel = "Print Name: _________________________";
-        String dateLabel = "Date: _______________________________";
+        String dateLabel = "Date: _______________________________\n";
 
         String onBehaveContent = title.concat("\n").concat(signatureLabel).concat("\n").concat(printNameLabel).concat("\n").concat(dateLabel);
         Object[][] signedDetails = {
@@ -337,8 +337,8 @@ public class ConsentPdfGeneratorWithHexPdfImpl implements ConsentPdfGenerator {
 
         document.drawTable(signedDetails,
                 new float[]{240, 240},
-                new int[]{HexPDF.LEFT, HexPDF.LEFT},
-                HexPDF.LEFT);
+                new int[]{HexPdf.LEFT, HexPdf.LEFT},
+                HexPdf.LEFT);
 
     }
     private String determineProviderName(FlattenedSmallProviderDto providerDto) {
