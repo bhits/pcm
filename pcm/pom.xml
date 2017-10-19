@@ -34,6 +34,7 @@
         <c2s.consent-gen.version>1.16.0</c2s.consent-gen.version>
         <c2s.validator-extension.version>1.16.0</c2s.validator-extension.version>
         <c2s.i18n-jpa-support.version>1.16.0</c2s.i18n-jpa-support.version>
+        <c2s.pdfbox-enhance.version>1.17.0-SNAPSHOT</c2s.pdfbox-enhance.version>
         <logstash-logback-encoder.version>4.11</logstash-logback-encoder.version>
     </properties>
 
@@ -178,6 +179,11 @@
             <groupId>gov.samhsa.c2s</groupId>
             <artifactId>consent-gen</artifactId>
             <version>${c2s.consent-gen.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>gov.samhsa.c2s</groupId>
+            <artifactId>pdfbox-enhance</artifactId>
+            <version>${c2s.pdfbox-enhance.version}</version>
         </dependency>
 
         <!-- Test -->
