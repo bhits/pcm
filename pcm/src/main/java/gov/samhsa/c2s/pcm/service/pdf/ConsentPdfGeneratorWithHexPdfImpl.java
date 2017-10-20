@@ -122,13 +122,15 @@ public class ConsentPdfGeneratorWithHexPdfImpl implements ConsentPdfGenerator {
         String patientBirthDate = PdfBoxHandler.formatLocalDate(patientProfile.getBirthDate(), DATE_FORMAT_PATTERN);
 
         Object[][] patientInfo = {
-                {"\nConsent Reference Number: " + consent.getConsentReferenceId() , null},
-                {"\nPatient Name: " + patientFullName, NEWLINE_CHARACTER + "Patient DOB: "+ patientBirthDate }
+                {NEWLINE_CHARACTER+"Consent Reference Number: " + consent.getConsentReferenceId() , null},
+                {NEWLINE_CHARACTER+"Patient Name: " + patientFullName, NEWLINE_CHARACTER + "Patient DOB: "+ patientBirthDate }
         };
+        float[] patientInfoTableColumnWidth =   new float[]{240,240};
+        int[] patientInfoTableColumnAlignment =  new int[]{HexPdf.LEFT, HexPdf.LEFT};
 
         document.drawTable(patientInfo,
-                new float[]{240,240},
-                new int[]{HexPdf.LEFT, HexPdf.LEFT},
+                patientInfoTableColumnWidth,
+                patientInfoTableColumnAlignment,
                 HexPdf.LEFT);
 
     }
@@ -137,9 +139,11 @@ public class ConsentPdfGeneratorWithHexPdfImpl implements ConsentPdfGenerator {
         Object[][] title = {
                 {"AUTHORIZATION TO DISCLOSE" }
         };
+        float [] AuthorizationTitleTableColumnWidth = new float[]{480};
+        int[] AuthorizationTitleTableColumnAlignment =  new int[]{HexPdf.LEFT};
         document.drawTable(title,
-                new float[]{480},
-                new int[]{HexPdf.LEFT},
+                AuthorizationTitleTableColumnWidth,
+                AuthorizationTitleTableColumnAlignment,
                 HexPdf.LEFT);
         drawAuthorizationSubSectionHeader(document,NEWLINE_CHARACTER+"Authorizes:" + NEWLINE_CHARACTER );
 
@@ -156,9 +160,11 @@ public class ConsentPdfGeneratorWithHexPdfImpl implements ConsentPdfGenerator {
         Object[][] title = {
                 {"HEALTH INFORMATION TO BE DISCLOSED" }
         };
+        float[] healthInformationTaleWidth = new float[]{480};
+        int[] healthInformationTaleAlignment= new int[]{HexPdf.LEFT};
         document.drawTable(title,
-                new float[]{480},
-                new int[]{HexPdf.LEFT},
+                healthInformationTaleWidth,
+                healthInformationTaleAlignment,
                 HexPdf.LEFT);
 
         String sensitivityCategoriesLabel = "To SHARE the following medical information:";
@@ -181,10 +187,12 @@ public class ConsentPdfGeneratorWithHexPdfImpl implements ConsentPdfGenerator {
         Object[][] healthInformationHeaders = {
                 {sensitivityCategoriesStr, purposeOfUseStr }
         };
+        float[] healthInformationTableColumnWidth = new float[]{240,240};
+        int[] healthInformationTableColumnAlignment = new int[]{HexPdf.LEFT, HexPdf.LEFT};
 
         document.drawTable(healthInformationHeaders,
-                new float[]{240,240},
-                new int[]{HexPdf.LEFT, HexPdf.LEFT},
+                healthInformationTableColumnWidth,
+                healthInformationTableColumnAlignment,
                 HexPdf.LEFT);
     }
 
@@ -193,10 +201,11 @@ public class ConsentPdfGeneratorWithHexPdfImpl implements ConsentPdfGenerator {
         Object[][] title = {
                 {"CONSENT TERMS" }
         };
-
+        float[]consentTermsColumnWidth = new float[]{480};
+        int[]consentTermsColumnAlignment =  new int[]{HexPdf.LEFT};
         document.drawTable(title,
-                new float[]{480},
-                new int[]{HexPdf.LEFT},
+                consentTermsColumnWidth,
+                consentTermsColumnAlignment,
                 HexPdf.LEFT);
 
         final String userNameKey = "ATTESTER_FULL_NAME";
@@ -219,9 +228,11 @@ public class ConsentPdfGeneratorWithHexPdfImpl implements ConsentPdfGenerator {
         document.drawText(  NEWLINE_CHARACTER);
         document.drawText(  NEWLINE_CHARACTER);
 
+        float[] consentDurationTableColumnWidth = new float[]{240, 240};
+        int[] consentDurationTableColumnAlignment =  new int[]{HexPdf.LEFT, HexPdf.LEFT};
         document.drawTable(title,
-                new float[]{240, 240},
-                new int[]{HexPdf.LEFT, HexPdf.LEFT},
+                consentDurationTableColumnWidth,
+                consentDurationTableColumnAlignment,
                 HexPdf.LEFT);
     }
 
@@ -249,9 +260,11 @@ public class ConsentPdfGeneratorWithHexPdfImpl implements ConsentPdfGenerator {
             tableContents[i+1][3]= flattenedSmallProvidersDto.get(i).getPracticeLocationAddressTelephoneNumber();
         }
 
+        float[] providerTableColumnWidth =  new float[]{160,80,160,80};
+        int[] providerTableColumnAlignment =  new int[]{HexPdf.LEFT, HexPdf.LEFT, HexPdf.LEFT, HexPdf.LEFT};
         document.drawTable(tableContents,
-                new float[]{160,80,160,80},
-                new int[]{HexPdf.LEFT, HexPdf.LEFT, HexPdf.LEFT, HexPdf.LEFT},
+                providerTableColumnWidth,
+                providerTableColumnAlignment,
                 HexPdf.LEFT);
     }
 
@@ -271,10 +284,12 @@ public class ConsentPdfGeneratorWithHexPdfImpl implements ConsentPdfGenerator {
         Object[][] signedDetails = {
                 {createSignatureContent(patient, signedOnDateTime)}
         };
+        float[] patientDetailsColumnWidth= new float[]{480};
+        int[] patientDetailsColumnAlignment= new int[]{HexPdf.LEFT};
 
         document.drawTable(signedDetails,
-                new float[]{480},
-                new int[]{HexPdf.LEFT},
+                patientDetailsColumnWidth,
+                patientDetailsColumnAlignment,
                 HexPdf.LEFT);
     }
 
@@ -335,10 +350,12 @@ public class ConsentPdfGeneratorWithHexPdfImpl implements ConsentPdfGenerator {
         Object[][] signedDetails = {
                 {signedContent, onBehaveContent}
         };
+        float[] signDetailsColumnWidth = new float[]{240, 240};
+        int[] signDetailsColumnAlignment = new int[]{HexPdf.LEFT, HexPdf.LEFT};
 
         document.drawTable(signedDetails,
-                new float[]{240, 240},
-                new int[]{HexPdf.LEFT, HexPdf.LEFT},
+                signDetailsColumnWidth,
+                signDetailsColumnAlignment,
                 HexPdf.LEFT);
 
     }
