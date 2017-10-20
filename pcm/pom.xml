@@ -149,17 +149,6 @@
             <artifactId>modelmapper</artifactId>
             <version>${modelmapper.version}</version>
         </dependency>
-        <dependency>
-            <groupId>org.apache.pdfbox</groupId>
-            <artifactId>pdfbox</artifactId>
-            <version>${apache.pdfbox.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>com.github.ralfstuckert.pdfbox-layout</groupId>
-            <artifactId>pdfbox2-layout</artifactId>
-            <version>1.0.0</version>
-        </dependency>
 
         <dependency>
             <groupId>org.synyx</groupId>
@@ -212,6 +201,7 @@
             <version>${c2s.common-libraries.version}</version>
             <scope>test</scope>
         </dependency>
+
     </dependencies>
 
     <dependencyManagement>

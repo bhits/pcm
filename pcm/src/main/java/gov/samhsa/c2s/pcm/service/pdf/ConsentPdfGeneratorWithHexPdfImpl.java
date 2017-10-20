@@ -22,7 +22,6 @@ import gov.samhsa.c2s.pcm.service.util.UserInfoHelper;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.text.StrSubstitutor;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
@@ -37,11 +36,13 @@ import java.util.stream.Collectors;
 
 @Service
 @Slf4j
-@Primary // TODO remove when finished with the refactoring
 public class ConsentPdfGeneratorWithHexPdfImpl implements ConsentPdfGenerator {
     private static final String DATE_FORMAT_PATTERN = "MMM dd, yyyy";
     private static final String CONSENT_PDF = "consent-pdf";
     private static final String TELECOM_EMAIL = "EMAIL";
+
+    private final String NEWLINE_CHARACTER = "\n";
+    private final String NEWLINE_AND_LIST_PRIFIX = "\n- ";
 
     private final PdfProperties pdfProperties;
     private final PlsService plsService;
@@ -105,7 +106,7 @@ public class ConsentPdfGeneratorWithHexPdfImpl implements ConsentPdfGenerator {
     public void drawConsentTitle(HexPdf document, String consentTitle){
         // Add a main title, centered in shiny colours
         document.title1Style();
-        document.drawText( consentTitle + "\n", HexPdf.CENTER);
+        document.drawText( consentTitle + NEWLINE_CHARACTER, HexPdf.CENTER);
     }
     @Override
     public void setPageFooter(HexPdf document, String consentTitle){
@@ -122,7 +123,7 @@ public class ConsentPdfGeneratorWithHexPdfImpl implements ConsentPdfGenerator {
 
         Object[][] patientInfo = {
                 {"\nConsent Reference Number: " + consent.getConsentReferenceId() , null},
-                {"\nPatient Name: " + patientFullName, "\nPatient DOB: "+ patientBirthDate }
+                {"\nPatient Name: " + patientFullName, NEWLINE_CHARACTER + "Patient DOB: "+ patientBirthDate }
         };
 
         document.drawTable(patientInfo,
@@ -140,17 +141,17 @@ public class ConsentPdfGeneratorWithHexPdfImpl implements ConsentPdfGenerator {
                 new float[]{480},
                 new int[]{HexPdf.LEFT},
                 HexPdf.LEFT);
-        drawAuthorizationSubSectionHeader(document,"\nAuthorizes:\n" );
+        drawAuthorizationSubSectionHeader(document,NEWLINE_CHARACTER+"Authorizes:" + NEWLINE_CHARACTER );
 
         drawProvidersTable(document, consent.getFromProviders());
 
-        drawAuthorizationSubSectionHeader(document,"\nTo disclose to:\n" );
+        drawAuthorizationSubSectionHeader(document, NEWLINE_CHARACTER+"To disclose to:" + NEWLINE_CHARACTER );
 
         drawProvidersTable(document, consent.getToProviders());
     }
 
     private void drawHealthInformationToBeDisclosedSection(Consent consent) {
-        document.drawText(  "\n");
+        document.drawText(  NEWLINE_CHARACTER);
 
         Object[][] title = {
                 {"HEALTH INFORMATION TO BE DISCLOSED" }
@@ -162,21 +163,20 @@ public class ConsentPdfGeneratorWithHexPdfImpl implements ConsentPdfGenerator {
 
         String sensitivityCategoriesLabel = "To SHARE the following medical information:";
         String subLabel = "Sensitivity Categories:";
-        String listPrifix = "\n- ";
         String sensitivityCategories = consent.getShareSensitivityCategories().stream()
                 .map(SensitivityCategory::getDisplay)
-                .collect(Collectors.joining("\n- "));
+                .collect(Collectors.joining(NEWLINE_AND_LIST_PRIFIX));
 
         String sensitivityCategoriesStr = sensitivityCategoriesLabel
-                                            .concat("\n").concat(subLabel)
-                                            .concat("\n- ").concat(sensitivityCategories);
+                                            .concat(NEWLINE_CHARACTER).concat(subLabel)
+                                            .concat(NEWLINE_AND_LIST_PRIFIX).concat(sensitivityCategories);
 
         String purposeLabel = "To SHARE for the following purpose(s):";
 
         String purposes = consent.getSharePurposes().stream()
                 .map(Purpose::getDisplay)
-                .collect(Collectors.joining("\n- "));
-        String purposeOfUseStr = purposeLabel.concat("\n- ").concat(purposes);
+                .collect(Collectors.joining(NEWLINE_AND_LIST_PRIFIX));
+        String purposeOfUseStr = purposeLabel.concat(NEWLINE_AND_LIST_PRIFIX).concat(purposes);
 
         Object[][] healthInformationHeaders = {
                 {sensitivityCategoriesStr, purposeOfUseStr }
@@ -216,7 +216,8 @@ public class ConsentPdfGeneratorWithHexPdfImpl implements ConsentPdfGenerator {
         Object[][] title = {
                 {effectiveDateContent, expirationDateContent }
         };
-        document.drawText(  "\n\n");
+        document.drawText(  NEWLINE_CHARACTER);
+        document.drawText(  NEWLINE_CHARACTER);
 
         document.drawTable(title,
                 new float[]{240, 240},
@@ -286,11 +287,11 @@ public class ConsentPdfGeneratorWithHexPdfImpl implements ConsentPdfGenerator {
                 .orElseThrow(NoDataFoundException::new);
         LocalDate signedDate = signedOnDateTime.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
 
-        final String signedByContent = "\nSigned by: ".concat(patientName);
+        final String signedByContent =  NEWLINE_CHARACTER+"Signed by: ".concat(patientName);
         final String signedByEmail = "Email: ".concat(email);
         final String signedOn = "Signed on: ".concat(PdfBoxHandler.formatLocalDate(signedDate, DATE_FORMAT_PATTERN));
 
-        return signedByContent.concat("\n").concat(signedByEmail).concat("\n").concat(signedOn).concat("\n");
+        return signedByContent.concat(NEWLINE_CHARACTER).concat(signedByEmail).concat(NEWLINE_CHARACTER).concat(signedOn).concat(NEWLINE_CHARACTER);
     }
 
     private String createSignatureOnBehalfOfContent(PatientDto patient, Date signedOnDateTime){
@@ -306,7 +307,7 @@ public class ConsentPdfGeneratorWithHexPdfImpl implements ConsentPdfGenerator {
         final String signedByEmail = "Email: ".concat(email);
         final String signedOn = "Signed on: ".concat(PdfBoxHandler.formatLocalDate(signedDate, DATE_FORMAT_PATTERN));
 
-        return signedByContent.concat("\n").concat(signedByEmail).concat("\n").concat(signedOn);
+        return signedByContent.concat(NEWLINE_CHARACTER).concat(signedByEmail).concat(NEWLINE_CHARACTER).concat(signedOn);
     }
 
     private void addNonPatientSigningDetails(HexPdf document, String role, Optional<UserDto> signedByUserDto, Date signedOnDateTime) throws IOException {
@@ -319,18 +320,18 @@ public class ConsentPdfGeneratorWithHexPdfImpl implements ConsentPdfGenerator {
                 .orElseThrow(NoDataFoundException::new);
         LocalDate signedDate = signedOnDateTime.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
 
-        final String signedByContent = "\nSigned by ".concat(role.substring(0, 1).toUpperCase() + role.substring(1) + ": ");
+        final String signedByContent = NEWLINE_CHARACTER+"Signed by ".concat(role.substring(0, 1).toUpperCase() + role.substring(1) + ": ");
         final String signedByEmail = "Email: ".concat(email);
         final String signedOn = "Signed on: ".concat(PdfBoxHandler.formatLocalDate(signedDate, DATE_FORMAT_PATTERN));
-        final String signedContent = signedByContent.concat("\n").concat(signedByEmail).concat("\n").concat(signedOn);
+        final String signedContent = signedByContent.concat(NEWLINE_CHARACTER).concat(signedByEmail).concat(NEWLINE_CHARACTER).concat(signedOn);
 
         // Add signature details
-        String title = "\nPatient/Patient Representative:";
+        String title = NEWLINE_CHARACTER+"Patient/Patient Representative:";
         String signatureLabel = "Signature: __________________________";
         String printNameLabel = "Print Name: _________________________";
-        String dateLabel = "Date: _______________________________\n";
+        String dateLabel = "Date: _______________________________"+NEWLINE_CHARACTER;
 
-        String onBehaveContent = title.concat("\n").concat(signatureLabel).concat("\n").concat(printNameLabel).concat("\n").concat(dateLabel);
+        String onBehaveContent = title.concat(NEWLINE_CHARACTER).concat(signatureLabel).concat(NEWLINE_CHARACTER).concat(printNameLabel).concat(NEWLINE_CHARACTER).concat(dateLabel);
         Object[][] signedDetails = {
                 {signedContent, onBehaveContent}
         };
