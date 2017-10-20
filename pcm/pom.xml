@@ -158,7 +158,6 @@
         <dependency>
             <groupId>net.sf.saxon</groupId>
             <artifactId>Saxon-HE</artifactId>
-            <version>${saxon-he.version}</version>
         </dependency>
 
         <!-- C2S Common Libraries -->
